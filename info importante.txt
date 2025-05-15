@@ -1,0 +1,31 @@
+NOMBRES DE LAS BDs
+
+Nombre de la base de datos central:
+ServiPuntosCentral
+
+Nombre de la base de datos para los tenants:
+ServiPuntosSite
+
+----------------------------------------------
+
+MIGRACIONES
+
+Para crear migraciones:
+dotnet ef migrations add InitialCreate
+dotnet ef database update
+
+Tener en cuenta que cuando vayan a hacerse migraciones estaría bueno separarlas
+
+Para la base de datos central:
+dotnet ef migrations add InitialSiteMigration \
+  --context DAO.Data.Site.SiteDbContext \
+  --output-dir DAO/Migrations/Site
+
+Para la base de datos Site
+dotnet ef migrations add InitialCentralMigration \
+  --context DAO.Data.Central.CentralDbContext \
+  --output-dir DAO/Migrations/Central
+
+
+----------------------------------------------
+
