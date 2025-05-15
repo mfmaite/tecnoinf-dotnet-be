@@ -1,9 +1,9 @@
 USE [master];
 GO
 
-IF NOT EXISTS (SELECT * FROM sys.sql_logins WHERE name = 'newuser')
+IF NOT EXISTS (SELECT * FROM sys.sql_logins WHERE name = '$(MSSQL_USER)')
 BEGIN
-    CREATE LOGIN [newuser] WITH PASSWORD = 'password123', CHECK_POLICY = OFF;
-    ALTER SERVER ROLE [sysadmin] ADD MEMBER [newuser];
+    CREATE LOGIN [$(MSSQL_USER)] WITH PASSWORD = '$(MSSQL_USER_PASSWORD)', CHECK_POLICY = OFF;
+    ALTER SERVER ROLE [sysadmin] ADD MEMBER [$(MSSQL_USER)];
 END
 GO

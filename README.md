@@ -18,38 +18,17 @@ docker compose ps
 
 1. Entrar al contenedor:
 ```bash
-docker compose exec sqlserver bash
+docker compose exec <container_name> bash
 ```
+
+> 💡 Puedes obtener el nombre del contenedor ejecutando `docker compose ps`
 
 2. Conectarse a SQL Server usando sqlcmd:
 ```bash
-/opt/mssql-tools18/bin/sqlcmd -S localhost -U newuser -P "password123" -C
+/opt/mssql-tools18/bin/sqlcmd -S localhost -U <user_name> -C
 ```
 
-### Comandos SQL útiles
-
-Una vez conectado, puedes usar estos comandos (recuerda terminar cada comando con `GO`):
-
-- Ver bases de datos:
-```sql
-SELECT name FROM sys.databases; GO
-```
-
-- Ver tablas de la base de datos actual:
-```sql
-SELECT name FROM sys.tables; GO
-```
-
-- Cambiar a una base de datos específica:
-```sql
-USE NombreBaseDeDatos; GO
-```
-
-### Credenciales
-
-- **Usuario Adicional**
-  - Usuario: newuser
-  - Contraseña: password123
+Después de ejecutar este comando, la consola pedirá la contraseña del mismo.
 
 ### Conexión desde herramientas externas
 
@@ -57,4 +36,4 @@ Puedes conectarte usando estas credenciales desde cualquier herramienta SQL (com
 
 - Servidor: localhost
 - Puerto: 1433
-- Usuario y contraseña: (cualquiera de los mencionados arriba)
+- Usuario y contraseña: las definidas en el archivo .env

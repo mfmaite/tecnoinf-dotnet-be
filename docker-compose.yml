@@ -1,35 +1,39 @@
 volumes:
-  sqlserver_data1:
+  central-db_data1:
 
 services:
-  sqlserver:
+  central-db:
     image: mcr.microsoft.com/mssql/server:2022-latest
     environment:
       - ACCEPT_EULA=Y
-      - MSSQL_SA_PASSWORD=1StrongPwd!!
+      - MSSQL_SA_PASSWORD=${MSSQL_SA_PASSWORD}
       - MSSQL_PID=Developer
     user: root
     ports:
       - 1433:1433
     volumes:
-      - sqlserver_data1:/var/opt/mssql
+      - central-db_data1:/var/opt/mssql
     restart: always
     healthcheck:
-      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 1StrongPwd!! -C -Q 'SELECT 1' || exit 1"]
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P ${MSSQL_SA_PASSWORD} -C -Q 'SELECT 1' || exit 1"]
       interval: 10s
       retries: 10
       start_period: 10s
       timeout: 3s
-  sqlserver.configurator:
+    env_file:
+      - .env
+  central-db.configurator:
     image: mcr.microsoft.com/mssql/server:2022-latest
     user: root
+    env_file:
+      - .env
     volumes:
       - ./init:/docker-entrypoint-initdb.d
     depends_on:
-      sqlserver:
+      central-db:
         condition: service_healthy
     command: >
       bash -c '
-      /opt/mssql-tools18/bin/sqlcmd -S sqlserver -U sa -P 1StrongPwd!! -C -d master -i docker-entrypoint-initdb.d/init.sql;
+      /opt/mssql-tools18/bin/sqlcmd -S central-db -U sa -P ${MSSQL_SA_PASSWORD} -C -d master -i docker-entrypoint-initdb.d/init.sql;
       echo "All done!";
       '
