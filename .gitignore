@@ -1,0 +1,31 @@
+# .NET Core
+bin/
+obj/
+*.user
+*.userosscache
+*.suo
+*.userprefs
+
+# Visual Studio Code
+.vscode/
+.vs/
+
+# Docker
+.docker/
+
+# Environment variables
+.env
+
+# SQL Server
+*.mdf
+*.ldf
+*.ndf
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db

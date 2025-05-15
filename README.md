@@ -1,5 +1,13 @@
 # SQL Server con Docker
 
+## Requisitos previos
+
+Antes de iniciar, necesitas crear un archivo `.env` en la raíz del proyecto con las siguientes variables:
+```env
+MSSQL_SA_PASSWORD=
+MSSQL_USER_PASSWORD=
+```
+
 ## Inicialización
 
 1. Iniciar los contenedores:
@@ -18,12 +26,13 @@ docker compose ps
 
 1. Entrar al contenedor:
 ```bash
-docker compose exec sqlserver bash
+docker compose exec <container_name> bash
 ```
+> 💡 Para obtener el nombre del container, puedes correr `docker ps`
 
 2. Conectarse a SQL Server usando sqlcmd:
 ```bash
-/opt/mssql-tools18/bin/sqlcmd -S localhost -U newuser -P "password123" -C
+/opt/mssql-tools18/bin/sqlcmd -S localhost -U <db_user> -P <db_password> -C
 ```
 
 ### Comandos SQL útiles
@@ -45,16 +54,11 @@ SELECT name FROM sys.tables; GO
 USE NombreBaseDeDatos; GO
 ```
 
-### Credenciales
-
-- **Usuario Adicional**
-  - Usuario: newuser
-  - Contraseña: password123
-
 ### Conexión desde herramientas externas
 
 Puedes conectarte usando estas credenciales desde cualquier herramienta SQL (como Azure Data Studio, SQL Server Management Studio, etc.) usando:
 
 - Servidor: localhost
 - Puerto: 1433
-- Usuario y contraseña: (cualquiera de los mencionados arriba)
+- Credenciales: Usar las definidas en el archivo .env
+
