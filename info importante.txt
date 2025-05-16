@@ -27,5 +27,8 @@ dotnet ef migrations add InitialCentralMigration \
   --output-dir DAO/Migrations/Central
 
 
+Para aplicar migraciones en la base de datos Central:
+dotnet ef database update --context CentralDbContext
+
 ----------------------------------------------
 
