@@ -25,6 +25,13 @@ Si es la primera vez que inicias este proyecto, debes seguir los siguientes paso
 ```
 Esto descargará las librerías necesarias para el proyecto.
 
+3. Aplicar las migraciones pendientes:
+```bash
+dotnet ef database update <db_context>
+```
+
+> 💡 El DbContext de la base Central es `CentralDbContext`
+
 ### 🚀 Inicialización
 
 1. Inicia los contenedores:
@@ -36,9 +43,18 @@ docker compose up -d
 ```bash
 docker compose ps
 ```
-3. Posicionado en la carpeta `ServiPuntosUy`, ejecuta
+
+3. Posicionado en la carpeta `ServiPuntosUy`, ejecuta:
 ```bash
 dotnet run
+```
+
+## 📚 Documentación API (Swagger)
+
+Una vez que la aplicación esté corriendo, puedes acceder a la documentación de la API en:
+
+```
+http://localhost:5162/swagger
 ```
 
 ## ⚙️ Troubleshooting
