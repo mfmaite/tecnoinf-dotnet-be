@@ -1,23 +1,14 @@
-using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
-namespace ServiPuntosUy.DAO.Models.Central;
+namespace ServiPuntosUy.DTO;
 
-public class Tenant
+public class TenantDTO
 {
     public int Id { get; set; }
-
-    [Required]
     public string Name { get; set; } = string.Empty;
-
-    [Required]
     public string DatabaseName { get; set; } = string.Empty;
-
-    [Required]
     public string ConnectionString { get; set; } = string.Empty;
-
-    [Required]
     public string User { get; set; } = string.Empty;
-
-    [Required]
+    [JsonIgnore]
     public string Password { get; set; } = string.Empty;
 }
