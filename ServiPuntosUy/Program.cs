@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using ServiPuntosUy.Models.DAO;
+using ServiPuntosUy.DAO.Data.Central;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,7 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 
 // Configurar la conexión a la base de datos
-builder.Services.AddDbContext<ServiPuntosContext>(options =>
+builder.Services.AddDbContext<CentralDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("CentralConnection")));
 
 var app = builder.Build();
@@ -26,12 +26,9 @@ app.UseRouting();
 
 app.UseAuthorization();
 
-app.MapStaticAssets();
-
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
-    .WithStaticAssets();
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 
 app.Run();
