@@ -16,16 +16,19 @@ dotnet ef database update
 
 Tener en cuenta que cuando vayan a hacerse migraciones estaría bueno separarlas
 
-Para la base de datos central:
-dotnet ef migrations add InitialSiteMigration \
-  --context DAO.Data.Site.SiteDbContext \
+Para la base de datos Site: EDITAR EL NOMBRE DE LA MIGRATION
+dotnet ef migrations add <migration_name> \
+  --context SiteDbContext \
   --output-dir DAO/Migrations/Site
 
-Para la base de datos Site
-dotnet ef migrations add InitialCentralMigration \
-  --context DAO.Data.Central.CentralDbContext \
+Para la base de datos Central: EDITAR EL NOMBRE DE LA MIGRATION
+dotnet ef migrations add <migration_name> \
+  --context CentralDbContext \
   --output-dir DAO/Migrations/Central
 
+
+Para aplicar migraciones en la base de datos Central:
+dotnet ef database update --context CentralDbContext
 
 ----------------------------------------------
 
