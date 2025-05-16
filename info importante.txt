@@ -28,4 +28,48 @@ dotnet ef migrations add InitialCentralMigration \
 
 
 ----------------------------------------------
+DIRECTORIOS DEL TONGA
+======================
+
+Auxiliares
+===========
+exceptions
+enums
+
+
+Motor (core)
+============
+CoreApi
+    *Controllers
+    *Middlewares
+    *Model
+    *Properties (se genera solo)
+--> DTOs
+--> DAO
+--> Data services
+
+
+
+No entiendo
+===========
+platform.dao
+ResultsApi
+site.dao
+data access logic
+
+
+====================================================
+
+1. Hacer un ABM del backend central (plataforma). SIN LOGIN
+    A. Crear base de datos
+    b. Definir una clase tenant
+    c. Definir una clase admin central (plataforma)
+    d. Definir controller Tenant
+        - Add tenant
+        - Delete tenant
+        - Modify tenant
+
+2. Mirar jwt
+
+
 
