@@ -1,0 +1,4 @@
+En esta carpeta se manejará la información de la Database (Data Access Object)
+
+Models contiene las entidades, dentro hay una carpeta para la bd del site y otra para la bd central
+Data contiene el DbContext, dentro hay una carpeta para la bd del site y otra para la bd central

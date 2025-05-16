@@ -1,1 +1,51 @@
-.env
+# ======================================
+# ⚙️ .NET build artifacts
+# ======================================
+bin/
+obj/
+
+# Recursive bin/obj (e.g. in Migrations folders)
+**/bin/
+**/obj/
+
+# ======================================
+# 🧪 User-generated config & environment
+# ======================================
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.vs/
+
+# Environment-based settings (keep appsettings.json, ignore local ones)
+appsettings.Development.json
+appsettings.Local.json
+*.env
+
+# EF Core generated binary artifacts in Migrations folders
+ServiPuntosUy/Models/DAO/**/Migrations/**/bin/
+ServiPuntosUy/Models/DAO/**/Migrations/**/obj/
+
+# ======================================
+# 🌐 ASP.NET Core web stuff
+# ======================================
+wwwroot/lib/
+wwwroot/dist/
+wwwroot/node_modules/
+
+# ======================================
+# 🧪 Logs & test artifacts
+# ======================================
+*.log
+logs/
+coverage/
+*.lcov
+
+#
+
+
+.vs/
+.git/
+**/bin/
+**/Debug/
+**/obj/
