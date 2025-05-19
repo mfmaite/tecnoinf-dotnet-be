@@ -10,14 +10,5 @@ public class Tenant
     public string Name { get; set; } = string.Empty;
 
     [Required]
-    public string DatabaseName { get; set; } = string.Empty;
-
-    [Required]
-    public string ConnectionString { get; set; } = string.Empty;
-
-    [Required]
-    public string User { get; set; } = string.Empty;
-
-    [Required]
-    public string Password { get; set; } = string.Empty;
+    public string TenantId { get; set; } = string.Empty;
 }

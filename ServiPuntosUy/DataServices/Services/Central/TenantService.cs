@@ -2,7 +2,7 @@ using System.Linq.Expressions;
 using ServiPuntosUy.DTO;
 using ServiPuntosUy.DAO.Models.Central;
 using ServiPuntosUy.Models.DAO;
-
+using System.Text.RegularExpressions;
 namespace ServiPuntosUy.DataServices.Services.Central;
 
 public class TenantService : ITenantService
@@ -20,9 +20,7 @@ public class TenantService : ITenantService
       return new TenantDTO {
         Id = tenant.Id,
         Name = tenant.Name,
-        DatabaseName = tenant.DatabaseName,
-        ConnectionString = tenant.ConnectionString,
-        User = tenant.User,
+        TenantId = tenant.TenantId,
       };
     }
 
@@ -37,13 +35,16 @@ public class TenantService : ITenantService
         return tenant != null ? GetTenantDTO(tenant) : null;
     }
 
-    public TenantDTO CreateTenant(string name, string databaseName, string connectionString, string user, string password) {
+    public TenantDTO CreateTenant(string name, string tenantId) {
+      // Validar que tenantId contenga solo letras A-Z (mayus y minus)
+      if (!Regex.IsMatch(tenantId, @"^[a-zA-Z]+$"))
+      {
+          throw new ArgumentException("El TenantId solo puede contener letras mayúsculas de la A a la Z.");
+      }
+
       var newTenant = new Tenant {
         Name = name,
-        DatabaseName = databaseName,
-        ConnectionString = connectionString,
-        User = user,
-        Password = password,
+        TenantId = tenantId,
       };
 
         var createdTenant = _tenantRepository.AddAsync(newTenant).GetAwaiter().GetResult();
