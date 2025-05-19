@@ -42,6 +42,14 @@ public class TenantService : ITenantService
           throw new ArgumentException("El TenantId solo puede contener letras mayúsculas de la A a la Z.");
       }
 
+      // Verificar que el tenantId no exista
+      bool tenantExists = _tenantRepository.GetQueryable().Any(t => t.TenantId == tenantId);
+      if (tenantExists)
+      {
+          throw new ArgumentException($"El TenantId '{tenantId}' ya existe. Debe ser único.");
+      }
+
+
       var newTenant = new Tenant {
         Name = name,
         TenantId = tenantId,
