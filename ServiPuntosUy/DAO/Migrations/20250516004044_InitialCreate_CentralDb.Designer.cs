@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using ServiPuntosUy.DAO.Data.Central;
+using ServiPuntosUy.DAO.Data;
 
 #nullable disable
 
-namespace ServiPuntosUy.DAO.Migrations.Central
+namespace ServiPuntosUy.DAO.Migrations
 {
     [DbContext(typeof(CentralDbContext))]
     [Migration("20250516004044_InitialCreate_CentralDb")]

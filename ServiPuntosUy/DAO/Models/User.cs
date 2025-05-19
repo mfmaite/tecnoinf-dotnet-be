@@ -1,4 +1,4 @@
-namespace ServiPuntosUy.DAO.Models.Central;
+namespace ServiPuntosUy.DAO.Models;
 
 public class User
 {

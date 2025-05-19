@@ -4,27 +4,27 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using ServiPuntosUy.DAO.Data.Central;
+using ServiPuntosUy.DAO.Data;
 
 #nullable disable
 
-namespace ServiPuntosUy.DAO.Migrations.Central
+namespace ServiPuntosUy.DAO.Migrations
 {
     [DbContext(typeof(CentralDbContext))]
-    [Migration("20250516013727_CreateTenantModel")]
-    partial class CreateTenantModel
+    [Migration("20250519204453_UpdateTenantModel")]
+    partial class UpdateTenantModel
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.5")
+                .HasAnnotation("ProductVersion", "8.0.3")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("ServiPuntosUy.DAO.Models.Central.Tenant", b =>
+            modelBuilder.Entity("ServiPuntosUy.DAO.Models.Tenant", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -32,23 +32,11 @@ namespace ServiPuntosUy.DAO.Migrations.Central
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("ConnectionString")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("DatabaseName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Password")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("User")
+                    b.Property<string>("TenantId")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -57,7 +45,7 @@ namespace ServiPuntosUy.DAO.Migrations.Central
                     b.ToTable("Tenants");
                 });
 
-            modelBuilder.Entity("ServiPuntosUy.DAO.Models.Central.User", b =>
+            modelBuilder.Entity("ServiPuntosUy.DAO.Models.User", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()

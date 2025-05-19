@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using ServiPuntosUy.DAO.Models.Central;
+using ServiPuntosUy.DAO.Models;
 
-namespace ServiPuntosUy.DAO.Data.Central;
+namespace ServiPuntosUy.DAO.Data;
 
 public class CentralDbContext : DbContext
 {

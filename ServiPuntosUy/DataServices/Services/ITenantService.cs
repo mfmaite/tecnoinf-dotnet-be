@@ -1,5 +1,5 @@
 using ServiPuntosUy.DTO;
-using ServiPuntosUy.DAO.Models.Central;
+using ServiPuntosUy.DAO.Models;
 
 namespace ServiPuntosUy.DataServices.Services;
 
@@ -7,5 +7,5 @@ public interface ITenantService
 {
     TenantDTO GetTenantDTO(Tenant tenant);
     TenantDTO GetTenantById(int id);
-    TenantDTO CreateTenant(string name, string databaseName, string connectionString, string user, string password);
+    TenantDTO CreateTenant(string name, string tenantId);
 }

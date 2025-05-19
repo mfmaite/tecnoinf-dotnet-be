@@ -1,8 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using ServiPuntosUy.Models.DAO;
-using ServiPuntosUy.DataServices.Services.Central;
 using ServiPuntosUy.DataServices.Services;
-using ServiPuntosUy.DAO.Data.Central;
+using ServiPuntosUy.DAO.Data;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);

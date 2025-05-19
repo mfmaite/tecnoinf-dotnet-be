@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using ServiPuntosUy.DataServices.Services.Central;
-using ServiPuntosUy.DAO.Models.Central;
 using ServiPuntosUy.DataServices.Services;
+using ServiPuntosUy.DAO.Models;
 using ServiPuntosUy.DTO;
 
 namespace ServiPuntosUy.Controllers;
@@ -34,10 +33,7 @@ public class TenantController : ControllerBase
         try {
             var newTenant = _tenantService.CreateTenant(
                 tenant.Name,
-                tenant.DatabaseName,
-                tenant.ConnectionString,
-                tenant.User,
-                tenant.Password
+                tenant.TenantId
             );
 
             return Ok(newTenant);

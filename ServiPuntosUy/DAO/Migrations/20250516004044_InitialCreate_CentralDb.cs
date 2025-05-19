@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace ServiPuntosUy.DAO.Migrations.Central
+namespace ServiPuntosUy.DAO.Migrations
 {
     /// <inheritdoc />
     public partial class InitialCreate_CentralDb : Migration
