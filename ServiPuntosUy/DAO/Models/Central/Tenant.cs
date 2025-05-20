@@ -11,4 +11,6 @@ public class Tenant
 
     [Required]
     public string TenantId { get; set; } = string.Empty;
+
+    public ICollection<Estacion> Estaciones { get; set; } = new List<Estacion>();
 }
