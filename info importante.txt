@@ -16,19 +16,71 @@ dotnet ef database update
 
 Tener en cuenta que cuando vayan a hacerse migraciones estaría bueno separarlas
 
-Para la base de datos Site: EDITAR EL NOMBRE DE LA MIGRATION
-dotnet ef migrations add <migration_name> \
-  --context SiteDbContext \
+Para la base de datos central:
+dotnet ef migrations add InitialSiteMigration \
+  --context DAO.Data.Site.SiteDbContext \
   --output-dir DAO/Migrations/Site
 
-Para la base de datos Central: EDITAR EL NOMBRE DE LA MIGRATION
-dotnet ef migrations add <migration_name> \
-  --context CentralDbContext \
+Para la base de datos Site
+dotnet ef migrations add InitialCentralMigration \
+  --context DAO.Data.Central.CentralDbContext \
   --output-dir DAO/Migrations/Central
 
 
-Para aplicar migraciones en la base de datos Central:
-dotnet ef database update --context CentralDbContext
+----------------------------------------------
+
+DIRECTORIOS DEL TONGA
+
+===========
+Auxiliares
+===========
+exceptions
+enums
+
+============
+Motor (core)
+============
+CoreApi
+    *Controllers
+    *Middlewares
+    *Model
+    *Properties (se genera solo)
+--> DTOs
+--> DAO
+--> Data services
+
+=============
+????
+=============
+platform.dao
+ResultsApi
+site.dao
+data access logic
 
 ----------------------------------------------
+
+CASOS DE USO CRITICOS
+
+1. Alta tenant
+2. Autenticacion
+3. Alta estacion
+4. Canje puntos
+5. Verificacion de edad
+6. Alta de producto
+7. Actualizacion de combustible
+
+
+ROADMAP PARA LOS CASOS DE USO
+
+1. Alta tenant (SIN LOGIN)
+    A. Crear base de datos
+    b. Definir una clase tenant
+    d. Definir controller Tenant
+        - Add tenant
+
+
+2. Autenticacion
+    1. verificar usuario
+    2. asignar jwt
+
 
