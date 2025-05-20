@@ -57,6 +57,18 @@ builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepositor
 builder.Services.AddScoped<ITenantService, TenantService>();
 builder.Services.AddScoped<ILoginService, LoginService>();
 
+// Registra la política CORS (antes de Build)
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("SpaPolicy", policy =>
+    {
+        policy
+          .WithOrigins("http://localhost:5173")
+          .AllowAnyHeader()
+          .AllowAnyMethod();
+    });
+});
+
 var app = builder.Build();
 
 app.UseSwagger();
@@ -67,11 +79,9 @@ app.UseSwaggerUI(c =>
 });
 
 app.UseRouting();
-
-// Configuración del middleware
-app.UseAuthentication();
+app.UseCors("SpaPolicy");
 app.UseAuthorization();
-
 app.MapControllers();
+app.UseAuthentication();
 
 app.Run();
