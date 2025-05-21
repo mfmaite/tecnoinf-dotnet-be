@@ -1,10 +1,16 @@
 using Microsoft.EntityFrameworkCore;
 using ServiPuntosUy.DTO;
+using ServiPuntosUy.DAO.Models.Central;
+using ServiPuntosUy.Models.DAO;
+using System;
+using System.Linq;
+using Microsoft.Extensions.Configuration;
+using ServiPuntosUy.DataServices.Services.Central;
 
 namespace ServiPuntosUy.DataServices.Services.Branch
 {
     /// <summary>
-    /// Implementación del servicio de estaciones para el administrador de estación
+    /// Implementación del servicio de branches para el administrador de branch
     /// </summary>
     public class BranchService : IBranchService
     {
@@ -12,123 +18,60 @@ namespace ServiPuntosUy.DataServices.Services.Branch
         private readonly IConfiguration _configuration;
         private readonly string _tenantId;
         private readonly int _branchId;
-        
+        private readonly IGenericRepository<ServiPuntosUy.DAO.Models.Central.Branch> _branchRepository;
+
         public BranchService(DbContext dbContext, IConfiguration configuration, string tenantId, int branchId)
         {
             _dbContext = dbContext;
             _configuration = configuration;
             _tenantId = tenantId;
             _branchId = branchId;
+            _branchRepository = new GenericRepository<ServiPuntosUy.DAO.Models.Central.Branch>(dbContext);
         }
-        
-        /// <summary>
-        /// Obtiene todas las estaciones de un tenant
-        /// </summary>
-        /// <param name="tenantId">ID del tenant</param>
-        /// <returns>Lista de estaciones</returns>
-        public Task<IEnumerable<BranchDTO>> GetBranchesByTenantAsync(string tenantId)
-        {
-            // Implementación básica para el scaffold
-            throw new NotImplementedException();
+
+        // Métodos del Branch
+
+        public BranchDTO GetBranchDTO(ServiPuntosUy.DAO.Models.Central.Branch branch) {
+            return new BranchDTO {
+                Id = branch.Id,
+                Latitud = branch.Latitud,
+                Longitud = branch.Longitud,
+                TenantId = branch.TenantId,
+                // Tenant = null // Comentado hasta que tengamos acceso a _tenantService
+            };
         }
-        
-        /// <summary>
-        /// Obtiene una estación por su ID
-        /// </summary>
-        /// <param name="id">ID de la estación</param>
-        /// <returns>Estación</returns>
-        public Task<BranchDTO> GetBranchByIdAsync(int id)
-        {
-            // Implementación básica para el scaffold
-            throw new NotImplementedException();
+
+        public BranchDTO GetBranchById(int id) {
+            // Buscar el branch por ID usando el repositorio de la clase
+            var branch = _branchRepository.GetQueryable().FirstOrDefault(e => e.Id == id);
+            
+            // Devolver el DTO si se encontró el branch
+            return branch != null ? GetBranchDTO(branch) : null;
         }
-        
-        /// <summary>
-        /// Crea una nueva estación
-        /// </summary>
-        /// <param name="branchDTO">Datos de la estación</param>
-        /// <returns>Estación creada</returns>
-        public Task<BranchDTO> CreateBranchAsync(BranchDTO branchDTO)
-        {
-            // Implementación básica para el scaffold
-            throw new NotImplementedException();
-        }
-        
-        /// <summary>
-        /// Actualiza una estación
-        /// </summary>
-        /// <param name="branchDTO">Datos de la estación</param>
-        /// <returns>Estación actualizada</returns>
-        public Task<BranchDTO> UpdateBranchAsync(BranchDTO branchDTO)
-        {
-            // Implementación básica para el scaffold
-            throw new NotImplementedException();
-        }
-        
-        /// <summary>
-        /// Elimina una estación
-        /// </summary>
-        /// <param name="id">ID de la estación</param>
-        /// <returns>True si la eliminación es exitosa, false en caso contrario</returns>
-        public Task<bool> DeleteBranchAsync(int id)
-        {
-            // Implementación básica para el scaffold
-            throw new NotImplementedException();
-        }
-        
-        /// <summary>
-        /// Obtiene las estaciones cercanas a una ubicación
-        /// </summary>
-        /// <param name="latitude">Latitud</param>
-        /// <param name="longitude">Longitud</param>
-        /// <param name="radius">Radio en kilómetros</param>
-        /// <param name="tenantId">ID del tenant (opcional)</param>
-        /// <returns>Lista de estaciones cercanas</returns>
-        public Task<IEnumerable<BranchDTO>> GetNearbyBranchesAsync(double latitude, double longitude, double radius, string tenantId = null)
-        {
-            // Implementación básica para el scaffold
-            throw new NotImplementedException();
-        }
-        
-        /// <summary>
-        /// Actualiza los precios de combustibles de una estación
-        /// </summary>
-        /// <param name="branchId">ID de la estación</param>
-        /// <param name="fuelPrices">Precios de combustibles</param>
-        /// <returns>True si la actualización es exitosa, false en caso contrario</returns>
-        public Task<bool> UpdateFuelPricesAsync(int branchId, Dictionary<string, decimal> fuelPrices)
-        {
-            // Implementación básica para el scaffold
-            throw new NotImplementedException();
-        }
-        
-        /// <summary>
-        /// Actualiza los horarios de una estación
-        /// </summary>
-        /// <param name="branchId">ID de la estación</param>
-        /// <param name="openingHours">Horarios de apertura y cierre</param>
-        /// <returns>True si la actualización es exitosa, false en caso contrario</returns>
-        public Task<bool> UpdateOpeningHoursAsync(int branchId, Dictionary<string, Tuple<TimeSpan, TimeSpan>> openingHours)
-        {
-            // Implementación básica para el scaffold
-            throw new NotImplementedException();
-        }
-        
-        /// <summary>
-        /// Actualiza la disponibilidad de servicios de una estación
-        /// </summary>
-        /// <param name="branchId">ID de la estación</param>
-        /// <param name="services">Servicios disponibles</param>
-        /// <returns>True si la actualización es exitosa, false en caso contrario</returns>
-        public Task<bool> UpdateServicesAsync(int branchId, Dictionary<string, bool> services)
-        {
-            // Implementación básica para el scaffold
-            throw new NotImplementedException();
+
+        public BranchDTO CreateBranch(string latitud, string longitud, string tenantId) {
+            // Obtener el tenant (esto podría requerir un servicio de tenant)
+            // Por ahora, simplemente usamos el ID del tenant
+            int tenantIdInt = int.Parse(tenantId);
+            
+            // Crear un nuevo branch
+            var branch = new ServiPuntosUy.DAO.Models.Central.Branch {
+                Latitud = latitud,
+                Longitud = longitud,
+                TenantId = tenantIdInt
+            };
+            
+            // Guardar el branch en la base de datos usando el repositorio de la clase
+            var createdBranch = _branchRepository.AddAsync(branch).GetAwaiter().GetResult();
+            _branchRepository.SaveChangesAsync().GetAwaiter().GetResult();
+            
+            // Devolver el DTO del branch creado
+            return GetBranchDTO(createdBranch);
         }
     }
     
     /// <summary>
-    /// Implementación del servicio de lealtad para el administrador de estación
+    /// Implementación del servicio de lealtad para el administrador de branch
     /// </summary>
     public class LoyaltyService : ILoyaltyService
     {
@@ -136,7 +79,7 @@ namespace ServiPuntosUy.DataServices.Services.Branch
         private readonly IConfiguration _configuration;
         private readonly string _tenantId;
         private readonly int _branchId;
-        
+
         public LoyaltyService(DbContext dbContext, IConfiguration configuration, string tenantId, int branchId)
         {
             _dbContext = dbContext;
@@ -144,7 +87,7 @@ namespace ServiPuntosUy.DataServices.Services.Branch
             _tenantId = tenantId;
             _branchId = branchId;
         }
-        
+
         /// <summary>
         /// Obtiene la configuración de lealtad de un tenant
         /// </summary>
@@ -155,7 +98,7 @@ namespace ServiPuntosUy.DataServices.Services.Branch
             // Implementación básica para el scaffold
             throw new NotImplementedException();
         }
-        
+
         /// <summary>
         /// Actualiza la configuración de lealtad de un tenant
         /// </summary>
@@ -166,7 +109,7 @@ namespace ServiPuntosUy.DataServices.Services.Branch
             // Implementación básica para el scaffold
             throw new NotImplementedException();
         }
-        
+
         /// <summary>
         /// Obtiene el saldo de puntos de un usuario
         /// </summary>
@@ -178,7 +121,7 @@ namespace ServiPuntosUy.DataServices.Services.Branch
             // Implementación básica para el scaffold
             throw new NotImplementedException();
         }
-        
+
         /// <summary>
         /// Registra una transacción de lealtad
         /// </summary>
@@ -189,7 +132,7 @@ namespace ServiPuntosUy.DataServices.Services.Branch
             // Implementación básica para el scaffold
             throw new NotImplementedException();
         }
-        
+
         /// <summary>
         /// Obtiene el historial de transacciones de un usuario
         /// </summary>
@@ -205,7 +148,7 @@ namespace ServiPuntosUy.DataServices.Services.Branch
             // Implementación básica para el scaffold
             throw new NotImplementedException();
         }
-        
+
         /// <summary>
         /// Canjea puntos por un producto o servicio
         /// </summary>
@@ -219,31 +162,31 @@ namespace ServiPuntosUy.DataServices.Services.Branch
             // Implementación básica para el scaffold
             throw new NotImplementedException();
         }
-        
+
         /// <summary>
         /// Verifica un código QR de redención
         /// </summary>
         /// <param name="qrCode">Código QR</param>
-        /// <param name="branchId">ID de la estación</param>
+        /// <param name="branchId">ID del branch</param>
         /// <returns>ID de la redención</returns>
         public Task<int> VerifyRedemptionQrAsync(string qrCode, int branchId)
         {
             // Implementación básica para el scaffold
             throw new NotImplementedException();
         }
-        
+
         /// <summary>
         /// Confirma una redención
         /// </summary>
         /// <param name="redemptionId">ID de la redención</param>
-        /// <param name="branchId">ID de la estación</param>
+        /// <param name="branchId">ID del branch</param>
         /// <returns>True si la confirmación es exitosa, false en caso contrario</returns>
         public Task<bool> ConfirmRedemptionAsync(int redemptionId, int branchId)
         {
             // Implementación básica para el scaffold
             throw new NotImplementedException();
         }
-        
+
         /// <summary>
         /// Calcula los puntos a otorgar por una compra
         /// </summary>
@@ -256,7 +199,7 @@ namespace ServiPuntosUy.DataServices.Services.Branch
             // Implementación básica para el scaffold
             throw new NotImplementedException();
         }
-        
+
         /// <summary>
         /// Obtiene estadísticas de lealtad de un tenant
         /// </summary>
@@ -272,7 +215,7 @@ namespace ServiPuntosUy.DataServices.Services.Branch
     }
     
     /// <summary>
-    /// Implementación del servicio de promociones para el administrador de estación
+    /// Implementación del servicio de promociones para el administrador de branch
     /// </summary>
     public class PromotionService : IPromotionService
     {
@@ -294,7 +237,7 @@ namespace ServiPuntosUy.DataServices.Services.Branch
     }
     
     /// <summary>
-    /// Implementación del servicio de productos para el administrador de estación
+    /// Implementación del servicio de productos para el administrador de branch
     /// </summary>
     public class ProductService : IProductService
     {
@@ -316,7 +259,7 @@ namespace ServiPuntosUy.DataServices.Services.Branch
     }
     
     /// <summary>
-    /// Implementación del servicio de usuarios para el administrador de estación
+    /// Implementación del servicio de usuarios para el administrador de branch
     /// </summary>
     public class UserService : IUserService
     {
@@ -338,7 +281,7 @@ namespace ServiPuntosUy.DataServices.Services.Branch
     }
     
     /// <summary>
-    /// Implementación del servicio de notificaciones para el administrador de estación
+    /// Implementación del servicio de notificaciones para el administrador de branch
     /// </summary>
     public class NotificationService : INotificationService
     {
@@ -360,7 +303,7 @@ namespace ServiPuntosUy.DataServices.Services.Branch
     }
     
     /// <summary>
-    /// Implementación del servicio de verificación para el administrador de estación
+    /// Implementación del servicio de verificación para el administrador de branch
     /// </summary>
     public class VerificationService : IVerificationService
     {
@@ -382,7 +325,7 @@ namespace ServiPuntosUy.DataServices.Services.Branch
     }
     
     /// <summary>
-    /// Implementación del servicio de reportes para el administrador de estación
+    /// Implementación del servicio de reportes para el administrador de branch
     /// </summary>
     public class ReportingService : IReportingService
     {
@@ -404,7 +347,7 @@ namespace ServiPuntosUy.DataServices.Services.Branch
     }
     
     /// <summary>
-    /// Implementación del servicio de pagos para el administrador de estación
+    /// Implementación del servicio de pagos para el administrador de branch
     /// </summary>
     public class PaymentService : IPaymentService
     {
