@@ -13,9 +13,9 @@ namespace ServiPuntosUy.Controllers;
 [ApiController]
 public class TenantController : ControllerBase
 {
-    private readonly ITenantService _tenantService;
+    private readonly ICentralTenantService _tenantService;
 
-    public TenantController(ITenantService tenantService)
+    public TenantController(ICentralTenantService tenantService)
     {
         _tenantService = tenantService;
     }
@@ -33,7 +33,6 @@ public class TenantController : ControllerBase
     public IActionResult CreateTenant([FromBody] Tenant tenant) {
         try {
             var newTenant = _tenantService.CreateTenant(
-                tenant.Name,
                 tenant.TenantId
             );
 

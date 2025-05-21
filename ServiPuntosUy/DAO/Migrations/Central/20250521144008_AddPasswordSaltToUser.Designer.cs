@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ServiPuntosUy.DAO.Data.Central;
 
@@ -11,9 +12,11 @@ using ServiPuntosUy.DAO.Data.Central;
 namespace ServiPuntosUy.DAO.Migrations.Central
 {
     [DbContext(typeof(CentralDbContext))]
-    partial class CentralDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250521144008_AddPasswordSaltToUser")]
+    partial class AddPasswordSaltToUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -30,8 +33,9 @@ namespace ServiPuntosUy.DAO.Migrations.Central
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("TenantId")
                         .IsRequired()
@@ -89,8 +93,8 @@ namespace ServiPuntosUy.DAO.Migrations.Central
                             Id = 1,
                             Email = "admin@servipuntos.uy",
                             Name = "Admin Central",
-                            Password = "XQKwIBeqj19wbyTUY/m8tKy1Yz2U3mJZZZCuaAr4qss=",
-                            PasswordSalt = "M43nQHtaSPW3zWSWaZZIWg==",
+                            Password = "U+g8JfXq2Yz6C1wNZ6ysgmB2Jxe+WiFJ5ByaUFdB1oQ=",
+                            PasswordSalt = "YNQB3eYjZs7WWh/wGUtrlQ==",
                             Role = 1,
                             TenantId = "central"
                         });

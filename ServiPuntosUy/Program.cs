@@ -7,6 +7,9 @@ using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using ServiPuntosUy.DataServices;
+using ServiPuntosUy.DataServices.Services.CommonLogic;
+using ServiPuntosUy.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -53,9 +56,23 @@ builder.Services.AddScoped<DbContext>(provider => provider.GetService<CentralDbC
 // Registrar repositorios
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
-// Registrar servicios
-builder.Services.AddScoped<ITenantService, TenantService>();
-builder.Services.AddScoped<ILoginService, LoginService>();
+
+// Ver como hacer esto mas prolijo
+// Registrar servicios comunes
+builder.Services.AddScoped<IAuthLogic, AuthLogic>();
+builder.Services.AddScoped<ITenantResolver, TenantResolver>();
+builder.Services.AddScoped<IServiceFactory, ServiceFactory>();
+builder.Services.AddScoped<IAuthService>(sp => 
+    new ServiPuntosUy.DataServices.Services.CommonLogic.CommonAuthService(
+        sp.GetRequiredService<DbContext>(),
+        builder.Configuration,
+        sp.GetRequiredService<IAuthLogic>(),
+        null)); // null para Central
+
+
+// ESTO NO VA
+// Registrar servicios específicos para el administrador central
+// builder.Services.AddScoped<ICentralTenantService, ServiPuntosUy.DataServices.Services.Central.TenantService>();
 
 var app = builder.Build();
 
@@ -69,6 +86,8 @@ app.UseSwaggerUI(c =>
 app.UseRouting();
 
 // Configuración del middleware
+app.UseMiddleware<RequestContentMiddleware>();
+app.UseMiddleware<JwtAuthenticationMiddleware>(); // Middleware personalizado para autenticación JWT
 app.UseAuthentication();
 app.UseAuthorization();
 
