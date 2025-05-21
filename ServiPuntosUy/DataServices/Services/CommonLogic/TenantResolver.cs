@@ -16,11 +16,7 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
             _configuration = configuration;
         }
 
-        /// <summary>
-        /// Resuelve el ID del tenant a partir del contexto HTTP
-        /// </summary>
-        /// <param name="context">Contexto HTTP</param>
-        /// <returns>ID del tenant</returns>
+     
         public string ResolveTenantId(HttpContext context)
         {
             // 1. Intentar obtener del token JWT
@@ -48,11 +44,7 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
             return null;
         }
 
-        /// <summary>
-        /// Resuelve el tipo de usuario a partir del contexto HTTP
-        /// </summary>
-        /// <param name="context">Contexto HTTP</param>
-        /// <returns>Tipo de usuario</returns>
+    
         public UserType ResolveUserType(HttpContext context)
         {
             // 1. Intentar obtener del token JWT

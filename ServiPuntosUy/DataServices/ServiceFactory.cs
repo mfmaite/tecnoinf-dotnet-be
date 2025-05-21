@@ -43,15 +43,8 @@ namespace ServiPuntosUy.DataServices
             // Limpiar la colección de servicios antes de configurar
             _serviceCollection.Clear();
 
-            // Registrar servicios comunes
-            _serviceCollection.AddSingleton(_configuration);
-
-            // Obtener servicios globales ya registrados en Program.cs
-            _serviceCollection.AddScoped<IAuthLogic>(sp => _serviceProvider.GetRequiredService<IAuthLogic>());
-            _serviceCollection.AddScoped<ITenantResolver>(sp => _serviceProvider.GetRequiredService<ITenantResolver>());
-
-            // Registrar el TenantAccessor para proporcionar el tenant actual a los servicios
-            _serviceCollection.AddScoped<ITenantAccessor>(sp => new TenantAccessor(tenantId));
+            // Configurar servicios comunes para todos los tipos de usuario
+            ConfigureCommonServices(tenantId);
 
             // Registrar servicios específicos según el tipo de usuario
             switch (userType)
@@ -82,18 +75,30 @@ namespace ServiPuntosUy.DataServices
             _scopedServiceProvider = _serviceCollection.BuildServiceProvider();
         }
 
+        /// <summary>
+        /// Configura los servicios básicos comunes a todos los tipos de usuario
+        /// </summary>
+        private void ConfigureCommonServices(string tenantId)
+        {
+            // Registrar servicios comunes
+            _serviceCollection.AddSingleton(_configuration);
+
+            // Obtener servicios globales ya registrados en Program.cs
+            _serviceCollection.AddScoped<IAuthLogic>(sp => _serviceProvider.GetRequiredService<IAuthLogic>());
+            _serviceCollection.AddScoped<ITenantResolver>(sp => _serviceProvider.GetRequiredService<ITenantResolver>());
+
+            // Registrar el TenantAccessor para proporcionar el tenant actual a los servicios
+            _serviceCollection.AddScoped<ITenantAccessor>(sp => new TenantAccessor(tenantId));
+            
+            // Obtener el DbContext del contenedor principal
+            _serviceCollection.AddScoped<DbContext>(sp => _serviceProvider.GetRequiredService<DbContext>());
+            
+            // Registrar el GenericRepository que usa el DbContext
+            _serviceCollection.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+        }
+
         private void ConfigureCentralServices()
         {
-            // Registrar el DbContext para el administrador central
-            _serviceCollection.AddDbContext<DAO.Data.Central.CentralDbContext>(options =>
-                options.UseSqlServer(_configuration.GetConnectionString("CentralConnection")));
-
-            // Registrar el DbContext como base para el GenericRepository
-            _serviceCollection.AddScoped<DbContext>(sp => sp.GetService<DAO.Data.Central.CentralDbContext>());
-
-            // Registrar el GenericRepository
-            _serviceCollection.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
-
             // Registrar servicios para el administrador central
             _serviceCollection.AddScoped<ICentralTenantService, TenantService>();
             _serviceCollection.AddScoped<IAuthService>(sp =>

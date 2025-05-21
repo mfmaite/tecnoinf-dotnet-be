@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ServiPuntosUy.DataServices.Services;
+using ServiPuntosUy.Controllers.Base;
+using ServiPuntosUy.DataServices;
 using ServiPuntosUy.DTO;
 using System.Security.Claims;
 
@@ -11,13 +12,10 @@ namespace ServiPuntosUy.Controllers
     /// </summary>
     [Route("api/[controller]")]
     [ApiController]
-    public class AuthController : ControllerBase
+    public class AuthController : BaseController
     {
-        private readonly IAuthService _authService;
-
-        public AuthController(IAuthService authService)
+        public AuthController(IServiceFactory serviceFactory) : base(serviceFactory)
         {
-            _authService = authService;
         }
 
         /// <summary>
@@ -30,7 +28,7 @@ namespace ServiPuntosUy.Controllers
         [ProducesResponseType(401)]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
-            var token = await _authService.AuthenticateAsync(request.Email, request.Password);
+            var token = await AuthService.AuthenticateAsync(request.Email, request.Password);
             
             if (string.IsNullOrEmpty(token))
                 return Unauthorized(new { message = "Email o contraseña incorrectos" });
@@ -53,7 +51,7 @@ namespace ServiPuntosUy.Controllers
                 return Unauthorized(new { message = "Token inválido" });
                 
             var userId = int.Parse(userIdClaim.Value);
-            var user = await _authService.GetUserInfoAsync(userId);
+            var user = await AuthService.GetUserInfoAsync(userId);
             
             if (user == null)
                 return NotFound(new { message = "Usuario no encontrado" });
