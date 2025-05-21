@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
+
 
 namespace ServiPuntosUy.Models.DAO;
 
@@ -11,6 +13,18 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
     {
         _context = context;
         _dbSet = context.Set<T>();
+    }
+
+    public virtual IQueryable<T> Get(List<Expression<Func<T, bool>>>? conditions = null){
+        IQueryable<T> query = _dbSet;
+      if (conditions is not null)
+      {
+        foreach (Expression<Func<T, bool>> condition in conditions)
+        {
+          query = query.Where(condition);
+        }
+      }
+        return query;
     }
 
     public virtual async Task<T?> GetByIdAsync(int id)

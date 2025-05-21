@@ -3,6 +3,7 @@ using ServiPuntosUy.Models.DAO;
 using ServiPuntosUy.DataServices.Services.Central;
 using ServiPuntosUy.DataServices.Services;
 using ServiPuntosUy.DAO.Data.Central;
+using ServiPuntosUy.DataServices.CommonLogic;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -56,6 +57,7 @@ builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepositor
 // Registrar servicios
 builder.Services.AddScoped<ITenantService, TenantService>();
 builder.Services.AddScoped<ILoginService, LoginService>();
+builder.Services.AddScoped<IAuthLogic, AuthLogic>();
 
 var app = builder.Build();
 

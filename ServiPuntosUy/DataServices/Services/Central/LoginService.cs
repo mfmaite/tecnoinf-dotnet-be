@@ -9,26 +9,26 @@ namespace ServiPuntosUy.DataServices.Services.Central;
 public class LoginService : ILoginService
 {
     private readonly IGenericRepository<Login> _loginRepository; // <login> hace referencia a el DAO de Login
+    private readonly IGenericRepository<CentralUser> _userDAL;
 
-    public LoginService(IGenericRepository<Login> loginRepository)
+    public LoginService(IGenericRepository<Login> loginRepository, IGenericRepository<CentralUser> userDAL)
     {
         _loginRepository = loginRepository;
+        _userDAL = userDAL;
     }
 
 
-    public UserDTO Login(string user, string password) {
+    public UserDTO Login(string email, string password) {
 
-        return new UserDTO
+        var user = _userDAL.Get(new List<Expression<Func<CentralUser, bool>>>
         {
-            Email = user,
-            Password = password
-        };
-        // var condicion = new List<Expression<Func<Tenant, bool>>>
-        // {
-        //     tenant => tenant.User == user && tenant.Password == password
-        // };
-    
-        //     var tenant = _tenantRepository.GetQueryable().FirstOrDefault(t => t.User == user && t.Password == password);
-        //     return tenant != null ? new UserDTO { User = tenant.User, Password = tenant.Password } : null;
+            u => u.Email == email && u.Password == password
+        }).Select(usr => new UserDTO
+        {
+            Email = usr.Email,
+            Password = usr.Password
+        }).FirstOrDefault();
+
+        return user;
     }
 }
