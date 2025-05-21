@@ -34,10 +34,7 @@ public class TenantController : ControllerBase
         try {
             var newTenant = _tenantService.CreateTenant(
                 tenant.Name,
-                tenant.DatabaseName,
-                tenant.ConnectionString,
-                tenant.User,
-                tenant.Password
+                tenant.TenantId
             );
 
             return Ok(newTenant);
