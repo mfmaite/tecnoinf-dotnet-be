@@ -32,6 +32,17 @@ builder.Services.AddAuthorization();
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
+// Configurar CORS para desarrollo (permitir cualquier origen)
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
+
 // Add Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -98,6 +109,9 @@ app.UseSwaggerUI(c =>
 });
 
 app.UseRouting();
+
+// Habilitar CORS
+app.UseCors("AllowAll");
 
 // Configuración del middleware
 app.UseMiddleware<RequestContentMiddleware>();

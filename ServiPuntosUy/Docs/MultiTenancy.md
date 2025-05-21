@@ -101,11 +101,3 @@ Los servicios se implementan en diferentes namespaces según el tipo de usuario:
 - `ServiPuntosUy.DataServices.Services.EndUser`: Servicios para el usuario final
 
 Cada implementación de servicio recibe el tenant actual y, en el caso de los servicios de estación, también el ID de la estación.
-
-## Ventajas de esta Arquitectura
-
-1. **Separación clara de responsabilidades**: Cada componente tiene una responsabilidad bien definida
-2. **Flexibilidad**: Los servicios se pueden configurar dinámicamente según el tenant y tipo de usuario
-3. **Seguridad**: Los datos se filtran automáticamente por tenant, minimizando el riesgo de filtración
-4. **Escalabilidad**: El enfoque de discriminador por tenant permite escalar horizontalmente
-5. **Mantenibilidad**: La estructura modular facilita la adición de nuevos servicios y funcionalidades
