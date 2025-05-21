@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ServiPuntosUy.DataServices.Services.Central;
+using ServiPuntosUy.Controllers.Base;
+using ServiPuntosUy.DataServices;
 using ServiPuntosUy.DAO.Models.Central;
 using ServiPuntosUy.DTO;
 
@@ -12,13 +13,10 @@ namespace ServiPuntosUy.Controllers;
 [Route("api/[controller]")]
 [ApiController]
 [Authorize]
-public class TenantController : ControllerBase
+public class TenantController : BaseController
 {
-    private readonly ICentralTenantService _tenantService;
-
-    public TenantController(ICentralTenantService tenantService)
+    public TenantController(IServiceFactory serviceFactory) : base(serviceFactory)
     {
-        _tenantService = tenantService;
     }
 
     /// <summary>
@@ -33,7 +31,7 @@ public class TenantController : ControllerBase
     [ProducesResponseType(400)]
     public IActionResult CreateTenant([FromBody] Tenant tenant) {
         try {
-            var newTenant = _tenantService.CreateTenant(
+            var newTenant = TenantService.CreateTenant(
                 tenant.TenantId
             );
 
@@ -61,7 +59,7 @@ public class TenantController : ControllerBase
     {
         try
         {
-            var tenant = _tenantService.GetTenantById(id);
+            var tenant = TenantService.GetTenantById(id);
             if (tenant == null)
                 return NotFound($"Tenant with ID {id} not found");
 

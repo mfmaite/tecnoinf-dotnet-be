@@ -122,6 +122,7 @@ namespace ServiPuntosUy.DataServices
         private void ConfigureTenantServices(string tenantId)
         {
             // Registrar servicios para el administrador de tenant
+            _serviceCollection.AddScoped<ICentralTenantService, TenantService>();
             _serviceCollection.AddScoped<IAuthService>(sp =>
                 new CommonAuthService(
                     sp.GetRequiredService<DbContext>(),
@@ -144,6 +145,7 @@ namespace ServiPuntosUy.DataServices
         private void ConfigureBranchServices(string tenantId, int branchId)
         {
             // Registrar servicios para el administrador de estación
+            _serviceCollection.AddScoped<ICentralTenantService, TenantService>();
             _serviceCollection.AddScoped<IAuthService>(sp =>
                 new CommonAuthService(
                     sp.GetRequiredService<DbContext>(),
@@ -172,6 +174,7 @@ namespace ServiPuntosUy.DataServices
         private void ConfigureEndUserServices(string tenantId)
         {
             // Registrar servicios para el usuario final
+            _serviceCollection.AddScoped<ICentralTenantService, TenantService>();
             _serviceCollection.AddScoped<IAuthService>(sp =>
                 new CommonAuthService(
                     sp.GetRequiredService<DbContext>(),
