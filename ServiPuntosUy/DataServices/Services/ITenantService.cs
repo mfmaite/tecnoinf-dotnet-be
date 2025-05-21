@@ -9,5 +9,4 @@ public interface ITenantService
     Tenant GetTenantObjectByTenantId(string tenantId);
     TenantDTO GetTenantDTOByTenantId(string tenantId);
     TenantDTO CreateTenant(string name, string tenantId);
-    void AddEstacionToTenant(string tenantId, Estacion estacion);
 }

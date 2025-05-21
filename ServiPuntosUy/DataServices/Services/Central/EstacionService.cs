@@ -48,8 +48,6 @@ public class EstacionService : IEstacionService
         Tenant = tenant,
       };
 
-      _tenantService.AddEstacionToTenant(tenantId, estacion);
-
       var createdEstacion = _estacionRepository.AddAsync(estacion).GetAwaiter().GetResult();
       _estacionRepository.SaveChangesAsync().GetAwaiter().GetResult();
 

@@ -65,14 +65,4 @@ public class TenantService : ITenantService
 
         return GetTenantDTO(createdTenant);
     }
-
-    public void AddEstacionToTenant(string tenantId, Estacion estacion) {
-      var tenant = _tenantRepository.GetQueryable().FirstOrDefault(t => t.TenantId == tenantId);
-      if (tenant == null) {
-        throw new ArgumentException("No existe un tenant con el id " + tenantId);
-      }
-
-      tenant.Estaciones.Add(estacion);
-      _tenantRepository.SaveChangesAsync().GetAwaiter().GetResult();
-    }
 }

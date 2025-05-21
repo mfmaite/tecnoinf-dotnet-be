@@ -6,8 +6,10 @@ namespace ServiPuntosUy.DAO.Models.Central
     public class Estacion
     {
         public int Id { get; set; }
+
         [Required]
         public string Latitud { get; set; }
+
         [Required]
         public string Longitud { get; set; }
 

@@ -56,6 +56,7 @@ builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepositor
 // Registrar servicios
 builder.Services.AddScoped<ITenantService, TenantService>();
 builder.Services.AddScoped<ILoginService, LoginService>();
+builder.Services.AddScoped<IEstacionService, EstacionService>();
 
 // Registra la política CORS (antes de Build)
 builder.Services.AddCors(options =>
