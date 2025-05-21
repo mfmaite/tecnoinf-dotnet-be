@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.IdentityModel.Tokens.Jwt;
-using System.Net;
 using System.Security.Claims;
 using ServiPuntosUy.DataServices;
 using ServiPuntosUy.DataServices.Services;

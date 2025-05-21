@@ -1,7 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using ServiPuntosUy.Models.DAO;
-using ServiPuntosUy.DataServices.Services.Central;
-using ServiPuntosUy.DataServices.Services;
 using ServiPuntosUy.DAO.Data.Central;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -44,6 +42,34 @@ builder.Services.AddSwaggerGen(c =>
         Version = "v1",
         Description = "API para la gestión de ServiPuntosUY"
     });
+    
+    // Configurar la seguridad JWT para Swagger
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                },
+                Scheme = "oauth2",
+                Name = "Bearer",
+                In = ParameterLocation.Header
+            },
+            new List<string>()
+        }
+    });
 });
 
 // Configurar la conexión a la base de datos
@@ -57,22 +83,10 @@ builder.Services.AddScoped<DbContext>(provider => provider.GetService<CentralDbC
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
 
-// Ver como hacer esto mas prolijo
-// Registrar servicios comunes
+// Registrar servicios globales que no dependen del tenant/usuario
 builder.Services.AddScoped<IAuthLogic, AuthLogic>();
 builder.Services.AddScoped<ITenantResolver, TenantResolver>();
 builder.Services.AddScoped<IServiceFactory, ServiceFactory>();
-builder.Services.AddScoped<IAuthService>(sp => 
-    new ServiPuntosUy.DataServices.Services.CommonLogic.CommonAuthService(
-        sp.GetRequiredService<DbContext>(),
-        builder.Configuration,
-        sp.GetRequiredService<IAuthLogic>(),
-        null)); // null para Central
-
-
-// ESTO NO VA
-// Registrar servicios específicos para el administrador central
-// builder.Services.AddScoped<ICentralTenantService, ServiPuntosUy.DataServices.Services.Central.TenantService>();
 
 var app = builder.Build();
 
@@ -87,7 +101,7 @@ app.UseRouting();
 
 // Configuración del middleware
 app.UseMiddleware<RequestContentMiddleware>();
-app.UseMiddleware<JwtAuthenticationMiddleware>(); // Middleware personalizado para autenticación JWT
+app.UseMiddleware<JwtAuthenticationMiddleware>(); // Middleware personalizado para autenticación JWT (chequea token)
 app.UseAuthentication();
 app.UseAuthorization();
 

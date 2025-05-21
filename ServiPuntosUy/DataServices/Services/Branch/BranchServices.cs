@@ -1,13 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using ServiPuntosUy.DTO;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using Microsoft.IdentityModel.Tokens;
-using ServiPuntosUy.DataServices.Services.CommonLogic;
-using ServiPuntosUy.DataServices.Services.Branch;
-using ServiPuntosUy.Enums;
 
 namespace ServiPuntosUy.DataServices.Services.Branch
 {

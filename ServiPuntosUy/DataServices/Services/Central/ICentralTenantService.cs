@@ -1,5 +1,4 @@
 using ServiPuntosUy.DTO;
-using ServiPuntosUy.DAO.Models.Central;
 
 namespace ServiPuntosUy.DataServices.Services.Central
 {

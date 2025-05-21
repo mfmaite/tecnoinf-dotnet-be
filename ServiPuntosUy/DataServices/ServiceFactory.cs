@@ -1,7 +1,4 @@
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using ServiPuntosUy.Models.DAO;
 using ServiPuntosUy.DataServices.Services;
 using ServiPuntosUy.DataServices.Services.Central;
@@ -36,7 +33,7 @@ namespace ServiPuntosUy.DataServices
             {
                 return _scopedServiceProvider.GetService<T>();
             }
-            
+
             // Si no, usar el proveedor de servicios global
             return _serviceProvider.GetService<T>();
         }
@@ -45,12 +42,14 @@ namespace ServiPuntosUy.DataServices
         {
             // Limpiar la colección de servicios antes de configurar
             _serviceCollection.Clear();
-            
+
             // Registrar servicios comunes
             _serviceCollection.AddSingleton(_configuration);
-            _serviceCollection.AddScoped<IAuthLogic, AuthLogic>();
-            _serviceCollection.AddScoped<ITenantResolver, TenantResolver>();
-            
+
+            // Obtener servicios globales ya registrados en Program.cs
+            _serviceCollection.AddScoped<IAuthLogic>(sp => _serviceProvider.GetRequiredService<IAuthLogic>());
+            _serviceCollection.AddScoped<ITenantResolver>(sp => _serviceProvider.GetRequiredService<ITenantResolver>());
+
             // Registrar el TenantAccessor para proporcionar el tenant actual a los servicios
             _serviceCollection.AddScoped<ITenantAccessor>(sp => new TenantAccessor(tenantId));
 
@@ -86,104 +85,104 @@ namespace ServiPuntosUy.DataServices
         private void ConfigureCentralServices()
         {
             // Registrar el DbContext para el administrador central
-            _serviceCollection.AddDbContext<ServiPuntosUy.DAO.Data.Central.CentralDbContext>(options =>
+            _serviceCollection.AddDbContext<DAO.Data.Central.CentralDbContext>(options =>
                 options.UseSqlServer(_configuration.GetConnectionString("CentralConnection")));
-            
+
             // Registrar el DbContext como base para el GenericRepository
-            _serviceCollection.AddScoped<DbContext>(sp => sp.GetService<ServiPuntosUy.DAO.Data.Central.CentralDbContext>());
-            
+            _serviceCollection.AddScoped<DbContext>(sp => sp.GetService<DAO.Data.Central.CentralDbContext>());
+
             // Registrar el GenericRepository
             _serviceCollection.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
-            
+
             // Registrar servicios para el administrador central
-            _serviceCollection.AddScoped<ICentralTenantService, ServiPuntosUy.DataServices.Services.Central.TenantService>();
-            _serviceCollection.AddScoped<IAuthService>(sp => 
-                new ServiPuntosUy.DataServices.Services.CommonLogic.CommonAuthService(
+            _serviceCollection.AddScoped<ICentralTenantService, TenantService>();
+            _serviceCollection.AddScoped<IAuthService>(sp =>
+                new CommonAuthService(
                     sp.GetRequiredService<DbContext>(),
                     _configuration,
                     sp.GetRequiredService<IAuthLogic>(),
                     null)); // null para Central
-            
+
             // Registrar los demás servicios para el administrador central
-            _serviceCollection.AddScoped<ILoyaltyService, ServiPuntosUy.DataServices.Services.Central.LoyaltyService>();
-            _serviceCollection.AddScoped<IPromotionService, ServiPuntosUy.DataServices.Services.Central.PromotionService>();
-            _serviceCollection.AddScoped<IProductService, ServiPuntosUy.DataServices.Services.Central.ProductService>();
-            _serviceCollection.AddScoped<IUserService, ServiPuntosUy.DataServices.Services.Central.UserService>();
-            _serviceCollection.AddScoped<INotificationService, ServiPuntosUy.DataServices.Services.Central.NotificationService>();
-            _serviceCollection.AddScoped<IVerificationService, ServiPuntosUy.DataServices.Services.Central.VerificationService>();
-            _serviceCollection.AddScoped<IReportingService, ServiPuntosUy.DataServices.Services.Central.ReportingService>();
-            _serviceCollection.AddScoped<IPaymentService, ServiPuntosUy.DataServices.Services.Central.PaymentService>();
+            _serviceCollection.AddScoped<ILoyaltyService, Services.Central.LoyaltyService>();
+            _serviceCollection.AddScoped<IPromotionService, Services.Central.PromotionService>();
+            _serviceCollection.AddScoped<IProductService, Services.Central.ProductService>();
+            _serviceCollection.AddScoped<IUserService, Services.Central.UserService>();
+            _serviceCollection.AddScoped<INotificationService, Services.Central.NotificationService>();
+            _serviceCollection.AddScoped<IVerificationService, Services.Central.VerificationService>();
+            _serviceCollection.AddScoped<IReportingService, Services.Central.ReportingService>();
+            _serviceCollection.AddScoped<IPaymentService, Services.Central.PaymentService>();
         }
 
         private void ConfigureTenantServices(string tenantId)
         {
             // Registrar servicios para el administrador de tenant
-            _serviceCollection.AddScoped<IAuthService>(sp => 
-                new ServiPuntosUy.DataServices.Services.CommonLogic.CommonAuthService(
+            _serviceCollection.AddScoped<IAuthService>(sp =>
+                new CommonAuthService(
                     sp.GetRequiredService<DbContext>(),
                     _configuration,
                     sp.GetRequiredService<IAuthLogic>(),
                     tenantId));
-                    
-            
-            _serviceCollection.AddScoped<ILoyaltyService, ServiPuntosUy.DataServices.Services.Tenant.LoyaltyService>();
-            _serviceCollection.AddScoped<IPromotionService, ServiPuntosUy.DataServices.Services.Tenant.PromotionService>();
-            _serviceCollection.AddScoped<IProductService, ServiPuntosUy.DataServices.Services.Tenant.ProductService>();
-            _serviceCollection.AddScoped<IUserService, ServiPuntosUy.DataServices.Services.Tenant.UserService>();
-            _serviceCollection.AddScoped<INotificationService, ServiPuntosUy.DataServices.Services.Tenant.NotificationService>();
-            _serviceCollection.AddScoped<IVerificationService, ServiPuntosUy.DataServices.Services.Tenant.VerificationService>();
-            _serviceCollection.AddScoped<IReportingService, ServiPuntosUy.DataServices.Services.Tenant.ReportingService>();
-            _serviceCollection.AddScoped<IPaymentService, ServiPuntosUy.DataServices.Services.Tenant.PaymentService>();
-            
+
+
+            _serviceCollection.AddScoped<ILoyaltyService, Services.Tenant.LoyaltyService>();
+            _serviceCollection.AddScoped<IPromotionService, Services.Tenant.PromotionService>();
+            _serviceCollection.AddScoped<IProductService, Services.Tenant.ProductService>();
+            _serviceCollection.AddScoped<IUserService, Services.Tenant.UserService>();
+            _serviceCollection.AddScoped<INotificationService, Services.Tenant.NotificationService>();
+            _serviceCollection.AddScoped<IVerificationService, Services.Tenant.VerificationService>();
+            _serviceCollection.AddScoped<IReportingService, Services.Tenant.ReportingService>();
+            _serviceCollection.AddScoped<IPaymentService, Services.Tenant.PaymentService>();
+
         }
 
         private void ConfigureBranchServices(string tenantId, int branchId)
         {
             // Registrar servicios para el administrador de estación
-            _serviceCollection.AddScoped<IAuthService>(sp => 
-                new ServiPuntosUy.DataServices.Services.CommonLogic.CommonAuthService(
+            _serviceCollection.AddScoped<IAuthService>(sp =>
+                new CommonAuthService(
                     sp.GetRequiredService<DbContext>(),
                     _configuration,
                     sp.GetRequiredService<IAuthLogic>(),
                     tenantId));
-            
+
             // Registrar los servicios implementados
-            _serviceCollection.AddScoped<ServiPuntosUy.DataServices.Services.Branch.IBranchService>(sp => 
-                new ServiPuntosUy.DataServices.Services.Branch.BranchService(
-                    sp.GetRequiredService<DbContext>(), 
-                    _configuration, 
-                    tenantId, 
+            _serviceCollection.AddScoped<IBranchService>(sp =>
+                new BranchService(
+                    sp.GetRequiredService<DbContext>(),
+                    _configuration,
+                    tenantId,
                     branchId));
-            
-            
-            _serviceCollection.AddScoped<ILoyaltyService, ServiPuntosUy.DataServices.Services.Branch.LoyaltyService>();
-            _serviceCollection.AddScoped<IPromotionService, ServiPuntosUy.DataServices.Services.Branch.PromotionService>();
-            _serviceCollection.AddScoped<IProductService, ServiPuntosUy.DataServices.Services.Branch.ProductService>();
-            _serviceCollection.AddScoped<IUserService, ServiPuntosUy.DataServices.Services.Branch.UserService>();
-            _serviceCollection.AddScoped<INotificationService, ServiPuntosUy.DataServices.Services.Branch.NotificationService>();
-            _serviceCollection.AddScoped<IVerificationService, ServiPuntosUy.DataServices.Services.Branch.VerificationService>();
-            
+
+
+            _serviceCollection.AddScoped<ILoyaltyService, Services.Branch.LoyaltyService>();
+            _serviceCollection.AddScoped<IPromotionService, Services.Branch.PromotionService>();
+            _serviceCollection.AddScoped<IProductService, Services.Branch.ProductService>();
+            _serviceCollection.AddScoped<IUserService, Services.Branch.UserService>();
+            _serviceCollection.AddScoped<INotificationService, Services.Branch.NotificationService>();
+            _serviceCollection.AddScoped<IVerificationService, Services.Branch.VerificationService>();
+
         }
 
         private void ConfigureEndUserServices(string tenantId)
         {
             // Registrar servicios para el usuario final
-            _serviceCollection.AddScoped<IAuthService>(sp => 
-                new ServiPuntosUy.DataServices.Services.CommonLogic.CommonAuthService(
-                    sp.GetRequiredService<DbContext>(), 
-                    _configuration, 
-                    sp.GetRequiredService<IAuthLogic>(), 
+            _serviceCollection.AddScoped<IAuthService>(sp =>
+                new CommonAuthService(
+                    sp.GetRequiredService<DbContext>(),
+                    _configuration,
+                    sp.GetRequiredService<IAuthLogic>(),
                     tenantId));
-            
-            
-            _serviceCollection.AddScoped<ILoyaltyService, ServiPuntosUy.DataServices.Services.EndUser.LoyaltyService>();
-            _serviceCollection.AddScoped<IPromotionService, ServiPuntosUy.DataServices.Services.EndUser.PromotionService>();
-            _serviceCollection.AddScoped<IProductService, ServiPuntosUy.DataServices.Services.EndUser.ProductService>();
-            _serviceCollection.AddScoped<IUserService, ServiPuntosUy.DataServices.Services.EndUser.UserService>();
-            _serviceCollection.AddScoped<INotificationService, ServiPuntosUy.DataServices.Services.EndUser.NotificationService>();
-            _serviceCollection.AddScoped<IVerificationService, ServiPuntosUy.DataServices.Services.EndUser.VerificationService>();
-            _serviceCollection.AddScoped<IPaymentService, ServiPuntosUy.DataServices.Services.EndUser.PaymentService>();
-            
+
+
+            _serviceCollection.AddScoped<ILoyaltyService, Services.EndUser.LoyaltyService>();
+            _serviceCollection.AddScoped<IPromotionService, Services.EndUser.PromotionService>();
+            _serviceCollection.AddScoped<IProductService, Services.EndUser.ProductService>();
+            _serviceCollection.AddScoped<IUserService, Services.EndUser.UserService>();
+            _serviceCollection.AddScoped<INotificationService, Services.EndUser.NotificationService>();
+            _serviceCollection.AddScoped<IVerificationService, Services.EndUser.VerificationService>();
+            _serviceCollection.AddScoped<IPaymentService, Services.EndUser.PaymentService>();
+
         }
     }
 }

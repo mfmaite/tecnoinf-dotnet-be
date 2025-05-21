@@ -1,6 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Text.RegularExpressions;
-using Microsoft.Extensions.Configuration;
 using ServiPuntosUy.Enums;
 
 namespace ServiPuntosUy.DataServices.Services.CommonLogic

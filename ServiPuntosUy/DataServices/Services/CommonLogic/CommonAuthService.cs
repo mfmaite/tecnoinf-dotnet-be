@@ -2,7 +2,6 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using ServiPuntosUy.DAO.Models.Central;
 using ServiPuntosUy.DTO;
@@ -57,13 +56,19 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Email, user.Email),
                 new Claim("userType", ((int)user.Role).ToString()),
-                new Claim("tenantId", _tenantId ?? "central")
+                new Claim("tenantId", user.TenantId ?? "central")
             };
+            
+            // Agregar branchId al token si el usuario es de tipo Branch
+            if (user.Role == Enums.UserType.Branch && user.BranchId.HasValue)
+            {
+                claims.Add(new Claim("branchId", user.BranchId.Value.ToString()));
+            }
 
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.UtcNow.AddMinutes(Convert.ToDouble(_configuration["Jwt:MinutesTokenLifeTime"])),
+                Expires = DateTime.UtcNow.AddMinutes(Convert.ToDouble(_configuration["Jwt:Duration"])),
                 Issuer = _configuration["Jwt:Issuer"],
                 Audience = _configuration["Jwt:Audience"],
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)

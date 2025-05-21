@@ -30,6 +30,15 @@ Esto descargará las librerías necesarias para el proyecto.
 dotnet ef database update <db_context>
 ```
 
+4. Chequear que la connection string de `appsettings.json` sea la aceduada
+```json
+...
+   "ConnectionStrings": {
+    "CentralConnection": "Server=localhost,1433;Database=ServiPuntosCentral;User Id=tecnoinf;Password=password123;TrustServerCertificate=True;"
+  },
+  ...
+```
+
 > 💡 El DbContext de la base Central es `CentralDbContext`
 
 ### 🚀 Inicialización
@@ -57,9 +66,6 @@ Una vez que la aplicación esté corriendo, puedes acceder a la documentación d
 http://localhost:5162/swagger
 ```
 
-### Autenticación JWT
-
-ServiPuntos.uy utiliza JSON Web Tokens (JWT) para la autenticación de usuarios. Para más detalles sobre cómo funciona la autenticación y cómo probar la API con Swagger, consulta la [Guía de Autenticación](ServiPuntosUy/Docs/AuthenticationGuide.md).
 
 ## ⚙️ Troubleshooting
 
@@ -157,11 +163,3 @@ Para probar el sistema multi-tenant en desarrollo local, configura el archivo ho
 127.0.0.1    app.servipuntos.local
 127.0.0.1    api.servipuntos.local
 ```
-
-### Configuración de la Base de Datos
-
-1. Actualiza la cadena de conexión en `appsettings.json`.
-2. Ejecuta las migraciones:
-   ```
-   dotnet ef database update --context CentralDbContext
-   ```

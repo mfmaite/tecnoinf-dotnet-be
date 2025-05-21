@@ -1,7 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using ServiPuntosUy.DTO;
-using ServiPuntosUy.DataServices.Services.Branch;
+
 
 namespace ServiPuntosUy.DataServices.Services.EndUser
 {

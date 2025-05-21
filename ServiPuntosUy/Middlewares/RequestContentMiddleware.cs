@@ -1,7 +1,3 @@
-using System.IdentityModel.Tokens.Jwt;
-using System.Net;
-using System.Text.Json;
-using Microsoft.Extensions.Hosting;
 using ServiPuntosUy.DataServices;
 using ServiPuntosUy.DataServices.Services.CommonLogic;
 using ServiPuntosUy.Enums;

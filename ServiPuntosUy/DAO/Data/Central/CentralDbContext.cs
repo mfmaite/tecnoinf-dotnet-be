@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using ServiPuntosUy.DAO.Models.Central;
 using ServiPuntosUy.DataServices.Services.CommonLogic;
 using ServiPuntosUy.Enums;

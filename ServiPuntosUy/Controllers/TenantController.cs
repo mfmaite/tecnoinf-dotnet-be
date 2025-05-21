@@ -1,7 +1,7 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ServiPuntosUy.DataServices.Services.Central;
 using ServiPuntosUy.DAO.Models.Central;
-using ServiPuntosUy.DataServices.Services;
 using ServiPuntosUy.DTO;
 
 namespace ServiPuntosUy.Controllers;
@@ -11,6 +11,7 @@ namespace ServiPuntosUy.Controllers;
 /// </summary>
 [Route("api/[controller]")]
 [ApiController]
+[Authorize]
 public class TenantController : ControllerBase
 {
     private readonly ICentralTenantService _tenantService;
