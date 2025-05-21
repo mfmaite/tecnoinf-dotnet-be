@@ -48,22 +48,22 @@ public class TenantController : ControllerBase
     /// <summary>
     /// Obtiene un tenant por su ID
     /// </summary>
-    /// <param name="id">ID del tenant</param>
+    /// <param name="tenantId">ID del tenant</param>
     /// <returns>El tenant solicitado</returns>
     /// <response code="200">Retorna el tenant solicitado</response>
     /// <response code="404">Si el tenant no existe</response>
     /// <response code="400">Si hay un error en la búsqueda</response>
-    [HttpGet("{id}")]
+    [HttpGet("{tenantId}")]
     [ProducesResponseType(typeof(TenantDTO), 200)]
     [ProducesResponseType(404)]
     [ProducesResponseType(400)]
-    public IActionResult GetTenant(int id)
+    public IActionResult GetTenant(string tenantId)
     {
         try
         {
-            var tenant = _tenantService.GetTenantById(id);
+            var tenant = _tenantService.GetTenantDTOByTenantId(tenantId);
             if (tenant == null)
-                return NotFound($"Tenant with ID {id} not found");
+                return NotFound($"Tenant with ID {tenantId} not found");
 
             return Ok(tenant);
         }

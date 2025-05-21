@@ -6,6 +6,8 @@ namespace ServiPuntosUy.DataServices.Services;
 public interface ITenantService
 {
     TenantDTO GetTenantDTO(Tenant tenant);
-    TenantDTO GetTenantById(int id);
+    Tenant GetTenantObjectByTenantId(string tenantId);
+    TenantDTO GetTenantDTOByTenantId(string tenantId);
     TenantDTO CreateTenant(string name, string tenantId);
+    void AddEstacionToTenant(string tenantId, Estacion estacion);
 }

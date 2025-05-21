@@ -24,15 +24,20 @@ public class TenantService : ITenantService
       };
     }
 
-    public TenantDTO GetTenantById(int id)
+    public Tenant GetTenantObjectByTenantId(string tenantId)
     {
         var condicion = new List<Expression<Func<Tenant, bool>>>
         {
-            tenant => tenant.Id == id
+            tenant => tenant.TenantId == tenantId
         };
 
-        var tenant = _tenantRepository.GetQueryable().FirstOrDefault(t => t.Id == id);
-        return tenant != null ? GetTenantDTO(tenant) : null;
+        var tenant = _tenantRepository.GetQueryable().FirstOrDefault(t => t.TenantId == tenantId);
+        return tenant;
+    }
+
+    public TenantDTO GetTenantDTOByTenantId(string tenantId)
+    {
+        return GetTenantDTO(GetTenantObjectByTenantId(tenantId));
     }
 
     public TenantDTO CreateTenant(string name, string tenantId) {
@@ -59,5 +64,15 @@ public class TenantService : ITenantService
         _tenantRepository.SaveChangesAsync().GetAwaiter().GetResult();
 
         return GetTenantDTO(createdTenant);
+    }
+
+    public void AddEstacionToTenant(string tenantId, Estacion estacion) {
+      var tenant = _tenantRepository.GetQueryable().FirstOrDefault(t => t.TenantId == tenantId);
+      if (tenant == null) {
+        throw new ArgumentException("No existe un tenant con el id " + tenantId);
+      }
+
+      tenant.Estaciones.Add(estacion);
+      _tenantRepository.SaveChangesAsync().GetAwaiter().GetResult();
     }
 }
