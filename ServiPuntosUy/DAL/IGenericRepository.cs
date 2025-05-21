@@ -1,5 +1,5 @@
+using System.Linq.Expressions;
 namespace ServiPuntosUy.Models.DAO;
-
 public interface IGenericRepository<T> where T : class
 {
     // Operaciones básicas CRUD
@@ -14,4 +14,5 @@ public interface IGenericRepository<T> where T : class
 
     // Operaciones de consulta
     IQueryable<T> GetQueryable();
+    IQueryable<T> Get(List<Expression<Func<T, bool>>>? conditions = null);
 }
