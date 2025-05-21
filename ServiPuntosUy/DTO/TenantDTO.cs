@@ -7,6 +7,4 @@ public class TenantDTO
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string TenantId { get; set; }
-
-    public ICollection<EstacionDTO> Estaciones { get; set; } = new List<EstacionDTO>();
 }
