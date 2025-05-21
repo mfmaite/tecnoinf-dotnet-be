@@ -94,6 +94,43 @@ Puedes conectarte usando estas credenciales desde cualquier herramienta SQL (com
 - Usuario y contraseña: las definidas en el archivo `.env`
 
 
+## 🖥️ Configuración del Archivo Hosts
+
+Para probar el sistema multi-tenant en desarrollo local, configura el archivo hosts:
+
+#### Windows (C:\Windows\System32\drivers\etc\hosts):
+```
+127.0.0.1    admin.servipuntos.local
+127.0.0.1    petrobras.admin.servipuntos.local
+127.0.0.1    shell.admin.servipuntos.local
+127.0.0.1    petrobras.branch.admin.servipuntos.local
+127.0.0.1    shell.branch.admin.servipuntos.local
+127.0.0.1    app.servipuntos.local
+127.0.0.1    api.servipuntos.local
+```
+
+#### macOS/Linux (/etc/hosts):
+```
+127.0.0.1    admin.servipuntos.local
+127.0.0.1    petrobras.admin.servipuntos.local
+127.0.0.1    shell.admin.servipuntos.local
+127.0.0.1    petrobras.branch.admin.servipuntos.local
+127.0.0.1    shell.branch.admin.servipuntos.local
+127.0.0.1    app.servipuntos.local
+127.0.0.1    api.servipuntos.local
+```
+
+Esto debido a que la resolución de tenant y rol se basa en el dominio y subdominio de las requests.
+Podemos agregar tantos tenants como se nos de la gana, no fomentamos el uso de wildcard (*) porque no en todos los sistemas opeartivos funciona. 
+
+Ej: si quisiera agregar ancap, sería agregar: 
+```
+127.0.0.1    ancap.admin.servipuntos.local
+127.0.0.1    ancap.branch.admin.servipuntos.local
+```
+
+
+
 ## Estructura del Proyecto
 
 ```
@@ -138,28 +175,16 @@ ServiPuntos.uy utiliza un enfoque de multi-tenancy basado en subdominios, donde 
 
 Para más detalles sobre el sistema multi-tenant, consulta la [documentación de multi-tenancy](ServiPuntosUy/Docs/MultiTenancy.md).
 
-### Configuración del Archivo Hosts
+## 📚 Documentación Técnica
 
-Para probar el sistema multi-tenant en desarrollo local, configura el archivo hosts:
+Para facilitar el desarrollo y mantenimiento del proyecto, se ha creado la siguiente documentación técnica:
 
-#### Windows (C:\Windows\System32\drivers\etc\hosts):
-```
-127.0.0.1    admin.servipuntos.local
-127.0.0.1    petrobras.admin.servipuntos.local
-127.0.0.1    shell.admin.servipuntos.local
-127.0.0.1    petrobras.branch.admin.servipuntos.local
-127.0.0.1    shell.branch.admin.servipuntos.local
-127.0.0.1    app.servipuntos.local
-127.0.0.1    api.servipuntos.local
-```
+### Arquitectura y Diseño
 
-#### macOS/Linux (/etc/hosts):
-```
-127.0.0.1    admin.servipuntos.local
-127.0.0.1    petrobras.admin.servipuntos.local
-127.0.0.1    shell.admin.servipuntos.local
-127.0.0.1    petrobras.branch.admin.servipuntos.local
-127.0.0.1    shell.branch.admin.servipuntos.local
-127.0.0.1    app.servipuntos.local
-127.0.0.1    api.servipuntos.local
-```
+- [**Multi-Tenancy**](ServiPuntosUy/Docs/MultiTenancy.md): Explica cómo funciona el sistema multi-tenant, la resolución de tenants y tipos de usuario.
+- [**BaseController**](ServiPuntosUy/Docs/BaseControllerGuide.md): Guía sobre el controlador base, sus propiedades y métodos heredados, y mejores prácticas para su uso.
+
+### Seguridad
+
+- [**Autenticación**](ServiPuntosUy/Docs/AuthenticationGuide.md): Guía sobre el sistema de autenticación JWT, cómo funciona y cómo usarlo.
+- [**Configuración CORS**](ServiPuntosUy/Docs/CorsConfiguration.md): Explica la configuración de CORS para desarrollo y producción.
