@@ -4,6 +4,7 @@ namespace ServiPuntosUy.DAO.Models.Central;
 
 public class Tenant
 {
+    [Key]
     public int Id { get; set; }
 
     [Required]
@@ -11,6 +12,4 @@ public class Tenant
 
     [Required]
     public string TenantId { get; set; } = string.Empty;
-
-    public ICollection<Estacion> Estaciones { get; set; } = new List<Estacion>();
 }

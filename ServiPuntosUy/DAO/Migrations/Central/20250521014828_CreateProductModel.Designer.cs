@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ServiPuntosUy.DAO.Data.Central;
 
@@ -11,9 +12,11 @@ using ServiPuntosUy.DAO.Data.Central;
 namespace ServiPuntosUy.DAO.Migrations.Central
 {
     [DbContext(typeof(CentralDbContext))]
-    partial class CentralDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250521014828_CreateProductModel")]
+    partial class CreateProductModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -77,6 +80,32 @@ namespace ServiPuntosUy.DAO.Migrations.Central
                         });
                 });
 
+            modelBuilder.Entity("ServiPuntosUy.DAO.Models.Central.Estacion", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Latitud")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Longitud")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("TenantId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("Estacion");
+                });
+
             modelBuilder.Entity("ServiPuntosUy.DAO.Models.Central.Tenant", b =>
                 {
                     b.Property<int>("Id")
@@ -96,6 +125,22 @@ namespace ServiPuntosUy.DAO.Migrations.Central
                     b.HasKey("Id");
 
                     b.ToTable("Tenants");
+                });
+
+            modelBuilder.Entity("ServiPuntosUy.DAO.Models.Central.Estacion", b =>
+                {
+                    b.HasOne("ServiPuntosUy.DAO.Models.Central.Tenant", "Tenant")
+                        .WithMany("Estaciones")
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Tenant");
+                });
+
+            modelBuilder.Entity("ServiPuntosUy.DAO.Models.Central.Tenant", b =>
+                {
+                    b.Navigation("Estaciones");
                 });
 #pragma warning restore 612, 618
         }

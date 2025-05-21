@@ -1,3 +1,4 @@
+
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -5,6 +6,7 @@ namespace ServiPuntosUy.DAO.Models.Central
 {
     public class Estacion
     {
+        [Key]
         public int Id { get; set; }
 
         [Required]
