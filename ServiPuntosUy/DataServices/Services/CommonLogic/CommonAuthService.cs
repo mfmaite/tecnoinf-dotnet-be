@@ -50,19 +50,19 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
             // Generar token JWT
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]);
-            
+
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Email, user.Email),
                 new Claim("userType", ((int)user.Role).ToString()),
-                new Claim("tenantId", user.TenantId ?? "central")
+                new Claim("tenantId", user.TenantId.ToString())
             };
-            
+
             // Agregar branchId al token si el usuario es de tipo Branch
-            if (user.Role == Enums.UserType.Branch && user.BranchId.HasValue)
+            if (user.Role == Enums.UserType.Branch)
             {
-                claims.Add(new Claim("branchId", user.BranchId.Value.ToString()));
+                claims.Add(new Claim("branchId", user.BranchId.ToString()));
             }
 
             var tokenDescriptor = new SecurityTokenDescriptor

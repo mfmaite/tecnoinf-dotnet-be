@@ -32,7 +32,7 @@ public class TenantController : BaseController
     public IActionResult CreateTenant([FromBody] Tenant tenant) {
         try {
             var newTenant = TenantService.CreateTenant(
-                tenant.TenantId
+                tenant.Name
             );
 
             return Ok(newTenant);

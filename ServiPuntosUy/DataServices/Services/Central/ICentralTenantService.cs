@@ -13,26 +13,26 @@ namespace ServiPuntosUy.DataServices.Services.Central
         /// <param name="tenant">Modelo de tenant</param>
         /// <returns>DTO de tenant</returns>
         TenantDTO GetTenantDTO(DAO.Models.Central.Tenant tenant);
-        
+
         /// <summary>
         /// Obtiene un tenant por su ID
         /// </summary>
         /// <param name="id">ID del tenant</param>
         /// <returns>DTO de tenant</returns>
         TenantDTO GetTenantById(int id);
-        
+
         /// <summary>
         /// Obtiene un tenant por su TenantId
         /// </summary>
         /// <param name="tenantId">TenantId del tenant</param>
         /// <returns>DTO de tenant</returns>
-        TenantDTO GetTenantByTenantId(string tenantId);
-        
+        TenantDTO GetTenantByTenantName(string tenantName);
+
         /// <summary>
         /// Crea un nuevo tenant
         /// </summary>
         /// <param name="tenantId">TenantId del tenant</param>
         /// <returns>DTO del tenant creado</returns>
-        TenantDTO CreateTenant(string tenantId);
+        TenantDTO CreateTenant(string tenantName);
     }
 }

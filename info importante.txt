@@ -10,7 +10,6 @@ MIGRACIONES
 Para crear migraciones:
 
 dotnet ef migrations add InitialCentralMigration \
-  --context DAO.Data.Central.CentralDbContext \
   --output-dir DAO/Migrations/Central
 
 dotnet ef database update
