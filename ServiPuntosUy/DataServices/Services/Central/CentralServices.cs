@@ -6,9 +6,7 @@ using ServiPuntosUy.Models.DAO;
 
 namespace ServiPuntosUy.DataServices.Services.Central
 {
-    /// <summary>
-    /// Implementación del servicio de tenant para el administrador central
-    /// </summary>
+    // Implementación del servicio de tenant para el administrador central
     public class TenantService : ICentralTenantService
     {
         private readonly IGenericRepository<DAO.Models.Central.Tenant> _tenantRepository;
@@ -23,7 +21,7 @@ namespace ServiPuntosUy.DataServices.Services.Central
         public TenantDTO GetTenantDTO(DAO.Models.Central.Tenant tenant) {
             return new TenantDTO {
                 Id = tenant.Id,
-                TenantId = tenant.TenantId,
+                Name = tenant.Name,
             };
         }
 
@@ -37,31 +35,30 @@ namespace ServiPuntosUy.DataServices.Services.Central
             var tenant = _tenantRepository.GetQueryable().FirstOrDefault(t => t.Id == id);
             return tenant != null ? GetTenantDTO(tenant) : null;
         }
-        
-        public TenantDTO GetTenantByTenantId(string tenantId)
+
+        public TenantDTO GetTenantByTenantName(string tenantName)
         {
-            var tenant = _tenantRepository.GetQueryable().FirstOrDefault(t => t.TenantId == tenantId);
+            var tenant = _tenantRepository.GetQueryable().FirstOrDefault(t => t.Name == tenantName);
             return tenant != null ? GetTenantDTO(tenant) : null;
         }
 
-        public TenantDTO CreateTenant(string tenantId) {
+        public TenantDTO CreateTenant(string tenantName) {
             // Validar que tenantId contenga solo letras A-Z (mayus y minus)
-            if (!Regex.IsMatch(tenantId, @"^[a-zA-Z]+$"))
+            if (!Regex.IsMatch(tenantName, @"^[a-zA-Z]+$"))
             {
-                throw new ArgumentException("El TenantId solo puede contener letras mayúsculas de la A a la Z.");
+                throw new ArgumentException("El tenant name solo puede contener letras mayúsculas de la A a la Z.");
             }
 
             // Verificar que el tenantId no exista
-            bool tenantExists = _tenantRepository.GetQueryable().Any(t => t.TenantId == tenantId);
+            bool tenantExists = _tenantRepository.GetQueryable().Any(t => t.Name == tenantName);
             if (tenantExists)
             {
-                throw new ArgumentException($"El TenantId '{tenantId}' ya existe. Debe ser único.");
+                throw new ArgumentException($"El Tenant '{tenantName}' ya existe. Debe ser único.");
             }
 
 
             var newTenant = new DAO.Models.Central.Tenant {
-                TenantId = tenantId,
-                CreatedAt = DateTime.UtcNow
+                Name = tenantName,
             };
 
             var createdTenant = _tenantRepository.AddAsync(newTenant).GetAwaiter().GetResult();
@@ -78,13 +75,13 @@ namespace ServiPuntosUy.DataServices.Services.Central
     {
         private readonly CentralDbContext _dbContext;
         private readonly IConfiguration _configuration;
-        
+
         public LoyaltyService(CentralDbContext dbContext, IConfiguration configuration)
         {
             _dbContext = dbContext;
             _configuration = configuration;
         }
-        
+
         /// <summary>
         /// Obtiene la configuración de lealtad de un tenant
         /// </summary>
@@ -95,7 +92,7 @@ namespace ServiPuntosUy.DataServices.Services.Central
             // Implementación básica para el scaffold
             throw new NotImplementedException();
         }
-        
+
         /// <summary>
         /// Actualiza la configuración de lealtad de un tenant
         /// </summary>
@@ -106,7 +103,7 @@ namespace ServiPuntosUy.DataServices.Services.Central
             // Implementación básica para el scaffold
             throw new NotImplementedException();
         }
-        
+
         /// <summary>
         /// Obtiene el saldo de puntos de un usuario
         /// </summary>
@@ -118,7 +115,7 @@ namespace ServiPuntosUy.DataServices.Services.Central
             // Implementación básica para el scaffold
             throw new NotImplementedException();
         }
-        
+
         /// <summary>
         /// Registra una transacción de lealtad
         /// </summary>
@@ -129,7 +126,7 @@ namespace ServiPuntosUy.DataServices.Services.Central
             // Implementación básica para el scaffold
             throw new NotImplementedException();
         }
-        
+
         /// <summary>
         /// Obtiene el historial de transacciones de un usuario
         /// </summary>
@@ -145,7 +142,7 @@ namespace ServiPuntosUy.DataServices.Services.Central
             // Implementación básica para el scaffold
             throw new NotImplementedException();
         }
-        
+
         /// <summary>
         /// Canjea puntos por un producto o servicio
         /// </summary>
@@ -159,7 +156,7 @@ namespace ServiPuntosUy.DataServices.Services.Central
             // Implementación básica para el scaffold
             throw new NotImplementedException();
         }
-        
+
         /// <summary>
         /// Verifica un código QR de redención
         /// </summary>
@@ -171,7 +168,7 @@ namespace ServiPuntosUy.DataServices.Services.Central
             // Implementación básica para el scaffold
             throw new NotImplementedException();
         }
-        
+
         /// <summary>
         /// Confirma una redención
         /// </summary>
@@ -183,7 +180,7 @@ namespace ServiPuntosUy.DataServices.Services.Central
             // Implementación básica para el scaffold
             throw new NotImplementedException();
         }
-        
+
         /// <summary>
         /// Calcula los puntos a otorgar por una compra
         /// </summary>
@@ -196,7 +193,7 @@ namespace ServiPuntosUy.DataServices.Services.Central
             // Implementación básica para el scaffold
             throw new NotImplementedException();
         }
-        
+
         /// <summary>
         /// Obtiene estadísticas de lealtad de un tenant
         /// </summary>
@@ -210,7 +207,7 @@ namespace ServiPuntosUy.DataServices.Services.Central
             throw new NotImplementedException();
         }
     }
-    
+
     /// <summary>
     /// Implementación del servicio de promociones para el administrador central
     /// </summary>
@@ -218,17 +215,17 @@ namespace ServiPuntosUy.DataServices.Services.Central
     {
         private readonly CentralDbContext _dbContext;
         private readonly IConfiguration _configuration;
-        
+
         public PromotionService(CentralDbContext dbContext, IConfiguration configuration)
         {
             _dbContext = dbContext;
             _configuration = configuration;
         }
-        
+
         // Implementar los métodos de la interfaz IPromotionService
         // Esta es una implementación básica para el scaffold
     }
-    
+
     /// <summary>
     /// Implementación del servicio de productos para el administrador central
     /// </summary>
@@ -236,17 +233,17 @@ namespace ServiPuntosUy.DataServices.Services.Central
     {
         private readonly CentralDbContext _dbContext;
         private readonly IConfiguration _configuration;
-        
+
         public ProductService(CentralDbContext dbContext, IConfiguration configuration)
         {
             _dbContext = dbContext;
             _configuration = configuration;
         }
-        
+
         // Implementar los métodos de la interfaz IProductService
         // Esta es una implementación básica para el scaffold
     }
-    
+
     /// <summary>
     /// Implementación del servicio de usuarios para el administrador central
     /// </summary>
@@ -254,17 +251,17 @@ namespace ServiPuntosUy.DataServices.Services.Central
     {
         private readonly CentralDbContext _dbContext;
         private readonly IConfiguration _configuration;
-        
+
         public UserService(CentralDbContext dbContext, IConfiguration configuration)
         {
             _dbContext = dbContext;
             _configuration = configuration;
         }
-        
+
         // Implementar los métodos de la interfaz IUserService
         // Esta es una implementación básica para el scaffold
     }
-    
+
     /// <summary>
     /// Implementación del servicio de notificaciones para el administrador central
     /// </summary>
@@ -272,17 +269,17 @@ namespace ServiPuntosUy.DataServices.Services.Central
     {
         private readonly CentralDbContext _dbContext;
         private readonly IConfiguration _configuration;
-        
+
         public NotificationService(CentralDbContext dbContext, IConfiguration configuration)
         {
             _dbContext = dbContext;
             _configuration = configuration;
         }
-        
+
         // Implementar los métodos de la interfaz INotificationService
         // Esta es una implementación básica para el scaffold
     }
-    
+
     /// <summary>
     /// Implementación del servicio de verificación para el administrador central
     /// </summary>
@@ -290,17 +287,17 @@ namespace ServiPuntosUy.DataServices.Services.Central
     {
         private readonly CentralDbContext _dbContext;
         private readonly IConfiguration _configuration;
-        
+
         public VerificationService(CentralDbContext dbContext, IConfiguration configuration)
         {
             _dbContext = dbContext;
             _configuration = configuration;
         }
-        
+
         // Implementar los métodos de la interfaz IVerificationService
         // Esta es una implementación básica para el scaffold
     }
-    
+
     /// <summary>
     /// Implementación del servicio de reportes para el administrador central
     /// </summary>
@@ -308,17 +305,17 @@ namespace ServiPuntosUy.DataServices.Services.Central
     {
         private readonly CentralDbContext _dbContext;
         private readonly IConfiguration _configuration;
-        
+
         public ReportingService(CentralDbContext dbContext, IConfiguration configuration)
         {
             _dbContext = dbContext;
             _configuration = configuration;
         }
-        
+
         // Implementar los métodos de la interfaz IReportingService
         // Esta es una implementación básica para el scaffold
     }
-    
+
     /// <summary>
     /// Implementación del servicio de pagos para el administrador central
     /// </summary>
@@ -326,13 +323,13 @@ namespace ServiPuntosUy.DataServices.Services.Central
     {
         private readonly CentralDbContext _dbContext;
         private readonly IConfiguration _configuration;
-        
+
         public PaymentService(CentralDbContext dbContext, IConfiguration configuration)
         {
             _dbContext = dbContext;
             _configuration = configuration;
         }
-        
+
         // Implementar los métodos de la interfaz IPaymentService
         // Esta es una implementación básica para el scaffold
     }
