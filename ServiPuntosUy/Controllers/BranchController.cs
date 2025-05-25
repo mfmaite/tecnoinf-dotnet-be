@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using ServiPuntosUy.DataServices;
 using ServiPuntosUy.Controllers.Base;
 using Microsoft.AspNetCore.Authorization;
+using ServiPuntosUy.DataServices.Services.Tenant;
 
 namespace ServiPuntosUy.Controllers;
 
@@ -12,6 +13,7 @@ namespace ServiPuntosUy.Controllers;
 [Authorize]
 public class BranchController : BaseController
 {
+
     public BranchController(IServiceFactory serviceFactory) : base(serviceFactory)
     {
     }
@@ -36,11 +38,6 @@ public class BranchController : BaseController
             Console.WriteLine($"OpenTime: {request?.OpenTime}");
             Console.WriteLine($"ClosingTime: {request?.ClosingTime}");
 
-            if (BranchService == null)
-            {
-                return BadRequest("BranchService is null");
-            }
-
             // Intentar parsear OpenTime y ClosingTime
             if (!TimeOnly.TryParse(request.OpenTime, out var openTime))
                 return BadRequest("Formato de hora inválido para OpenTime. Use HH:mm.");
@@ -48,7 +45,7 @@ public class BranchController : BaseController
             if (!TimeOnly.TryParse(request.ClosingTime, out var closingTime))
                 return BadRequest("Formato de hora inválido para ClosingTime. Use HH:mm.");
 
-            var newBranch = BranchService.CreateBranch(
+            var newBranch = TenantBranchService?.CreateBranch(
                 request.TenantId,
                 request.Latitud,
                 request.Longitud,
@@ -57,6 +54,11 @@ public class BranchController : BaseController
                 openTime,
                 closingTime
             );
+
+            if (newBranch == null)
+            {
+                return BadRequest("No se pudo crear el branch. El servicio no está disponible.");
+            }
 
             return Ok(newBranch);
         }

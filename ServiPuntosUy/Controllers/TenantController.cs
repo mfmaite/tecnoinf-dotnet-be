@@ -1,9 +1,9 @@
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using ServiPuntosUy.Controllers.Base;
-using ServiPuntosUy.DataServices;
-using ServiPuntosUy.DAO.Models.Central;
 using ServiPuntosUy.DTO;
+using Microsoft.AspNetCore.Mvc;
+using ServiPuntosUy.DataServices;
+using ServiPuntosUy.Controllers.Base;
+using ServiPuntosUy.DAO.Models.Central;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ServiPuntosUy.Controllers;
 

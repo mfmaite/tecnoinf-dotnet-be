@@ -7,6 +7,7 @@ using ServiPuntosUy.DTO;
 using ServiPuntosUy.Enums;
 using ServiPuntosUy.DataServices.Services.Central;
 using ServiPuntosUy.DataServices.Services.Branch;
+using ServiPuntosUy.DataServices.Services.Tenant;
 
 namespace ServiPuntosUy.Controllers.Base
 {
@@ -16,27 +17,27 @@ namespace ServiPuntosUy.Controllers.Base
     public class BaseController : Controller
     {
         protected readonly IServiceFactory _serviceFactory;
-        
+
         public BaseController(IServiceFactory serviceFactory)
         {
             _serviceFactory = serviceFactory;
         }
-        
+
         /// <summary>
         /// Obtiene el tenant actual del contexto HTTP
         /// </summary>
         protected string CurrentTenant => HttpContext.Items["CurrentTenant"] as string;
-        
+
         /// <summary>
         /// Obtiene el tipo de usuario actual del contexto HTTP
         /// </summary>
         protected UserType UserType => HttpContext.Items["UserType"] is UserType userType ? userType : UserType.EndUser;
-        
+
         /// <summary>
         /// Obtiene el ID de la estación actual del contexto HTTP (solo para administradores de estación)
         /// </summary>
         protected int? BranchId => HttpContext.Items["BranchId"] as int?;
-        
+
         /// <summary>
         /// Obtiene el usuario actual del token JWT
         /// </summary>
@@ -56,13 +57,13 @@ namespace ServiPuntosUy.Controllers.Base
                 var email = jwtToken.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Email)?.Value;
                 var name = jwtToken.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Name)?.Value;
                 var userId = jwtToken.Claims.FirstOrDefault(x => x.Type == "userId")?.Value;
-                
+
                 int.TryParse(userId, out int id);
-                
-                return new UserDTO 
-                { 
+
+                return new UserDTO
+                {
                     Id = id,
-                    Name = name, 
+                    Name = name,
                     Email = email,
                     TenantId = ObtainTenantFromToken(),
                     UserType = ObtainUserTypeFromToken()
@@ -99,7 +100,7 @@ namespace ServiPuntosUy.Controllers.Base
                 return null;
             }
         }
-        
+
         /// <summary>
         /// Obtiene el tipo de usuario del token JWT
         /// </summary>
@@ -117,12 +118,12 @@ namespace ServiPuntosUy.Controllers.Base
                 var tokenHandler = new JwtSecurityTokenHandler();
                 var jwtToken = tokenHandler.ReadJwtToken(authHeader.Split(' ')[1].Trim());
                 var userTypeClaim = jwtToken.Claims.FirstOrDefault(x => x.Type == "userType")?.Value;
-                
+
                 if (userTypeClaim != null && Enum.TryParse<UserType>(userTypeClaim, out var userType))
                 {
                     return userType;
                 }
-                
+
                 return UserType.EndUser;
             }
             catch
@@ -130,7 +131,7 @@ namespace ServiPuntosUy.Controllers.Base
                 return UserType.EndUser;
             }
         }
-        
+
         /// <summary>
         /// Obtiene el ID de la estación del token JWT (solo para administradores de estación)
         /// </summary>
@@ -148,12 +149,12 @@ namespace ServiPuntosUy.Controllers.Base
                 var tokenHandler = new JwtSecurityTokenHandler();
                 var jwtToken = tokenHandler.ReadJwtToken(authHeader.Split(' ')[1].Trim());
                 var branchIdClaim = jwtToken.Claims.FirstOrDefault(x => x.Type == "branchId")?.Value;
-                
+
                 if (branchIdClaim != null && int.TryParse(branchIdClaim, out int branchId))
                 {
                     return branchId;
                 }
-                
+
                 return null;
             }
             catch
@@ -161,7 +162,7 @@ namespace ServiPuntosUy.Controllers.Base
                 return null;
             }
         }
-        
+
         /// <summary>
         /// Verifica si el usuario actual tiene acceso al tenant especificado
         /// </summary>
@@ -174,75 +175,80 @@ namespace ServiPuntosUy.Controllers.Base
             {
                 return true;
             }
-            
+
             // Si es administrador de tenant o estación, solo tiene acceso a su propio tenant
             if (UserType == UserType.Tenant || UserType == UserType.Branch)
             {
                 return CurrentTenant == tenantId;
             }
-            
+
             // Si es usuario final, depende de la lógica de negocio
             // Por ejemplo, un usuario final podría tener acceso a múltiples tenants
             return CurrentTenant == tenantId;
         }
-        
+
         #region Métodos de ayuda para obtener servicios
-        
+
         /// <summary>
         /// Obtiene el servicio de autenticación
         /// </summary>
         protected IAuthService AuthService => _serviceFactory.GetService<IAuthService>();
-        
+
         /// <summary>
         /// Obtiene el servicio de tenant
         /// </summary>
         protected ICentralTenantService TenantService => _serviceFactory.GetService<ICentralTenantService>();
-        
+
         /// <summary>
         /// Obtiene el servicio de estaciones
         /// </summary>
         protected IBranchService BranchService => _serviceFactory.GetService<IBranchService>();
-        
+
         /// <summary>
         /// Obtiene el servicio de fidelización
         /// </summary>
         protected ILoyaltyService LoyaltyService => _serviceFactory.GetService<ILoyaltyService>();
-        
+
         /// <summary>
         /// Obtiene el servicio de promociones
         /// </summary>
         protected IPromotionService PromotionService => _serviceFactory.GetService<IPromotionService>();
-        
+
         /// <summary>
         /// Obtiene el servicio de productos
         /// </summary>
         protected IProductService ProductService => _serviceFactory.GetService<IProductService>();
-        
+
         /// <summary>
         /// Obtiene el servicio de usuarios
         /// </summary>
         protected IUserService UserService => _serviceFactory.GetService<IUserService>();
-        
+
         /// <summary>
         /// Obtiene el servicio de notificaciones
         /// </summary>
         protected INotificationService NotificationService => _serviceFactory.GetService<INotificationService>();
-        
+
         /// <summary>
         /// Obtiene el servicio de verificación
         /// </summary>
         protected IVerificationService VerificationService => _serviceFactory.GetService<IVerificationService>();
-        
+
         /// <summary>
         /// Obtiene el servicio de reportes
         /// </summary>
         protected IReportingService ReportingService => _serviceFactory.GetService<IReportingService>();
-        
+
         /// <summary>
         /// Obtiene el servicio de pagos
         /// </summary>
         protected IPaymentService PaymentService => _serviceFactory.GetService<IPaymentService>();
-        
+
+        /// <summary>
+        /// Obtiene el servicio de branches para tenant
+        /// </summary>
+        protected ITenantBranchService TenantBranchService => _serviceFactory.GetService<ITenantBranchService>();
+
         #endregion
     }
 }

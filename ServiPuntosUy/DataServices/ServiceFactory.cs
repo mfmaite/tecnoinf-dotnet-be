@@ -5,6 +5,7 @@ using ServiPuntosUy.DataServices.Services.Central;
 using ServiPuntosUy.DataServices.Services.Branch;
 using ServiPuntosUy.DataServices.Services.CommonLogic;
 using ServiPuntosUy.Enums;
+using ServiPuntosUy.DataServices.Services.Tenant;
 
 namespace ServiPuntosUy.DataServices
 {
@@ -89,10 +90,10 @@ namespace ServiPuntosUy.DataServices
 
             // Registrar el TenantAccessor para proporcionar el tenant actual a los servicios
             _serviceCollection.AddScoped<ITenantAccessor>(sp => new TenantAccessor(tenantId));
-            
+
             // Obtener el DbContext del contenedor principal
             _serviceCollection.AddScoped<DbContext>(sp => _serviceProvider.GetRequiredService<DbContext>());
-            
+
             // Registrar el GenericRepository que usa el DbContext
             _serviceCollection.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
         }
@@ -129,7 +130,7 @@ namespace ServiPuntosUy.DataServices
                     sp.GetRequiredService<IAuthLogic>(),
                     tenantId));
 
-
+            _serviceCollection.AddScoped<ITenantBranchService, TenantBranchService>();
             _serviceCollection.AddScoped<ILoyaltyService, Services.Tenant.LoyaltyService>();
             _serviceCollection.AddScoped<IPromotionService, Services.Tenant.PromotionService>();
             _serviceCollection.AddScoped<IProductService, Services.Tenant.ProductService>();

@@ -51,29 +51,6 @@ namespace ServiPuntosUy.DataServices.Services.Branch
             // Devolver el DTO si se encontró el branch
             return branch != null ? GetBranchDTO(branch) : null;
         }
-
-        public BranchDTO CreateBranch(int tenantId, string latitud, string longitud, string address, string phone, TimeOnly openTime, TimeOnly closingTime) {
-            // Obtener el tenant (esto podría requerir un servicio de tenant)
-            // Por ahora, simplemente usamos el ID del tenant
-
-            // Crear un nuevo branch
-            var branch = new ServiPuntosUy.DAO.Models.Central.Branch {
-                TenantId = tenantId,
-                Latitud = latitud,
-                Longitud = longitud,
-                Address = address,
-                Phone = phone,
-                OpenTime = openTime,
-                ClosingTime = closingTime,
-            };
-
-            // Guardar el branch en la base de datos usando el repositorio de la clase
-            var createdBranch = _branchRepository.AddAsync(branch).GetAwaiter().GetResult();
-            _branchRepository.SaveChangesAsync().GetAwaiter().GetResult();
-
-            // Devolver el DTO del branch creado
-            return GetBranchDTO(createdBranch);
-        }
     }
 
     /// <summary>

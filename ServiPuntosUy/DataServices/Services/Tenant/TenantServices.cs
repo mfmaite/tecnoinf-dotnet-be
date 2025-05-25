@@ -1,8 +1,62 @@
 using Microsoft.EntityFrameworkCore;
 using ServiPuntosUy.DTO;
+using ServiPuntosUy.DAO.Models.Central;
+using System;
+using System.Linq;
+using Microsoft.Extensions.Configuration;
+using System.Linq.Expressions;
+using ServiPuntosUy.Models.DAO;
+using System.Text.RegularExpressions;
+using ServiPuntosUy.DAO.Data.Central;
+using ServiPuntosUy.DataServices.Services.Branch;
 
 namespace ServiPuntosUy.DataServices.Services.Tenant
 {
+    public class TenantBranchService : ITenantBranchService
+    {
+        private readonly IGenericRepository<DAO.Models.Central.Branch> _branchRepository;
+
+        public TenantBranchService(IGenericRepository<DAO.Models.Central.Branch> branchRepository)
+        {
+            _branchRepository = branchRepository;
+        }
+
+        // Métodos de Branch
+
+        public BranchDTO GetBranchDTO(ServiPuntosUy.DAO.Models.Central.Branch branch) {
+            return new BranchDTO {
+                Id = branch.Id,
+                Address = branch.Address,
+                Latitud = branch.Latitud,
+                Longitud = branch.Longitud,
+                Phone = branch.Phone,
+                OpenTime = branch.OpenTime,
+                ClosingTime = branch.ClosingTime,
+                TenantId = branch.TenantId,
+            };
+        }
+
+        public BranchDTO CreateBranch(int tenantId, string latitud, string longitud, string address, string phone, TimeOnly openTime, TimeOnly closingTime) {
+            // Crear un nuevo branch
+            var branch = new DAO.Models.Central.Branch {
+                TenantId = tenantId,
+                Latitud = latitud,
+                Longitud = longitud,
+                Address = address,
+                Phone = phone,
+                OpenTime = openTime,
+                ClosingTime = closingTime,
+            };
+
+            // Guardar el branch en la base de datos usando el repositorio de la clase
+            var createdBranch = _branchRepository.AddAsync(branch).GetAwaiter().GetResult();
+            _branchRepository.SaveChangesAsync().GetAwaiter().GetResult();
+
+            // Devolver el DTO del branch creado
+            return GetBranchDTO(createdBranch);
+        }
+    }
+
     /// <summary>
     /// Implementación del servicio de lealtad para el administrador de tenant
     /// </summary>
@@ -11,14 +65,14 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
         private readonly DbContext _dbContext;
         private readonly IConfiguration _configuration;
         private readonly string _tenantId;
-        
+
         public LoyaltyService(DbContext dbContext, IConfiguration configuration, string tenantId)
         {
             _dbContext = dbContext;
             _configuration = configuration;
             _tenantId = tenantId;
         }
-        
+
         /// <summary>
         /// Obtiene la configuración de lealtad de un tenant
         /// </summary>
@@ -31,11 +85,11 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             {
                 throw new UnauthorizedAccessException("No tiene permisos para acceder a este tenant");
             }
-            
+
             // Implementación básica para el scaffold
             throw new NotImplementedException();
         }
-        
+
         /// <summary>
         /// Actualiza la configuración de lealtad de un tenant
         /// </summary>
@@ -48,11 +102,11 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             {
                 throw new UnauthorizedAccessException("No tiene permisos para acceder a este tenant");
             }
-            
+
             // Implementación básica para el scaffold
             throw new NotImplementedException();
         }
-        
+
         /// <summary>
         /// Obtiene el saldo de puntos de un usuario
         /// </summary>
@@ -66,11 +120,11 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             {
                 throw new UnauthorizedAccessException("No tiene permisos para acceder a este tenant");
             }
-            
+
             // Implementación básica para el scaffold
             throw new NotImplementedException();
         }
-        
+
         /// <summary>
         /// Registra una transacción de lealtad
         /// </summary>
@@ -83,11 +137,11 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             {
                 throw new UnauthorizedAccessException("No tiene permisos para acceder a este tenant");
             }
-            
+
             // Implementación básica para el scaffold
             throw new NotImplementedException();
         }
-        
+
         /// <summary>
         /// Obtiene el historial de transacciones de un usuario
         /// </summary>
@@ -105,11 +159,11 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             {
                 throw new UnauthorizedAccessException("No tiene permisos para acceder a este tenant");
             }
-            
+
             // Implementación básica para el scaffold
             throw new NotImplementedException();
         }
-        
+
         /// <summary>
         /// Canjea puntos por un producto o servicio
         /// </summary>
@@ -125,11 +179,11 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             {
                 throw new UnauthorizedAccessException("No tiene permisos para acceder a este tenant");
             }
-            
+
             // Implementación básica para el scaffold
             throw new NotImplementedException();
         }
-        
+
         /// <summary>
         /// Verifica un código QR de redención
         /// </summary>
@@ -141,7 +195,7 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             // Implementación básica para el scaffold
             throw new NotImplementedException();
         }
-        
+
         /// <summary>
         /// Confirma una redención
         /// </summary>
@@ -153,7 +207,7 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             // Implementación básica para el scaffold
             throw new NotImplementedException();
         }
-        
+
         /// <summary>
         /// Calcula los puntos a otorgar por una compra
         /// </summary>
@@ -168,11 +222,11 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             {
                 throw new UnauthorizedAccessException("No tiene permisos para acceder a este tenant");
             }
-            
+
             // Implementación básica para el scaffold
             throw new NotImplementedException();
         }
-        
+
         /// <summary>
         /// Obtiene estadísticas de lealtad de un tenant
         /// </summary>
@@ -187,12 +241,12 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             {
                 throw new UnauthorizedAccessException("No tiene permisos para acceder a este tenant");
             }
-            
+
             // Implementación básica para el scaffold
             throw new NotImplementedException();
         }
     }
-    
+
     /// <summary>
     /// Implementación del servicio de promociones para el administrador de tenant
     /// </summary>
@@ -201,18 +255,18 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
         private readonly DbContext _dbContext;
         private readonly IConfiguration _configuration;
         private readonly string _tenantId;
-        
+
         public PromotionService(DbContext dbContext, IConfiguration configuration, string tenantId)
         {
             _dbContext = dbContext;
             _configuration = configuration;
             _tenantId = tenantId;
         }
-        
+
         // Implementar los métodos de la interfaz IPromotionService
         // Esta es una implementación básica para el scaffold
     }
-    
+
     /// <summary>
     /// Implementación del servicio de productos para el administrador de tenant
     /// </summary>
@@ -221,18 +275,18 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
         private readonly DbContext _dbContext;
         private readonly IConfiguration _configuration;
         private readonly string _tenantId;
-        
+
         public ProductService(DbContext dbContext, IConfiguration configuration, string tenantId)
         {
             _dbContext = dbContext;
             _configuration = configuration;
             _tenantId = tenantId;
         }
-        
+
         // Implementar los métodos de la interfaz IProductService
         // Esta es una implementación básica para el scaffold
     }
-    
+
     /// <summary>
     /// Implementación del servicio de usuarios para el administrador de tenant
     /// </summary>
@@ -241,18 +295,18 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
         private readonly DbContext _dbContext;
         private readonly IConfiguration _configuration;
         private readonly string _tenantId;
-        
+
         public UserService(DbContext dbContext, IConfiguration configuration, string tenantId)
         {
             _dbContext = dbContext;
             _configuration = configuration;
             _tenantId = tenantId;
         }
-        
+
         // Implementar los métodos de la interfaz IUserService
         // Esta es una implementación básica para el scaffold
     }
-    
+
     /// <summary>
     /// Implementación del servicio de notificaciones para el administrador de tenant
     /// </summary>
@@ -261,18 +315,18 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
         private readonly DbContext _dbContext;
         private readonly IConfiguration _configuration;
         private readonly string _tenantId;
-        
+
         public NotificationService(DbContext dbContext, IConfiguration configuration, string tenantId)
         {
             _dbContext = dbContext;
             _configuration = configuration;
             _tenantId = tenantId;
         }
-        
+
         // Implementar los métodos de la interfaz INotificationService
         // Esta es una implementación básica para el scaffold
     }
-    
+
     /// <summary>
     /// Implementación del servicio de verificación para el administrador de tenant
     /// </summary>
@@ -281,18 +335,18 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
         private readonly DbContext _dbContext;
         private readonly IConfiguration _configuration;
         private readonly string _tenantId;
-        
+
         public VerificationService(DbContext dbContext, IConfiguration configuration, string tenantId)
         {
             _dbContext = dbContext;
             _configuration = configuration;
             _tenantId = tenantId;
         }
-        
+
         // Implementar los métodos de la interfaz IVerificationService
         // Esta es una implementación básica para el scaffold
     }
-    
+
     /// <summary>
     /// Implementación del servicio de reportes para el administrador de tenant
     /// </summary>
@@ -301,18 +355,18 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
         private readonly DbContext _dbContext;
         private readonly IConfiguration _configuration;
         private readonly string _tenantId;
-        
+
         public ReportingService(DbContext dbContext, IConfiguration configuration, string tenantId)
         {
             _dbContext = dbContext;
             _configuration = configuration;
             _tenantId = tenantId;
         }
-        
+
         // Implementar los métodos de la interfaz IReportingService
         // Esta es una implementación básica para el scaffold
     }
-    
+
     /// <summary>
     /// Implementación del servicio de pagos para el administrador de tenant
     /// </summary>
@@ -321,14 +375,14 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
         private readonly DbContext _dbContext;
         private readonly IConfiguration _configuration;
         private readonly string _tenantId;
-        
+
         public PaymentService(DbContext dbContext, IConfiguration configuration, string tenantId)
         {
             _dbContext = dbContext;
             _configuration = configuration;
             _tenantId = tenantId;
         }
-        
+
         // Implementar los métodos de la interfaz IPaymentService
         // Esta es una implementación básica para el scaffold
     }
