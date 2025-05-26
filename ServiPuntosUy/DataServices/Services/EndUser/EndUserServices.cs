@@ -1,5 +1,8 @@
+using System;
+using ServiceReference;
+using System.ServiceModel;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-
 
 namespace ServiPuntosUy.DataServices.Services.EndUser
 {
@@ -109,7 +112,7 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
 
     /// <summary>
     /// Implementación del servicio de verificacion para el usuario final
-    /// </summary>    
+    /// </summary>
     public class VerificationService : IVerificationService
     {
         private readonly DbContext _dbContext;
@@ -128,9 +131,9 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
     }
 
 
-/// <summary>
+    /// <summary>
     /// Implementación del servicio de pagos para el usuario final
-    /// </summary>    
+    /// </summary>
     public class PaymentService : IPaymentService
     {
         private readonly DbContext _dbContext;
@@ -148,6 +151,36 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
         // Esta es una implementación básica para el scaffold
     }
 
+    /// <summary>
+    /// Implementación del servicio de VEAI para el usuario final
+    /// </summary>
+    public class VEAIService : IVEAIService
+    {
+        private readonly WsServicioDeInformacionClient _client;
 
+        public VEAIService()
+        {
+            var binding = new BasicHttpBinding(BasicHttpSecurityMode.Transport);
+            var endpoint = new EndpointAddress("https://dnic.mz.uy/WsServicioDeInformacion.asmx");
+            _client = new WsServicioDeInformacionClient(binding, endpoint);
+        }
 
+        public async Task<string> ObtenerNombrePersona(string nroDoc, string tipoDoc, string nroSerie, string organismo, string clave)
+        {
+            var param = new ParamObtDocDigitalizado
+            {
+                NroDocumento = nroDoc,
+                TipoDocumento = tipoDoc,
+                NroSerie = nroSerie,
+                Organismo = organismo,
+                ClaveAcceso1 = clave
+            };
+
+            var result = await _client.ObtDocDigitalizadoAsync(param);
+            var body = result.Body;
+
+            Console.WriteLine(body);
+            return "ok";
+        }
+    }
 }

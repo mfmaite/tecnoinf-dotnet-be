@@ -249,6 +249,11 @@ namespace ServiPuntosUy.Controllers.Base
         /// </summary>
         protected ITenantBranchService TenantBranchService => _serviceFactory.GetService<ITenantBranchService>();
 
+        /// <summary>
+        /// Obtiene el servicio de VEAI
+        /// </summary>
+        protected IVEAIService VEAIService => _serviceFactory.GetService<IVEAIService>();
+
         #endregion
     }
 }

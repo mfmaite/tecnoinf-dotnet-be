@@ -6,7 +6,7 @@ using ServiPuntosUy.DataServices.Services.Branch;
 using ServiPuntosUy.DataServices.Services.CommonLogic;
 using ServiPuntosUy.Enums;
 using ServiPuntosUy.DataServices.Services.Tenant;
-
+using ServiPuntosUy.DataServices.Services.EndUser;
 namespace ServiPuntosUy.DataServices
 {
     /// <summary>
@@ -139,7 +139,6 @@ namespace ServiPuntosUy.DataServices
             _serviceCollection.AddScoped<IVerificationService, Services.Tenant.VerificationService>();
             _serviceCollection.AddScoped<IReportingService, Services.Tenant.ReportingService>();
             _serviceCollection.AddScoped<IPaymentService, Services.Tenant.PaymentService>();
-
         }
 
         private void ConfigureBranchServices(string tenantId, int branchId)
@@ -188,6 +187,7 @@ namespace ServiPuntosUy.DataServices
             _serviceCollection.AddScoped<INotificationService, Services.EndUser.NotificationService>();
             _serviceCollection.AddScoped<IVerificationService, Services.EndUser.VerificationService>();
             _serviceCollection.AddScoped<IPaymentService, Services.EndUser.PaymentService>();
+            _serviceCollection.AddScoped<IVEAIService, Services.EndUser.VEAIService>();
 
         }
     }
