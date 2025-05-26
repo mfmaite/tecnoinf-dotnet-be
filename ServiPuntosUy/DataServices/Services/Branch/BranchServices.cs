@@ -34,42 +34,25 @@ namespace ServiPuntosUy.DataServices.Services.Branch
         public BranchDTO GetBranchDTO(ServiPuntosUy.DAO.Models.Central.Branch branch) {
             return new BranchDTO {
                 Id = branch.Id,
+                Address = branch.Address,
                 Latitud = branch.Latitud,
                 Longitud = branch.Longitud,
+                Phone = branch.Phone,
+                OpenTime = branch.OpenTime,
+                ClosingTime = branch.ClosingTime,
                 TenantId = branch.TenantId,
-                // Tenant = null // Comentado hasta que tengamos acceso a _tenantService
             };
         }
 
         public BranchDTO GetBranchById(int id) {
             // Buscar el branch por ID usando el repositorio de la clase
             var branch = _branchRepository.GetQueryable().FirstOrDefault(e => e.Id == id);
-            
+
             // Devolver el DTO si se encontró el branch
             return branch != null ? GetBranchDTO(branch) : null;
         }
-
-        public BranchDTO CreateBranch(string latitud, string longitud, string tenantId) {
-            // Obtener el tenant (esto podría requerir un servicio de tenant)
-            // Por ahora, simplemente usamos el ID del tenant
-            int tenantIdInt = int.Parse(tenantId);
-            
-            // Crear un nuevo branch
-            var branch = new ServiPuntosUy.DAO.Models.Central.Branch {
-                Latitud = latitud,
-                Longitud = longitud,
-                TenantId = tenantIdInt
-            };
-            
-            // Guardar el branch en la base de datos usando el repositorio de la clase
-            var createdBranch = _branchRepository.AddAsync(branch).GetAwaiter().GetResult();
-            _branchRepository.SaveChangesAsync().GetAwaiter().GetResult();
-            
-            // Devolver el DTO del branch creado
-            return GetBranchDTO(createdBranch);
-        }
     }
-    
+
     /// <summary>
     /// Implementación del servicio de lealtad para el administrador de branch
     /// </summary>
@@ -213,7 +196,7 @@ namespace ServiPuntosUy.DataServices.Services.Branch
             throw new NotImplementedException();
         }
     }
-    
+
     /// <summary>
     /// Implementación del servicio de promociones para el administrador de branch
     /// </summary>
@@ -223,7 +206,7 @@ namespace ServiPuntosUy.DataServices.Services.Branch
         private readonly IConfiguration _configuration;
         private readonly string _tenantId;
         private readonly int _branchId;
-        
+
         public PromotionService(DbContext dbContext, IConfiguration configuration, string tenantId, int branchId)
         {
             _dbContext = dbContext;
@@ -231,11 +214,11 @@ namespace ServiPuntosUy.DataServices.Services.Branch
             _tenantId = tenantId;
             _branchId = branchId;
         }
-        
+
         // Implementar los métodos de la interfaz IPromotionService
         // Esta es una implementación básica para el scaffold
     }
-    
+
     /// <summary>
     /// Implementación del servicio de productos para el administrador de branch
     /// </summary>
@@ -245,7 +228,7 @@ namespace ServiPuntosUy.DataServices.Services.Branch
         private readonly IConfiguration _configuration;
         private readonly string _tenantId;
         private readonly int _branchId;
-        
+
         public ProductService(DbContext dbContext, IConfiguration configuration, string tenantId, int branchId)
         {
             _dbContext = dbContext;
@@ -253,11 +236,11 @@ namespace ServiPuntosUy.DataServices.Services.Branch
             _tenantId = tenantId;
             _branchId = branchId;
         }
-        
+
         // Implementar los métodos de la interfaz IProductService
         // Esta es una implementación básica para el scaffold
     }
-    
+
     /// <summary>
     /// Implementación del servicio de usuarios para el administrador de branch
     /// </summary>
@@ -267,7 +250,7 @@ namespace ServiPuntosUy.DataServices.Services.Branch
         private readonly IConfiguration _configuration;
         private readonly string _tenantId;
         private readonly int _branchId;
-        
+
         public UserService(DbContext dbContext, IConfiguration configuration, string tenantId, int branchId)
         {
             _dbContext = dbContext;
@@ -275,11 +258,11 @@ namespace ServiPuntosUy.DataServices.Services.Branch
             _tenantId = tenantId;
             _branchId = branchId;
         }
-        
+
         // Implementar los métodos de la interfaz IUserService
         // Esta es una implementación básica para el scaffold
     }
-    
+
     /// <summary>
     /// Implementación del servicio de notificaciones para el administrador de branch
     /// </summary>
@@ -289,7 +272,7 @@ namespace ServiPuntosUy.DataServices.Services.Branch
         private readonly IConfiguration _configuration;
         private readonly string _tenantId;
         private readonly int _branchId;
-        
+
         public NotificationService(DbContext dbContext, IConfiguration configuration, string tenantId, int branchId)
         {
             _dbContext = dbContext;
@@ -297,11 +280,11 @@ namespace ServiPuntosUy.DataServices.Services.Branch
             _tenantId = tenantId;
             _branchId = branchId;
         }
-        
+
         // Implementar los métodos de la interfaz INotificationService
         // Esta es una implementación básica para el scaffold
     }
-    
+
     /// <summary>
     /// Implementación del servicio de verificación para el administrador de branch
     /// </summary>
@@ -311,7 +294,7 @@ namespace ServiPuntosUy.DataServices.Services.Branch
         private readonly IConfiguration _configuration;
         private readonly string _tenantId;
         private readonly int _branchId;
-        
+
         public VerificationService(DbContext dbContext, IConfiguration configuration, string tenantId, int branchId)
         {
             _dbContext = dbContext;
@@ -319,11 +302,11 @@ namespace ServiPuntosUy.DataServices.Services.Branch
             _tenantId = tenantId;
             _branchId = branchId;
         }
-        
+
         // Implementar los métodos de la interfaz IVerificationService
         // Esta es una implementación básica para el scaffold
     }
-    
+
     /// <summary>
     /// Implementación del servicio de reportes para el administrador de branch
     /// </summary>
@@ -333,7 +316,7 @@ namespace ServiPuntosUy.DataServices.Services.Branch
         private readonly IConfiguration _configuration;
         private readonly string _tenantId;
         private readonly int _branchId;
-        
+
         public ReportingService(DbContext dbContext, IConfiguration configuration, string tenantId, int branchId)
         {
             _dbContext = dbContext;
@@ -341,11 +324,11 @@ namespace ServiPuntosUy.DataServices.Services.Branch
             _tenantId = tenantId;
             _branchId = branchId;
         }
-        
+
         // Implementar los métodos de la interfaz IReportingService
         // Esta es una implementación básica para el scaffold
     }
-    
+
     /// <summary>
     /// Implementación del servicio de pagos para el administrador de branch
     /// </summary>
@@ -355,7 +338,7 @@ namespace ServiPuntosUy.DataServices.Services.Branch
         private readonly IConfiguration _configuration;
         private readonly string _tenantId;
         private readonly int _branchId;
-        
+
         public PaymentService(DbContext dbContext, IConfiguration configuration, string tenantId, int branchId)
         {
             _dbContext = dbContext;
@@ -363,7 +346,7 @@ namespace ServiPuntosUy.DataServices.Services.Branch
             _tenantId = tenantId;
             _branchId = branchId;
         }
-        
+
         // Implementar los métodos de la interfaz IPaymentService
         // Esta es una implementación básica para el scaffold
     }

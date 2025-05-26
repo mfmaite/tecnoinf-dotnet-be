@@ -1,9 +1,9 @@
 namespace ServiPuntosUY.Controllers.Response
 {
     /// <summary>
-    /// Response estándar para las APIs con información de error, datos y mensaje.
+    /// Respuesta estándar para las APIs con información de error, datos y mensaje.
     /// </summary>
-    public class ApiResponse
+    public class ApiResponse<T>
     {
         /// <summary>
         /// Indica si ocurrió un error.
@@ -13,7 +13,7 @@ namespace ServiPuntosUY.Controllers.Response
         /// <summary>
         /// Datos de la respuesta.
         /// </summary>
-        public dynamic? Data { get; set; }
+        public T? Data { get; set; }
 
         /// <summary>
         /// Mensaje adicional o de error.

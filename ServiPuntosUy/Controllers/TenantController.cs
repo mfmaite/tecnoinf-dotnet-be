@@ -1,9 +1,9 @@
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using ServiPuntosUy.Controllers.Base;
-using ServiPuntosUy.DataServices;
-using ServiPuntosUy.DAO.Models.Central;
 using ServiPuntosUy.DTO;
+using Microsoft.AspNetCore.Mvc;
+using ServiPuntosUy.DataServices;
+using ServiPuntosUy.Controllers.Base;
+using ServiPuntosUy.DAO.Models.Central;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ServiPuntosUy.Controllers;
 
@@ -35,11 +35,18 @@ public class TenantController : BaseController
                 tenant.Name
             );
 
-            return Ok(newTenant);
+            return Ok(new ApiResponse<TenantDTO>{
+                Error = false,
+                Message = "Tenant creado correctamente",
+                Data = newTenant
+            });
         }
         catch (Exception ex)
         {
-            return BadRequest(ex.Message);
+            return BadRequest(new ApiResponse<object>{
+                Error = true,
+                Message = ex.Message
+            });
         }
     }
 
@@ -61,13 +68,23 @@ public class TenantController : BaseController
         {
             var tenant = TenantService.GetTenantById(id);
             if (tenant == null)
-                return NotFound($"Tenant with ID {id} not found");
+                return NotFound(new ApiResponse<object>{
+                    Error = true,
+                    Message = $"No existe un tenant con el ID {id}"
+                });
 
-            return Ok(tenant);
+            return Ok(new ApiResponse<TenantDTO>{
+                Error = false,
+                Message = "Tenant encontrado correctamente",
+                Data = tenant
+            });
         }
         catch (Exception ex)
         {
-            return BadRequest(ex.Message);
+            return BadRequest(new ApiResponse<object>{
+                Error = true,
+                Message = ex.Message
+            });
         }
     }
 }
