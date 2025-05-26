@@ -102,8 +102,8 @@ public class BranchController : BaseController
                 request.Longitud ?? null,
                 request.Address ?? null,
                 request.Phone ?? null,
-                openTime.Value,
-                closingTime.Value
+                openTime,
+                closingTime
             );
 
             if (newBranch == null)
@@ -112,6 +112,26 @@ public class BranchController : BaseController
             }
 
             return Ok(newBranch);
+        }
+        catch (Exception ex) {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    /// <summary>
+    /// Eliminar un branch
+    /// </summary>
+    /// <param name="branch">Id del branch a eliminar</param>
+    /// <returns>El id del branch eliminado</returns>
+    /// <response code="200">OK</response>
+    /// <response code="400">Si hay un error en la eliminación</response>
+    [HttpDelete("{id}/Delete")]
+    [ProducesResponseType(typeof(BranchDTO), 200)]
+    [ProducesResponseType(400)]
+    public IActionResult UpdateBranch(int id) {
+        try {
+            TenantBranchService?.DeleteBranch(id);
+            return Ok();
         }
         catch (Exception ex) {
             return BadRequest(ex.Message);
