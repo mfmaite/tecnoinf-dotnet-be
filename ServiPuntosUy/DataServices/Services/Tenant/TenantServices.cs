@@ -55,6 +55,46 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             // Devolver el DTO del branch creado
             return GetBranchDTO(createdBranch);
         }
+
+        public BranchDTO UpdateBranch(int branchId, string? latitud, string? longitud, string? address, string? phone, TimeOnly? openTime, TimeOnly? closingTime) {
+            var branch = _branchRepository.GetByIdAsync(branchId).GetAwaiter().GetResult();
+            if (branch == null) {
+                throw new Exception("Branch not found");
+            }
+            if (latitud != null) {
+                branch.Latitud = latitud;
+            }
+            if (longitud != null) {
+                branch.Longitud = longitud;
+            }
+            if (address != null) {
+                branch.Address = address;
+            }
+            if (phone != null) {
+                branch.Phone = phone;
+            }
+            if (openTime != null) {
+                branch.OpenTime = openTime.Value;
+            }
+            if (closingTime != null) {
+                branch.ClosingTime = closingTime.Value;
+            }
+
+            _branchRepository.UpdateAsync(branch).GetAwaiter().GetResult();
+            _branchRepository.SaveChangesAsync().GetAwaiter().GetResult();
+
+            return GetBranchDTO(branch);
+        }
+
+        public void DeleteBranch(int branchId) {
+            var branch = _branchRepository.GetByIdAsync(branchId).GetAwaiter().GetResult();
+            if (branch == null) {
+                throw new Exception("No existe una estación con el ID ${branchId}");
+            }
+
+            _branchRepository.DeleteAsync(branchId).GetAwaiter().GetResult();
+            _branchRepository.SaveChangesAsync().GetAwaiter().GetResult();
+        }
     }
 
     /// <summary>

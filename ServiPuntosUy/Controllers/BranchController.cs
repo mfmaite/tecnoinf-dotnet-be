@@ -66,4 +66,55 @@ public class BranchController : BaseController
             return BadRequest(ex.Message);
         }
     }
+
+    /// <summary>
+    /// Actualizar un branch
+    /// </summary>
+    /// <param name="branch">Datos del branch a actualizar</param>
+    /// <returns>El branch actualizado</returns>
+    /// <response code="200">Retorna el branch creado</response>
+    /// <response code="400">Si hay un error en la creación</response>
+    [HttpPatch("{id}/Update")]
+    [ProducesResponseType(typeof(BranchDTO), 200)]
+    [ProducesResponseType(400)]
+    public IActionResult UpdateBranch(int id, [FromBody] UpdateBranchRequest request) {
+        try {
+            // Intentar parsear OpenTime y ClosingTime
+            TimeOnly? openTime = null;
+            if (!string.IsNullOrWhiteSpace(request.OpenTime))
+            {
+                if (!TimeOnly.TryParse(request.OpenTime, out var parsedOpenTime))
+                    return BadRequest("Formato de hora inválido para OpenTime. Use HH:mm.");
+                openTime = parsedOpenTime;
+            }
+
+            TimeOnly? closingTime = null;
+            if (!string.IsNullOrWhiteSpace(request.ClosingTime))
+            {
+                if (!TimeOnly.TryParse(request.ClosingTime, out var parsedClosingTime))
+                    return BadRequest("Formato de hora inválido para ClosingTime. Use HH:mm.");
+                closingTime = parsedClosingTime;
+            }
+
+            var newBranch = TenantBranchService?.UpdateBranch(
+                id,
+                request.Latitud ?? null,
+                request.Longitud ?? null,
+                request.Address ?? null,
+                request.Phone ?? null,
+                openTime.Value,
+                closingTime.Value
+            );
+
+            if (newBranch == null)
+            {
+                return BadRequest("No se pudo crear el branch. El servicio no está disponible.");
+            }
+
+            return Ok(newBranch);
+        }
+        catch (Exception ex) {
+            return BadRequest(ex.Message);
+        }
+    }
 }
