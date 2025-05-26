@@ -4,7 +4,7 @@ using ServiPuntosUy.DataServices;
 using ServiPuntosUy.Controllers.Base;
 using ServiPuntosUy.DAO.Models.Central;
 using Microsoft.AspNetCore.Authorization;
-
+using ServiPuntosUY.Controllers.Response;
 namespace ServiPuntosUy.Controllers;
 
 /// <summary>
