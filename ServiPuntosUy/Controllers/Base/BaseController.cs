@@ -7,7 +7,6 @@ using ServiPuntosUy.DTO;
 using ServiPuntosUy.Enums;
 using ServiPuntosUy.DataServices.Services.Central;
 using ServiPuntosUy.DataServices.Services.Branch;
-using ServiPuntosUy.DataServices.Services.Tenant;
 
 namespace ServiPuntosUy.Controllers.Base
 {

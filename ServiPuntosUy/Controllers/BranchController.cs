@@ -3,6 +3,7 @@ using ServiPuntosUy.Requests;
 using Microsoft.AspNetCore.Mvc;
 using ServiPuntosUy.DataServices;
 using ServiPuntosUy.Controllers.Base;
+using ServiPuntosUY.Controllers.Response;
 using Microsoft.AspNetCore.Authorization;
 using ServiPuntosUy.DataServices.Services.Tenant;
 
@@ -30,14 +31,6 @@ public class BranchController : BaseController
     [ProducesResponseType(400)]
     public IActionResult CreateBranch([FromBody] CreateBranchRequest request) {
         try {
-            Console.WriteLine($"TenantId: {request?.TenantId}");
-            Console.WriteLine($"Latitud: {request?.Latitud}");
-            Console.WriteLine($"Longitud: {request?.Longitud}");
-            Console.WriteLine($"Address: {request?.Address}");
-            Console.WriteLine($"Phone: {request?.Phone}");
-            Console.WriteLine($"OpenTime: {request?.OpenTime}");
-            Console.WriteLine($"ClosingTime: {request?.ClosingTime}");
-
             // Intentar parsear OpenTime y ClosingTime
             if (!TimeOnly.TryParse(request.OpenTime, out var openTime))
                 return BadRequest("Formato de hora inválido para OpenTime. Use HH:mm.");
@@ -57,13 +50,23 @@ public class BranchController : BaseController
 
             if (newBranch == null)
             {
-                return BadRequest("No se pudo crear el branch. El servicio no está disponible.");
+                return BadRequest(new ApiResponse<object>{
+                    Error = true,
+                    Message = "No se pudo crear el branch. El servicio no está disponible."
+                });
             }
 
-            return Ok(newBranch);
+            return Ok(new ApiResponse<BranchDTO>{
+                Error = false,
+                Message = "Branch creado correctamente",
+                Data = newBranch
+            });
         }
         catch (Exception ex) {
-            return BadRequest(ex.Message);
+            return BadRequest(new ApiResponse<object>{
+                Error = true,
+                Message = ex.Message
+            });
         }
     }
 
@@ -108,13 +111,23 @@ public class BranchController : BaseController
 
             if (newBranch == null)
             {
-                return BadRequest("No se pudo crear el branch. El servicio no está disponible.");
+                return BadRequest(new ApiResponse<object>{
+                    Error = true,
+                    Message = "No se pudo actualizar el branch. El servicio no está disponible."
+                });
             }
 
-            return Ok(newBranch);
+            return Ok(new ApiResponse<BranchDTO>{
+                Error = false,
+                Message = "Branch actualizado correctamente",
+                Data = newBranch
+            });
         }
         catch (Exception ex) {
-            return BadRequest(ex.Message);
+            return BadRequest(new ApiResponse<object>{
+                Error = true,
+                Message = ex.Message
+            });
         }
     }
 
@@ -131,10 +144,16 @@ public class BranchController : BaseController
     public IActionResult UpdateBranch(int id) {
         try {
             TenantBranchService?.DeleteBranch(id);
-            return Ok();
+            return Ok(new ApiResponse<object>{
+                Error = false,
+                Message = "Branch eliminado correctamente"
+            });
         }
         catch (Exception ex) {
-            return BadRequest(ex.Message);
+            return BadRequest(new ApiResponse<object>{
+                Error = true,
+                Message = ex.Message
+            });
         }
     }
 }

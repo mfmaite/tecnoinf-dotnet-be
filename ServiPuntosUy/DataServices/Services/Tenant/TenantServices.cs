@@ -59,7 +59,7 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
         public BranchDTO UpdateBranch(int branchId, string? latitud, string? longitud, string? address, string? phone, TimeOnly? openTime, TimeOnly? closingTime) {
             var branch = _branchRepository.GetByIdAsync(branchId).GetAwaiter().GetResult();
             if (branch == null) {
-                throw new Exception("Branch not found");
+                throw new Exception("No existe una estación con el ID ${branchId}");
             }
             if (latitud != null) {
                 branch.Latitud = latitud;
