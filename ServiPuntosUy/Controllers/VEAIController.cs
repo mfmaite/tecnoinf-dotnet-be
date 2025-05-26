@@ -1,22 +1,41 @@
 using Microsoft.AspNetCore.Mvc;
 using ServiPuntosUy.DataServices.Services.EndUser;
+using ServiPuntosUy.DTO;
+using ServiPuntosUy.Controllers.Base;
+using ServiPuntosUy.DataServices;
+using ServiPuntosUy.DAO.Models.Central;
+using Microsoft.AspNetCore.Authorization;
+using ServiPuntosUY.Controllers.Response;
+namespace ServiPuntosUy.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class VEAIController : ControllerBase
+public class VEAIController : BaseController
 {
-    private readonly VEAIService _veaiService;
-
-    public VEAIController()
+    public VEAIController(IServiceFactory serviceFactory) : base(serviceFactory)
     {
-        _veaiService = new VEAIService();
     }
 
     [HttpPost]
     public async Task<IActionResult> Post([FromBody] PersonaRequest request)
     {
-        var result = await _veaiService.ObtenerNombrePersona(request.NroDocumento);
+        try {
+            var result = await VEAIService.VerificarIdentidad(
+            request.UserId,
+            request.NroDocumento
+            );
 
-        return Ok(result);
+            return Ok(new ApiResponse<string>{
+                Error = false,
+                Message = "Verificación de edad exitosa",
+                Data = result
+            });
+        }
+        catch (Exception ex) {
+            return BadRequest(new ApiResponse<string>{
+                Error = true,
+                Message = ex.Message
+            });
+        }
     }
 }

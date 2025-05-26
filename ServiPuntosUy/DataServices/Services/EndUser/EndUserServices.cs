@@ -2,6 +2,7 @@ using System;
 using ServiceReference;
 using System.ServiceModel;
 using System.Threading.Tasks;
+using ServiPuntosUy.Models.DAO;
 using Microsoft.EntityFrameworkCore;
 
 namespace ServiPuntosUy.DataServices.Services.EndUser
@@ -157,16 +158,25 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
     public class VEAIService : IVEAIService
     {
         private readonly WsServicioDeInformacionClient _client;
+        private readonly IGenericRepository<DAO.Models.Central.User> _userRepository;
 
-        public VEAIService()
+        public VEAIService(IGenericRepository<DAO.Models.Central.User> userRepository)
         {
             var binding = new BasicHttpBinding(BasicHttpSecurityMode.Transport);
             var endpoint = new EndpointAddress("https://dnic.mz.uy/WsServicioDeInformacion.asmx");
             _client = new WsServicioDeInformacionClient(binding, endpoint);
+            _userRepository = userRepository;
         }
 
-        public async Task<string> ObtenerNombrePersona(string nroDoc)
+        public async Task<string> VerificarIdentidad(int userId, string nroDoc)
         {
+            var user = await _userRepository.GetByIdAsync(userId);
+
+            if (user == null)
+            {
+                throw new Exception($"No se encontró el usuario con el ID: {userId}");
+            }
+
             var param = new ParamObtDocDigitalizado
             {
                 NroDocumento = nroDoc,
@@ -188,11 +198,8 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
             }
             else
             {
-                Console.WriteLine("No se encontró información de la persona");
-                return null;
+                throw new Exception("Error al verificar la identidad del usuario");
             }
-
-            return "ok";
         }
     }
 }
