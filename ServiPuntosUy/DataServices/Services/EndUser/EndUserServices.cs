@@ -4,6 +4,7 @@ using System.ServiceModel;
 using System.Threading.Tasks;
 using ServiPuntosUy.Models.DAO;
 using Microsoft.EntityFrameworkCore;
+using ServiPuntosUy.DTO;
 
 namespace ServiPuntosUy.DataServices.Services.EndUser
 {
@@ -168,7 +169,7 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
             _userRepository = userRepository;
         }
 
-        public async Task<string> VerificarIdentidad(int userId, string nroDoc)
+        public async Task<UserDTO> VerificarIdentidad(int userId, string nroDoc)
         {
             var user = await _userRepository.GetByIdAsync(userId);
 
@@ -194,7 +195,21 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
             if (persona != null)
             {
                 Console.WriteLine($"Fecha de nacimiento: {persona.FechaNacimiento}");
-                return persona.FechaNacimiento;
+                // return persona.FechaNacimiento;
+
+                // if (persona.FechaNacimiento)
+
+                return new UserDTO{
+                    Id = user.Id,
+                    TenantId = user.TenantId.ToString(),
+                    Email = user.Email,
+                    Name = user.Name,
+                    UserType = user.Role,
+                    BranchId = user.BranchId,
+                    IsVerified = user.IsVerified,
+                    PointBalance = user.PointBalance,
+                    NotificationsEnabled = user.NotificationsEnabled,
+                };
             }
             else
             {

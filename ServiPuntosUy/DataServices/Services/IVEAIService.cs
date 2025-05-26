@@ -1,3 +1,5 @@
+using ServiPuntosUy.DTO;
+
 namespace ServiPuntosUy.DataServices.Services
 {
     /// <summary>
@@ -5,6 +7,6 @@ namespace ServiPuntosUy.DataServices.Services
     /// </summary>
     public interface IVEAIService
     {
-        Task<string> VerificarIdentidad(int userId, string nroDoc);
+        Task<UserDTO> VerificarIdentidad(int userId, string nroDoc);
     }
 }

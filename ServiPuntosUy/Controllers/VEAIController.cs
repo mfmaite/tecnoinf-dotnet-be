@@ -25,7 +25,7 @@ public class VEAIController : BaseController
             request.NroDocumento
             );
 
-            return Ok(new ApiResponse<string>{
+            return Ok(new ApiResponse<UserDTO>{
                 Error = false,
                 Message = "Verificación de edad exitosa",
                 Data = result
