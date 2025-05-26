@@ -15,13 +15,7 @@ public class VEAIController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Post([FromBody] PersonaRequest request)
     {
-        var result = await _veaiService.ObtenerNombrePersona(
-            request.NroDocumento,
-            request.TipoDocumento,
-            request.NroSerie,
-            request.Organismo,
-            request.ClaveAcceso1
-        );
+        var result = await _veaiService.ObtenerNombrePersona(request.NroDocumento);
 
         return Ok(result);
     }

@@ -5,6 +5,6 @@ namespace ServiPuntosUy.DataServices.Services
     /// </summary>
     public interface IVEAIService
     {
-        Task<string> ObtenerNombrePersona(string nroDoc, string tipoDoc, string nroSerie, string organismo, string clave);
+        Task<string> ObtenerNombrePersona(string nroDoc);
     }
 }

@@ -165,21 +165,33 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
             _client = new WsServicioDeInformacionClient(binding, endpoint);
         }
 
-        public async Task<string> ObtenerNombrePersona(string nroDoc, string tipoDoc, string nroSerie, string organismo, string clave)
+        public async Task<string> ObtenerNombrePersona(string nroDoc)
         {
             var param = new ParamObtDocDigitalizado
             {
                 NroDocumento = nroDoc,
-                TipoDocumento = tipoDoc,
-                NroSerie = nroSerie,
-                Organismo = organismo,
-                ClaveAcceso1 = clave
+                TipoDocumento = "DO",
+                NroSerie = "ABC123456",
+                Organismo = "ServiPuntos",
+                ClaveAcceso1 = "Clave123"
             };
 
             var result = await _client.ObtDocDigitalizadoAsync(param);
-            var body = result.Body;
 
-            Console.WriteLine(body);
+            var persona = result.Body.ObtDocDigitalizadoResult?.Persona;
+
+
+            if (persona != null)
+            {
+                Console.WriteLine($"Fecha de nacimiento: {persona.FechaNacimiento}");
+                return persona.FechaNacimiento;
+            }
+            else
+            {
+                Console.WriteLine("No se encontró información de la persona");
+                return null;
+            }
+
             return "ok";
         }
     }
