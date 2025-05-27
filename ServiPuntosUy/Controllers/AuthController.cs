@@ -25,14 +25,18 @@ namespace ServiPuntosUy.Controllers
         /// <param name="request">Credenciales del usuario</param>
         /// <returns>Token JWT</returns>
         [HttpPost("login")]
-        [ProducesResponseType(typeof(object), 200)]
-        [ProducesResponseType(401)]
+        [ProducesResponseType(typeof(ApiResponse<UserSessionDTO>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<object>), 401)]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
             var userSession = await AuthService.AuthenticateAsync(request.Email, request.Password);
 
             if (userSession == null || string.IsNullOrEmpty(userSession.token))
-                return Unauthorized(new { message = "Email o contraseña incorrectos" });
+                return Unauthorized(new ApiResponse<object>
+                {
+                    Error = true,
+                    Message = "Email o contraseña incorrectos"
+                });
 
             return Ok(new ApiResponse<UserSessionDTO>
             {
@@ -48,21 +52,35 @@ namespace ServiPuntosUy.Controllers
         /// <returns>Información del usuario</returns>
         [HttpGet("me")]
         [Authorize]
-        [ProducesResponseType(typeof(UserDTO), 200)]
-        [ProducesResponseType(404)]
+        [ProducesResponseType(typeof(ApiResponse<UserDTO>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<object>), 401)]
+        [ProducesResponseType(typeof(ApiResponse<object>), 404)]
         public async Task<IActionResult> GetCurrentUser()
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             if (userIdClaim == null)
-                return Unauthorized(new { message = "Token inválido" });
+                return Unauthorized(new ApiResponse<object>
+                {
+                    Error = true,
+                    Message = "Token inválido"
+                });
 
             var userId = int.Parse(userIdClaim.Value);
             var user = await AuthService.GetUserInfoAsync(userId);
 
             if (user == null)
-                return NotFound(new { message = "Usuario no encontrado" });
+                return NotFound(new ApiResponse<object>
+                {
+                    Error = true,
+                    Message = "Usuario no encontrado"
+                });
 
-            return Ok(user);
+            return Ok(new ApiResponse<UserDTO>
+            {
+                Error = false,
+                Message = "Usuario obtenido correctamente",
+                Data = user
+            });
         }
     }
 }
