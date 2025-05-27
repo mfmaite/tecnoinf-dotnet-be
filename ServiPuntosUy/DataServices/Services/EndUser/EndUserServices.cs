@@ -199,7 +199,8 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
                     throw new Exception("Formato de fecha de nacimiento inválido.");
                 }
 
-                return new UserDTO{
+                return new UserDTO
+                {
                     Id = user.Id,
                     TenantId = user.TenantId.ToString(),
                     Email = user.Email,
@@ -215,6 +216,46 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
             {
                 throw new Exception("Error al verificar la identidad del usuario");
             }
+        }
+    }
+    /// Implementación del servicio de productos para el usuario final
+    /// </summary>
+    public class ProductService : IProductService
+    {
+        private readonly IGenericRepository<DAO.Models.Central.Product> _productRepository;
+        public ProductService(IGenericRepository<DAO.Models.Central.Product> productRepository)
+        {
+            _productRepository = productRepository;
+        }
+
+        public ProductDTO GetProductDTO(DAO.Models.Central.Product product)
+        {
+            return new ProductDTO
+            {
+                Id = product.Id,
+                TenantId = product.TenantId,
+                Name = product.Name,
+                Description = product.Description,
+                ImageUrl = product.ImageUrl,
+                Price = product.Price,
+                AgeRestricted = product.AgeRestricted
+            };
+        }
+        public ProductDTO CreateProduct(int tenantId, string name, string description, string imageUrl, decimal price, bool ageRestricted)
+        {
+            throw new Exception("El usuario final no puede crear productos");
+        }
+
+
+        public async Task<ProductDTO?> GetProductById(int productId)
+        {
+            var product = await _productRepository.GetByIdAsync(productId);
+            return product is not null ? GetProductDTO(product) : null;
+        }
+        public ProductDTO[] GetProductList(int tenantId)
+        {
+            var products = _productRepository.GetQueryable().Where(product => product.TenantId == tenantId).ToList();
+            return [.. products.Select(GetProductDTO)];
         }
     }
 }

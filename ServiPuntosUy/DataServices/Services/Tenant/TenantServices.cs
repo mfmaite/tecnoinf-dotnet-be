@@ -329,8 +329,6 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
     {
         private readonly IGenericRepository<DAO.Models.Central.Product> _productRepository;
 
-
-
         public ProductService(IGenericRepository<DAO.Models.Central.Product> productRepository)
         {
             _productRepository = productRepository;
@@ -349,7 +347,17 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
                 AgeRestricted = product.AgeRestricted
             };
         }
+        public async Task<ProductDTO?> GetProductById(int productId)
+        {
+            var product = await _productRepository.GetByIdAsync(productId);
+            return product is not null ? GetProductDTO(product) : null;
+        }
 
+        public ProductDTO[] GetProductList(int tenantId)
+        {
+            var products = _productRepository.GetQueryable().Where(product => product.TenantId == tenantId).ToList();
+            return [.. products.Select(GetProductDTO)];
+        }
         public ProductDTO CreateProduct(int tenantId, string name, string description, string imageUrl, decimal price, bool ageRestricted)
         {
             var product = new DAO.Models.Central.Product
