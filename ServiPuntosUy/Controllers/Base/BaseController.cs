@@ -54,19 +54,20 @@ namespace ServiPuntosUy.Controllers.Base
             {
                 var tokenHandler = new JwtSecurityTokenHandler();
                 var jwtToken = tokenHandler.ReadJwtToken(authHeader.Split(' ')[1].Trim());
-                var email = jwtToken.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Email)?.Value;
-                var name = jwtToken.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Name)?.Value;
-                var userId = jwtToken.Claims.FirstOrDefault(x => x.Type == "userId")?.Value;
 
-                int.TryParse(userId, out int id);
+                var userId = jwtToken.Claims.FirstOrDefault(x => x.Type == "userId")?.Value;
+                var email = jwtToken.Claims.FirstOrDefault(x => x.Type == "email")?.Value;
+                var name = jwtToken.Claims.FirstOrDefault(x => x.Type == "name")?.Value;
+                var tenantId = jwtToken.Claims.FirstOrDefault(x => x.Type == "tenantId")?.Value;
+                var userType = jwtToken.Claims.FirstOrDefault(x => x.Type == "userType")?.Value;
 
                 return new UserDTO
                 {
-                    Id = id,
+                    Id = int.Parse(userId),
                     Name = name,
                     Email = email,
-                    TenantId = ObtainTenantFromToken(),
-                    UserType = ObtainUserTypeFromToken()
+                    TenantId = tenantId,
+                    UserType = (UserType)int.Parse(userType)
                 };
             }
             catch
@@ -248,6 +249,11 @@ namespace ServiPuntosUy.Controllers.Base
         /// Obtiene el servicio de branches para tenant
         /// </summary>
         protected ITenantBranchService TenantBranchService => _serviceFactory.GetService<ITenantBranchService>();
+
+        /// <summary>
+        /// Obtiene el servicio de VEAI
+        /// </summary>
+        protected IVEAIService VEAIService => _serviceFactory.GetService<IVEAIService>();
 
         #endregion
     }
