@@ -19,19 +19,37 @@ public class VEAIController : BaseController
     [HttpPost]
     public async Task<IActionResult> Post([FromBody] PersonaRequest request)
     {
+<<<<<<< Updated upstream
         try {
             var user = ObtainUserFromToken();
             var result = await VEAIService.VerificarIdentidad(user.Id, request.NroDocumento);
 
 
             return Ok(new ApiResponse<UserDTO>{
+=======
+        try
+        {
+            var user = ObtainUserFromToken();
+            var result = await VEAIService.VerificarIdentidad(user.Id, request.DocumentNumber);
+
+
+            return Ok(new ApiResponse<UserDTO>
+            {
+>>>>>>> Stashed changes
                 Error = false,
                 Message = "Verificación de edad exitosa",
                 Data = result
             });
         }
+<<<<<<< Updated upstream
         catch (Exception ex) {
             return BadRequest(new ApiResponse<string>{
+=======
+        catch (Exception ex)
+        {
+            return BadRequest(new ApiResponse<string>
+            {
+>>>>>>> Stashed changes
                 Error = true,
                 Message = ex.Message
             });
