@@ -96,7 +96,6 @@ public class TenantController : BaseController
     /// <response code="400">Si hay un error en la búsqueda</response>
     [HttpGet("")]
     [ProducesResponseType(typeof(TenantDTO[]), 200)]
-    [ProducesResponseType(404)]
     [ProducesResponseType(400)]
     public IActionResult GetTenantsList()
     {
