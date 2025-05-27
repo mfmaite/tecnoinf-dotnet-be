@@ -31,8 +31,10 @@ namespace ServiPuntosUy.DataServices.Services.Branch
 
         // Métodos del Branch
 
-        public BranchDTO GetBranchDTO(ServiPuntosUy.DAO.Models.Central.Branch branch) {
-            return new BranchDTO {
+        public BranchDTO GetBranchDTO(ServiPuntosUy.DAO.Models.Central.Branch branch)
+        {
+            return new BranchDTO
+            {
                 Id = branch.Id,
                 Address = branch.Address,
                 Latitud = branch.Latitud,
@@ -44,7 +46,8 @@ namespace ServiPuntosUy.DataServices.Services.Branch
             };
         }
 
-        public BranchDTO GetBranchById(int id) {
+        public BranchDTO GetBranchById(int id)
+        {
             // Buscar el branch por ID usando el repositorio de la clase
             var branch = _branchRepository.GetQueryable().FirstOrDefault(e => e.Id == id);
 

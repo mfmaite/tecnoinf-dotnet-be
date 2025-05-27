@@ -24,8 +24,10 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
 
         // Métodos de Branch
 
-        public BranchDTO GetBranchDTO(ServiPuntosUy.DAO.Models.Central.Branch branch) {
-            return new BranchDTO {
+        public BranchDTO GetBranchDTO(ServiPuntosUy.DAO.Models.Central.Branch branch)
+        {
+            return new BranchDTO
+            {
                 Id = branch.Id,
                 Address = branch.Address,
                 Latitud = branch.Latitud,
@@ -37,9 +39,11 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             };
         }
 
-        public BranchDTO CreateBranch(int tenantId, string latitud, string longitud, string address, string phone, TimeOnly openTime, TimeOnly closingTime) {
+        public BranchDTO CreateBranch(int tenantId, string latitud, string longitud, string address, string phone, TimeOnly openTime, TimeOnly closingTime)
+        {
             // Crear un nuevo branch
-            var branch = new DAO.Models.Central.Branch {
+            var branch = new DAO.Models.Central.Branch
+            {
                 TenantId = tenantId,
                 Latitud = latitud,
                 Longitud = longitud,
@@ -57,27 +61,35 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             return GetBranchDTO(createdBranch);
         }
 
-        public BranchDTO UpdateBranch(int branchId, string? latitud, string? longitud, string? address, string? phone, TimeOnly? openTime, TimeOnly? closingTime) {
+        public BranchDTO UpdateBranch(int branchId, string? latitud, string? longitud, string? address, string? phone, TimeOnly? openTime, TimeOnly? closingTime)
+        {
             var branch = _branchRepository.GetByIdAsync(branchId).GetAwaiter().GetResult();
-            if (branch == null) {
+            if (branch == null)
+            {
                 throw new Exception("No existe una estación con el ID ${branchId}");
             }
-            if (latitud != null) {
+            if (latitud != null)
+            {
                 branch.Latitud = latitud;
             }
-            if (longitud != null) {
+            if (longitud != null)
+            {
                 branch.Longitud = longitud;
             }
-            if (address != null) {
+            if (address != null)
+            {
                 branch.Address = address;
             }
-            if (phone != null) {
+            if (phone != null)
+            {
                 branch.Phone = phone;
             }
-            if (openTime != null) {
+            if (openTime != null)
+            {
                 branch.OpenTime = openTime.Value;
             }
-            if (closingTime != null) {
+            if (closingTime != null)
+            {
                 branch.ClosingTime = closingTime.Value;
             }
 
@@ -87,9 +99,11 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             return GetBranchDTO(branch);
         }
 
-        public void DeleteBranch(int branchId) {
+        public void DeleteBranch(int branchId)
+        {
             var branch = _branchRepository.GetByIdAsync(branchId).GetAwaiter().GetResult();
-            if (branch == null) {
+            if (branch == null)
+            {
                 throw new Exception("No existe una estación con el ID ${branchId}");
             }
 
@@ -314,7 +328,7 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
     public class ProductService : IProductService
     {
         private readonly IGenericRepository<DAO.Models.Central.Product> _productRepository;
-        
+
 
 
         public ProductService(IGenericRepository<DAO.Models.Central.Product> productRepository)
@@ -354,7 +368,7 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             // Devolver el DTO del producto creado
 
             return GetProductDTO(createdProduct);
-        
+
         }
 
     }
