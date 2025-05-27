@@ -87,4 +87,35 @@ public class TenantController : BaseController
             });
         }
     }
+
+    /// <summary>
+    /// Obtiene la lista de tenants
+    /// </summary>
+    /// <returns>La lista de tenants</returns>
+    /// <response code="200">Retorna la lista de tenants</response>
+    /// <response code="400">Si hay un error en la búsqueda</response>
+    [HttpGet("")]
+    [ProducesResponseType(typeof(TenantDTO[]), 200)]
+    [ProducesResponseType(404)]
+    [ProducesResponseType(400)]
+    public IActionResult GetTenantsList()
+    {
+        try
+        {
+            var tenants = TenantService.GetTenantsList();
+
+            return Ok(new ApiResponse<TenantDTO[]>{
+                Error = false,
+                Message = "Lista de tenants obtenida correctamente",
+                Data = tenants
+            });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new ApiResponse<object>{
+                Error = true,
+                Message = ex.Message
+            });
+        }
+    }
 }

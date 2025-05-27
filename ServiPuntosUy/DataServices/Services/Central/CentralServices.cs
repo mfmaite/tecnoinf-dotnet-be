@@ -67,6 +67,11 @@ namespace ServiPuntosUy.DataServices.Services.Central
 
             return GetTenantDTO(createdTenant);
         }
+
+        public TenantDTO[] GetTenantsList() {
+            var tenants = _tenantRepository.GetQueryable().ToList();
+            return tenants.Select(t => GetTenantDTO(t)).ToArray();
+        }
     }
 
     /// <summary>
