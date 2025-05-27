@@ -194,10 +194,25 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
 
             if (persona != null)
             {
-                Console.WriteLine($"Fecha de nacimiento: {persona.FechaNacimiento}");
-                // return persona.FechaNacimiento;
+                if (DateTime.TryParseExact(persona.FechaNacimiento, "yyyy-MM-dd", null, System.Globalization.DateTimeStyles.None, out var fechaNacimiento))
+                {
+                    var hoy = DateTime.Today;
+                    var edad = hoy.Year - fechaNacimiento.Year;
+                    if (fechaNacimiento > hoy.AddYears(-edad))
+                    {
+                        edad--;
+                    }
 
-                // if (persona.FechaNacimiento)
+                    if (edad >= 18)
+                    {
+                        user.IsVerified = true;
+                        await _userRepository.UpdateAsync(user);
+                    }
+                }
+                else
+                {
+                    throw new Exception("Formato de fecha de nacimiento inválido.");
+                }
 
                 return new UserDTO{
                     Id = user.Id,
