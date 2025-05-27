@@ -36,7 +36,7 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
         /// <param name="email">Email del usuario</param>
         /// <param name="password">Contraseña del usuario</param>
         /// <returns>Token JWT si la autenticación es exitosa, null en caso contrario</returns>
-        public async Task<string> AuthenticateAsync(string email, string password)
+        public async Task<UserSessionDTO?> AuthenticateAsync(string email, string password)
         {
             // Buscar usuario por email
             var user = await _dbContext.Set<User>().FirstOrDefaultAsync(u => u.Email == email);
@@ -75,7 +75,8 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
             };
 
             var token = tokenHandler.CreateToken(tokenDescriptor);
-            return tokenHandler.WriteToken(token);
+            var returnToken = tokenHandler.WriteToken(token);
+            return new(returnToken);
         }
 
         /// <summary>
