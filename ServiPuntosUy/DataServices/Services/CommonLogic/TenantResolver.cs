@@ -122,7 +122,7 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
             // admin.servipuntos.uy -> Central (no tiene tenant)
             // {tenant-id}.admin.servipuntos.uy -> Tenant
             // {tenant-id}.branch.admin.servipuntos.uy -> Branch
-            // app.servipuntos.uy -> EndUser (el tenant se obtiene del token)
+            // {tenant-id}.app.servipuntos.uy -> EndUser (el tenant se obtiene del subdominio)
 
             // Para administrador de tenant: {tenant-id}.admin.servipuntos.uy
             var tenantAdminRegex = new Regex(@"^([^.]+)\.admin\.");
@@ -138,6 +138,14 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
             if (branchAdminMatch.Success)
             {
                 return branchAdminMatch.Groups[1].Value;
+            }
+
+            // Para usuario final: {tenant-id}.app.servipuntos.uy
+            var endUserTenantRegex = new Regex(@"^([^.]+)\.app\.");
+            var endUserTenantMatch = endUserTenantRegex.Match(host);
+            if (endUserTenantMatch.Success)
+            {
+                return endUserTenantMatch.Groups[1].Value;
             }
 
             // Para desarrollo local, se puede usar un query parameter
@@ -209,7 +217,7 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
             {
                 return UserType.Branch;
             }
-            else if (host.StartsWith("app."))
+            else if (host.Contains(".app."))
             {
                 return UserType.EndUser;
             }

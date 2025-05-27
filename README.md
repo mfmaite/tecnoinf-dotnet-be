@@ -103,7 +103,8 @@ Para probar el sistema multi-tenant en desarrollo local, configura el archivo ho
 127.0.0.1    shell.admin.servipuntos.local
 127.0.0.1    petrobras.branch.admin.servipuntos.local
 127.0.0.1    shell.branch.admin.servipuntos.local
-127.0.0.1    app.servipuntos.local
+127.0.0.1    petrobras.app.servipuntos.local
+127.0.0.1    shell.app.servipuntos.local
 127.0.0.1    api.servipuntos.local
 ```
 
@@ -114,7 +115,8 @@ Para probar el sistema multi-tenant en desarrollo local, configura el archivo ho
 127.0.0.1    shell.admin.servipuntos.local
 127.0.0.1    petrobras.branch.admin.servipuntos.local
 127.0.0.1    shell.branch.admin.servipuntos.local
-127.0.0.1    app.servipuntos.local
+127.0.0.1    petrobras.app.servipuntos.local
+127.0.0.1    shell.app.servipuntos.local
 127.0.0.1    api.servipuntos.local
 ```
 
@@ -168,7 +170,7 @@ ServiPuntos.uy utiliza un enfoque de multi-tenancy basado en subdominios, donde 
 - **Administrador Central**: `admin.servipuntos.uy`
 - **Administrador de Tenant**: `{tenant-id}.admin.servipuntos.uy`
 - **Administrador de Estación**: `{tenant-id}.branch.admin.servipuntos.uy`
-- **Usuario Final**: `app.servipuntos.uy`
+- **Usuario Final**: `{tenant-id}.app.servipuntos.uy` o `app.servipuntos.uy`
 - **API**: `api.servipuntos.uy`
 
 Para más detalles sobre el sistema multi-tenant, consulta la [documentación de multi-tenancy](ServiPuntosUy/Docs/MultiTenancy.md).
@@ -181,6 +183,7 @@ Para facilitar el desarrollo y mantenimiento del proyecto, se ha creado la sigui
 
 - [**Multi-Tenancy**](ServiPuntosUy/Docs/MultiTenancy.md): Explica cómo funciona el sistema multi-tenant, la resolución de tenants y tipos de usuario.
 - [**BaseController**](ServiPuntosUy/Docs/BaseControllerGuide.md): Guía sobre el controlador base, sus propiedades y métodos heredados, y mejores prácticas para su uso.
+- [**Configuración Frontend**](ServiPuntosUy/Docs/FrontendSetup.md): Guía para configurar una aplicación React que trabaje con el sistema multi-tenant, incluyendo cómo simular subdominios de tenant para usuarios finales.
 
 ### Seguridad
 
