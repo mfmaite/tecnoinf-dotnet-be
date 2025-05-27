@@ -218,6 +218,8 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
             }
         }
     }
+
+    /// <summary>
     /// Implementación del servicio de productos para el usuario final
     /// </summary>
     public class ProductService : IProductService
@@ -259,3 +261,4 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
         }
     }
 }
+
