@@ -75,7 +75,7 @@ La aplicación utiliza la siguiente estructura de dominios para diferenciar entr
 - **admin.servipuntos.uy**: Administrador central (SuperAdmin)
 - **{tenant-id}.admin.servipuntos.uy**: Administrador de tenant
 - **{tenant-id}.branch.admin.servipuntos.uy**: Administrador de estación
-- **app.servipuntos.uy**: Usuario final (EndUser)
+- **{tenant-id}.app.servipuntos.uy**: Usuario final (EndUser) con tenant específico
 
 ## Modelo de Datos
 
