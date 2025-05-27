@@ -12,7 +12,7 @@ Si es la primera vez que inicias este proyecto, debes seguir los siguientes paso
 - Tener instalado .NET.
 - Haber clonado el repositorio en tu máquina local.
 
-### 📦 Instalar dependencias
+### 📦 Instalar dependencias e inicializar el proyecto
 
 1. Navega a la raíz del proyecto y ejecuta:
 ```bash
@@ -25,12 +25,7 @@ Si es la primera vez que inicias este proyecto, debes seguir los siguientes paso
 ```
 Esto descargará las librerías necesarias para el proyecto.
 
-3. Aplicar las migraciones pendientes:
-```bash
-dotnet ef database update <db_context>
-```
-
-4. Chequear que la connection string de `appsettings.json` sea la aceduada
+3. Chequear que la connection string de `appsettings.json` sea la aceduada
 ```json
 ...
    "ConnectionStrings": {
@@ -39,24 +34,27 @@ dotnet ef database update <db_context>
   ...
 ```
 
-> 💡 El DbContext de la base Central es `CentralDbContext`
-
-### 🚀 Inicialización
-
-1. Inicia los contenedores:
+4. Inicia los contenedores:
 ```bash
 docker compose up -d
 ```
 
-2. Verificar que los contenedores estén corriendo:
+5. Verificar que los contenedores estén corriendo:
 ```bash
 docker compose ps
 ```
 
-3. Posicionado en la carpeta `ServiPuntosUy`, ejecuta:
+6. Aplicar las migraciones pendientes (esto aplicará todos los cambios nuevos a los esquemas)
+```bash
+dotnet ef database update
+```
+
+7. Posicionado en la carpeta `ServiPuntosUy`, ejecuta:
 ```bash
 dotnet run
 ```
+
+El proyecto debería arrancar sin problemas!
 
 ## 📚 Documentación API (Swagger)
 
