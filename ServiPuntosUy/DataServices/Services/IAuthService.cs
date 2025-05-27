@@ -13,15 +13,15 @@ namespace ServiPuntosUy.DataServices.Services
         /// <param name="email">Email del usuario</param>
         /// <param name="password">Contraseña del usuario</param>
         /// <returns>Token JWT si la autenticación es exitosa, null en caso contrario</returns>
-        Task<string> AuthenticateAsync(string email, string password);
-        
+        Task<UserSessionDTO?> AuthenticateAsync(string email, string password);
+
         /// <summary>
         /// Obtiene información del usuario actual
         /// </summary>
         /// <param name="userId">ID del usuario</param>
         /// <returns>Información del usuario</returns>
         Task<UserDTO> GetUserInfoAsync(int userId);
-        
+
         /// <summary>
         /// Verifica si un token JWT es válido
         /// </summary>
