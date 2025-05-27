@@ -183,6 +183,7 @@ Para facilitar el desarrollo y mantenimiento del proyecto, se ha creado la sigui
 
 - [**Multi-Tenancy**](ServiPuntosUy/Docs/MultiTenancy.md): Explica cómo funciona el sistema multi-tenant, la resolución de tenants y tipos de usuario.
 - [**BaseController**](ServiPuntosUy/Docs/BaseControllerGuide.md): Guía sobre el controlador base, sus propiedades y métodos heredados, y mejores prácticas para su uso.
+- [**Configuración Frontend**](ServiPuntosUy/Docs/FrontendSetup.md): Guía para configurar una aplicación React que trabaje con el sistema multi-tenant, incluyendo cómo simular subdominios de tenant para usuarios finales.
 
 ### Seguridad
 
