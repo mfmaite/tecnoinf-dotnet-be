@@ -20,10 +20,9 @@ public class VEAIController : BaseController
     public async Task<IActionResult> Post([FromBody] PersonaRequest request)
     {
         try {
-            var result = await VEAIService.VerificarIdentidad(
-            request.UserId,
-            request.NroDocumento
-            );
+            var user = ObtainUserFromToken();
+            var result = await VEAIService.VerificarIdentidad(user.Id, request.NroDocumento);
+
 
             return Ok(new ApiResponse<UserDTO>{
                 Error = false,

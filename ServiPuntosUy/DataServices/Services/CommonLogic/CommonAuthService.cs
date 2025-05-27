@@ -55,8 +55,11 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Email, user.Email),
+                new Claim("email", user.Email),
                 new Claim("userType", ((int)user.Role).ToString()),
-                new Claim("tenantId", user.TenantId.ToString())
+                new Claim("tenantId", user.TenantId.ToString()),
+                new Claim("name", user.Name),
+                new Claim("userId", user.Id.ToString())
             };
 
             // Agregar branchId al token si el usuario es de tipo Branch
