@@ -96,7 +96,11 @@ builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepositor
 
 // Registrar servicios globales que no dependen del tenant/usuario
 builder.Services.AddScoped<IAuthLogic, AuthLogic>();
-builder.Services.AddScoped<ITenantResolver, TenantResolver>();
+builder.Services.AddScoped<ITenantResolver>(provider => 
+    new TenantResolver(
+        provider.GetRequiredService<IConfiguration>(),
+        provider.GetRequiredService<CentralDbContext>()
+    ));
 builder.Services.AddScoped<IServiceFactory, ServiceFactory>();
 
 var app = builder.Build();

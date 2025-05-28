@@ -24,8 +24,10 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
 
         // Métodos de Branch
 
-        public BranchDTO GetBranchDTO(ServiPuntosUy.DAO.Models.Central.Branch branch) {
-            return new BranchDTO {
+        public BranchDTO GetBranchDTO(ServiPuntosUy.DAO.Models.Central.Branch branch)
+        {
+            return new BranchDTO
+            {
                 Id = branch.Id,
                 Address = branch.Address,
                 Latitud = branch.Latitud,
@@ -37,9 +39,11 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             };
         }
 
-        public BranchDTO CreateBranch(int tenantId, string latitud, string longitud, string address, string phone, TimeOnly openTime, TimeOnly closingTime) {
+        public BranchDTO CreateBranch(int tenantId, string latitud, string longitud, string address, string phone, TimeOnly openTime, TimeOnly closingTime)
+        {
             // Crear un nuevo branch
-            var branch = new DAO.Models.Central.Branch {
+            var branch = new DAO.Models.Central.Branch
+            {
                 TenantId = tenantId,
                 Latitud = latitud,
                 Longitud = longitud,
@@ -57,27 +61,35 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             return GetBranchDTO(createdBranch);
         }
 
-        public BranchDTO UpdateBranch(int branchId, string? latitud, string? longitud, string? address, string? phone, TimeOnly? openTime, TimeOnly? closingTime) {
+        public BranchDTO UpdateBranch(int branchId, string? latitud, string? longitud, string? address, string? phone, TimeOnly? openTime, TimeOnly? closingTime)
+        {
             var branch = _branchRepository.GetByIdAsync(branchId).GetAwaiter().GetResult();
-            if (branch == null) {
+            if (branch == null)
+            {
                 throw new Exception("No existe una estación con el ID ${branchId}");
             }
-            if (latitud != null) {
+            if (latitud != null)
+            {
                 branch.Latitud = latitud;
             }
-            if (longitud != null) {
+            if (longitud != null)
+            {
                 branch.Longitud = longitud;
             }
-            if (address != null) {
+            if (address != null)
+            {
                 branch.Address = address;
             }
-            if (phone != null) {
+            if (phone != null)
+            {
                 branch.Phone = phone;
             }
-            if (openTime != null) {
+            if (openTime != null)
+            {
                 branch.OpenTime = openTime.Value;
             }
-            if (closingTime != null) {
+            if (closingTime != null)
+            {
                 branch.ClosingTime = closingTime.Value;
             }
 
@@ -87,9 +99,11 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             return GetBranchDTO(branch);
         }
 
-        public void DeleteBranch(int branchId) {
+        public void DeleteBranch(int branchId)
+        {
             var branch = _branchRepository.GetByIdAsync(branchId).GetAwaiter().GetResult();
-            if (branch == null) {
+            if (branch == null)
+            {
                 throw new Exception("No existe una estación con el ID ${branchId}");
             }
 
@@ -286,6 +300,18 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             // Implementación básica para el scaffold
             throw new NotImplementedException();
         }
+
+        /// <summary>
+        /// Verifica si los puntos del usuario han expirado según la política de expiración
+        /// y actualiza la fecha del último login
+        /// </summary>
+        /// <param name="userId">ID del usuario</param>
+        /// <returns>True si los puntos expiraron, False en caso contrario</returns>
+        public Task<bool> CheckPointsExpirationAsync(int userId)
+        {
+            // Para administradores de tenant, no aplicamos la lógica de expiración de puntos
+            return Task.FromResult(false);
+        }
     }
 
     /// <summary>
@@ -314,8 +340,6 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
     public class ProductService : IProductService
     {
         private readonly IGenericRepository<DAO.Models.Central.Product> _productRepository;
-        
-
 
         public ProductService(IGenericRepository<DAO.Models.Central.Product> productRepository)
         {
@@ -335,7 +359,17 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
                 AgeRestricted = product.AgeRestricted
             };
         }
+        public async Task<ProductDTO?> GetProductById(int productId)
+        {
+            var product = await _productRepository.GetByIdAsync(productId);
+            return product is not null ? GetProductDTO(product) : null;
+        }
 
+        public ProductDTO[] GetProductList(int tenantId)
+        {
+            var products = _productRepository.GetQueryable().Where(product => product.TenantId == tenantId).ToList();
+            return [.. products.Select(GetProductDTO)];
+        }
         public ProductDTO CreateProduct(int tenantId, string name, string description, string imageUrl, decimal price, bool ageRestricted)
         {
             var product = new DAO.Models.Central.Product
@@ -354,7 +388,7 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             // Devolver el DTO del producto creado
 
             return GetProductDTO(createdProduct);
-        
+
         }
         
         public ProductDTO UpdateProduct(int productId, string? name, string? description, string? imageUrl, decimal? price, bool? ageRestricted)
