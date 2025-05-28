@@ -10,29 +10,29 @@
 namespace ServiceReference
 {
     using System.Runtime.Serialization;
-    
-    
+
+
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "8.0.0")]
-    [System.Runtime.Serialization.DataContractAttribute(Name="ParamObtDocDigitalizado", Namespace="http://dnic.gub.uy/")]
+    [System.Runtime.Serialization.DataContractAttribute(Name = "ParamObtDocDigitalizado", Namespace = "http://dnic.gub.uy/")]
     public partial class ParamObtDocDigitalizado : object
     {
-        
+
         private string ClaveAcceso1Field;
-        
+
         private string ClaveAcceso2Field;
-        
+
         private string NroDocumentoField;
-        
+
         private int NroIdentificacionField;
-        
+
         private string NroSerieField;
-        
+
         private string OrganismoField;
-        
+
         private string TipoDocumentoField;
-        
-        [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue=false)]
+
+        [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue = false)]
         public string ClaveAcceso1
         {
             get
@@ -44,8 +44,8 @@ namespace ServiceReference
                 this.ClaveAcceso1Field = value;
             }
         }
-        
-        [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue=false)]
+
+        [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue = false)]
         public string ClaveAcceso2
         {
             get
@@ -57,8 +57,8 @@ namespace ServiceReference
                 this.ClaveAcceso2Field = value;
             }
         }
-        
-        [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue=false)]
+
+        [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue = false)]
         public string NroDocumento
         {
             get
@@ -70,8 +70,8 @@ namespace ServiceReference
                 this.NroDocumentoField = value;
             }
         }
-        
-        [System.Runtime.Serialization.DataMemberAttribute(IsRequired=true)]
+
+        [System.Runtime.Serialization.DataMemberAttribute(IsRequired = true)]
         public int NroIdentificacion
         {
             get
@@ -83,8 +83,8 @@ namespace ServiceReference
                 this.NroIdentificacionField = value;
             }
         }
-        
-        [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue=false)]
+
+        [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue = false)]
         public string NroSerie
         {
             get
@@ -96,8 +96,8 @@ namespace ServiceReference
                 this.NroSerieField = value;
             }
         }
-        
-        [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue=false)]
+
+        [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue = false)]
         public string Organismo
         {
             get
@@ -109,8 +109,8 @@ namespace ServiceReference
                 this.OrganismoField = value;
             }
         }
-        
-        [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue=false)]
+
+        [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue = false)]
         public string TipoDocumento
         {
             get
@@ -123,22 +123,22 @@ namespace ServiceReference
             }
         }
     }
-    
+
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "8.0.0")]
-    [System.Runtime.Serialization.DataContractAttribute(Name="ResultObtDocDigitalizado", Namespace="http://dnic.gub.uy/")]
+    [System.Runtime.Serialization.DataContractAttribute(Name = "ResultObtDocDigitalizado", Namespace = "http://dnic.gub.uy/")]
     public partial class ResultObtDocDigitalizado : object
     {
-        
+
         private ServiceReference.ObjPersona PersonaField;
-        
+
         private ServiceReference.ImagenDigital[] ImagenesField;
-        
+
         private ServiceReference.Mensaje[] WarningsField;
-        
+
         private ServiceReference.Mensaje[] ErroresField;
-        
-        [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue=false)]
+
+        [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue = false)]
         public ServiceReference.ObjPersona Persona
         {
             get
@@ -150,8 +150,8 @@ namespace ServiceReference
                 this.PersonaField = value;
             }
         }
-        
-        [System.Runtime.Serialization.DataMemberAttribute(Order=1)]
+
+        [System.Runtime.Serialization.DataMemberAttribute(Order = 1)]
         public ServiceReference.ImagenDigital[] Imagenes
         {
             get
@@ -163,8 +163,8 @@ namespace ServiceReference
                 this.ImagenesField = value;
             }
         }
-        
-        [System.Runtime.Serialization.DataMemberAttribute(Order=2)]
+
+        [System.Runtime.Serialization.DataMemberAttribute(Order = 2)]
         public ServiceReference.Mensaje[] Warnings
         {
             get
@@ -176,8 +176,8 @@ namespace ServiceReference
                 this.WarningsField = value;
             }
         }
-        
-        [System.Runtime.Serialization.DataMemberAttribute(Order=3)]
+
+        [System.Runtime.Serialization.DataMemberAttribute(Order = 3)]
         public ServiceReference.Mensaje[] Errores
         {
             get
@@ -190,42 +190,42 @@ namespace ServiceReference
             }
         }
     }
-    
+
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "8.0.0")]
-    [System.Runtime.Serialization.DataContractAttribute(Name="ObjPersona", Namespace="http://dnic.gub.uy/")]
+    [System.Runtime.Serialization.DataContractAttribute(Name = "ObjPersona", Namespace = "http://dnic.gub.uy/")]
     public partial class ObjPersona : object
     {
-        
+
         private string CodTipoDocumentoField;
-        
+
         private string NroDocumentoField;
-        
+
         private string Nombre1Field;
-        
+
         private string Nombre2Field;
-        
+
         private string PrimerApellidoField;
-        
+
         private string SegundoApellidoField;
-        
+
         private string ApellidoAdoptivo1Field;
-        
+
         private string ApellidoAdoptivo2Field;
-        
+
         private int SexoField;
-        
+
         private string FechaNacimientoField;
-        
+
         private int CodNacionalidadField;
-        
+
         private string NombreEnCedulaField;
-        
+
         private int IdSolicitudField;
-        
+
         private int IdRespuestaField;
-        
-        [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue=false)]
+
+        [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue = false)]
         public string CodTipoDocumento
         {
             get
@@ -237,8 +237,8 @@ namespace ServiceReference
                 this.CodTipoDocumentoField = value;
             }
         }
-        
-        [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue=false)]
+
+        [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue = false)]
         public string NroDocumento
         {
             get
@@ -250,8 +250,8 @@ namespace ServiceReference
                 this.NroDocumentoField = value;
             }
         }
-        
-        [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue=false, Order=2)]
+
+        [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue = false, Order = 2)]
         public string Nombre1
         {
             get
@@ -263,8 +263,8 @@ namespace ServiceReference
                 this.Nombre1Field = value;
             }
         }
-        
-        [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue=false, Order=3)]
+
+        [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue = false, Order = 3)]
         public string Nombre2
         {
             get
@@ -276,8 +276,8 @@ namespace ServiceReference
                 this.Nombre2Field = value;
             }
         }
-        
-        [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue=false, Order=4)]
+
+        [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue = false, Order = 4)]
         public string PrimerApellido
         {
             get
@@ -289,8 +289,8 @@ namespace ServiceReference
                 this.PrimerApellidoField = value;
             }
         }
-        
-        [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue=false, Order=5)]
+
+        [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue = false, Order = 5)]
         public string SegundoApellido
         {
             get
@@ -302,8 +302,8 @@ namespace ServiceReference
                 this.SegundoApellidoField = value;
             }
         }
-        
-        [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue=false, Order=6)]
+
+        [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue = false, Order = 6)]
         public string ApellidoAdoptivo1
         {
             get
@@ -315,8 +315,8 @@ namespace ServiceReference
                 this.ApellidoAdoptivo1Field = value;
             }
         }
-        
-        [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue=false, Order=7)]
+
+        [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue = false, Order = 7)]
         public string ApellidoAdoptivo2
         {
             get
@@ -328,8 +328,8 @@ namespace ServiceReference
                 this.ApellidoAdoptivo2Field = value;
             }
         }
-        
-        [System.Runtime.Serialization.DataMemberAttribute(IsRequired=true, Order=8)]
+
+        [System.Runtime.Serialization.DataMemberAttribute(IsRequired = true, Order = 8)]
         public int Sexo
         {
             get
@@ -341,8 +341,8 @@ namespace ServiceReference
                 this.SexoField = value;
             }
         }
-        
-        [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue=false, Order=9)]
+
+        [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue = false, Order = 9)]
         public string FechaNacimiento
         {
             get
@@ -354,8 +354,8 @@ namespace ServiceReference
                 this.FechaNacimientoField = value;
             }
         }
-        
-        [System.Runtime.Serialization.DataMemberAttribute(IsRequired=true, Order=10)]
+
+        [System.Runtime.Serialization.DataMemberAttribute(IsRequired = true, Order = 10)]
         public int CodNacionalidad
         {
             get
@@ -367,8 +367,8 @@ namespace ServiceReference
                 this.CodNacionalidadField = value;
             }
         }
-        
-        [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue=false, Order=11)]
+
+        [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue = false, Order = 11)]
         public string NombreEnCedula
         {
             get
@@ -380,8 +380,8 @@ namespace ServiceReference
                 this.NombreEnCedulaField = value;
             }
         }
-        
-        [System.Runtime.Serialization.DataMemberAttribute(IsRequired=true, Order=12)]
+
+        [System.Runtime.Serialization.DataMemberAttribute(IsRequired = true, Order = 12)]
         public int IdSolicitud
         {
             get
@@ -393,8 +393,8 @@ namespace ServiceReference
                 this.IdSolicitudField = value;
             }
         }
-        
-        [System.Runtime.Serialization.DataMemberAttribute(IsRequired=true, Order=13)]
+
+        [System.Runtime.Serialization.DataMemberAttribute(IsRequired = true, Order = 13)]
         public int IdRespuesta
         {
             get
@@ -407,20 +407,20 @@ namespace ServiceReference
             }
         }
     }
-    
+
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "8.0.0")]
-    [System.Runtime.Serialization.DataContractAttribute(Name="ImagenDigital", Namespace="http://dnic.gub.uy/")]
+    [System.Runtime.Serialization.DataContractAttribute(Name = "ImagenDigital", Namespace = "http://dnic.gub.uy/")]
     public partial class ImagenDigital : object
     {
-        
+
         private string FotoField;
-        
+
         private int LargoBytesField;
-        
+
         private int TipoImagenField;
-        
-        [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue=false)]
+
+        [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue = false)]
         public string Foto
         {
             get
@@ -432,8 +432,8 @@ namespace ServiceReference
                 this.FotoField = value;
             }
         }
-        
-        [System.Runtime.Serialization.DataMemberAttribute(IsRequired=true)]
+
+        [System.Runtime.Serialization.DataMemberAttribute(IsRequired = true)]
         public int LargoBytes
         {
             get
@@ -445,8 +445,8 @@ namespace ServiceReference
                 this.LargoBytesField = value;
             }
         }
-        
-        [System.Runtime.Serialization.DataMemberAttribute(IsRequired=true)]
+
+        [System.Runtime.Serialization.DataMemberAttribute(IsRequired = true)]
         public int TipoImagen
         {
             get
@@ -459,20 +459,20 @@ namespace ServiceReference
             }
         }
     }
-    
+
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "8.0.0")]
-    [System.Runtime.Serialization.DataContractAttribute(Name="Mensaje", Namespace="http://dnic.gub.uy/")]
+    [System.Runtime.Serialization.DataContractAttribute(Name = "Mensaje", Namespace = "http://dnic.gub.uy/")]
     public partial class Mensaje : object
     {
-        
+
         private int CodMensajeField;
-        
+
         private string DescripcionField;
-        
+
         private string DatoExtraField;
-        
-        [System.Runtime.Serialization.DataMemberAttribute(IsRequired=true)]
+
+        [System.Runtime.Serialization.DataMemberAttribute(IsRequired = true)]
         public int CodMensaje
         {
             get
@@ -484,8 +484,8 @@ namespace ServiceReference
                 this.CodMensajeField = value;
             }
         }
-        
-        [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue=false)]
+
+        [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue = false)]
         public string Descripcion
         {
             get
@@ -497,8 +497,8 @@ namespace ServiceReference
                 this.DescripcionField = value;
             }
         }
-        
-        [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue=false, Order=2)]
+
+        [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue = false, Order = 2)]
         public string DatoExtra
         {
             get
@@ -511,152 +511,152 @@ namespace ServiceReference
             }
         }
     }
-    
+
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "8.0.0")]
-    [System.ServiceModel.ServiceContractAttribute(Namespace="http://dnic.gub.uy/", ConfigurationName="ServiceReference.IWsServicioDeInformacion")]
+    [System.ServiceModel.ServiceContractAttribute(Namespace = "http://dnic.gub.uy/", ConfigurationName = "ServiceReference.IWsServicioDeInformacion")]
     public interface IWsServicioDeInformacion
     {
-        
-        [System.ServiceModel.OperationContractAttribute(Action="http://dnic.gub.uy/IWsServicioDeInformacion/ObtDocDigitalizado", ReplyAction="*")]
+
+        [System.ServiceModel.OperationContractAttribute(Action = "http://dnic.gub.uy/IWsServicioDeInformacion/ObtDocDigitalizado", ReplyAction = "*")]
         System.Threading.Tasks.Task<ServiceReference.ObtDocDigitalizadoResponse> ObtDocDigitalizadoAsync(ServiceReference.ObtDocDigitalizadoRequest request);
     }
-    
+
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "8.0.0")]
     [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-    [System.ServiceModel.MessageContractAttribute(IsWrapped=false)]
+    [System.ServiceModel.MessageContractAttribute(IsWrapped = false)]
     public partial class ObtDocDigitalizadoRequest
     {
-        
-        [System.ServiceModel.MessageBodyMemberAttribute(Name="ObtDocDigitalizado", Namespace="http://dnic.gub.uy/", Order=0)]
+
+        [System.ServiceModel.MessageBodyMemberAttribute(Name = "ObtDocDigitalizado", Namespace = "http://dnic.gub.uy/", Order = 0)]
         public ServiceReference.ObtDocDigitalizadoRequestBody Body;
-        
+
         public ObtDocDigitalizadoRequest()
         {
         }
-        
+
         public ObtDocDigitalizadoRequest(ServiceReference.ObtDocDigitalizadoRequestBody Body)
         {
             this.Body = Body;
         }
     }
-    
+
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "8.0.0")]
     [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-    [System.Runtime.Serialization.DataContractAttribute(Namespace="http://dnic.gub.uy/")]
+    [System.Runtime.Serialization.DataContractAttribute(Namespace = "http://dnic.gub.uy/")]
     public partial class ObtDocDigitalizadoRequestBody
     {
-        
-        [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue=false, Order=0)]
+
+        [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue = false, Order = 0)]
         public ServiceReference.ParamObtDocDigitalizado param;
-        
+
         public ObtDocDigitalizadoRequestBody()
         {
         }
-        
+
         public ObtDocDigitalizadoRequestBody(ServiceReference.ParamObtDocDigitalizado param)
         {
             this.param = param;
         }
     }
-    
+
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "8.0.0")]
     [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-    [System.ServiceModel.MessageContractAttribute(IsWrapped=false)]
+    [System.ServiceModel.MessageContractAttribute(IsWrapped = false)]
     public partial class ObtDocDigitalizadoResponse
     {
-        
-        [System.ServiceModel.MessageBodyMemberAttribute(Name="ObtDocDigitalizadoResponse", Namespace="http://dnic.gub.uy/", Order=0)]
+
+        [System.ServiceModel.MessageBodyMemberAttribute(Name = "ObtDocDigitalizadoResponse", Namespace = "http://dnic.gub.uy/", Order = 0)]
         public ServiceReference.ObtDocDigitalizadoResponseBody Body;
-        
+
         public ObtDocDigitalizadoResponse()
         {
         }
-        
+
         public ObtDocDigitalizadoResponse(ServiceReference.ObtDocDigitalizadoResponseBody Body)
         {
             this.Body = Body;
         }
     }
-    
+
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "8.0.0")]
     [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-    [System.Runtime.Serialization.DataContractAttribute(Namespace="http://dnic.gub.uy/")]
+    [System.Runtime.Serialization.DataContractAttribute(Namespace = "http://dnic.gub.uy/")]
     public partial class ObtDocDigitalizadoResponseBody
     {
-        
-        [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue=false, Order=0)]
+
+        [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue = false, Order = 0)]
         public ServiceReference.ResultObtDocDigitalizado ObtDocDigitalizadoResult;
-        
+
         public ObtDocDigitalizadoResponseBody()
         {
         }
-        
+
         public ObtDocDigitalizadoResponseBody(ServiceReference.ResultObtDocDigitalizado ObtDocDigitalizadoResult)
         {
             this.ObtDocDigitalizadoResult = ObtDocDigitalizadoResult;
         }
     }
-    
+
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "8.0.0")]
     public interface IWsServicioDeInformacionChannel : ServiceReference.IWsServicioDeInformacion, System.ServiceModel.IClientChannel
     {
     }
-    
+
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "8.0.0")]
     public partial class WsServicioDeInformacionClient : System.ServiceModel.ClientBase<ServiceReference.IWsServicioDeInformacion>, ServiceReference.IWsServicioDeInformacion
     {
-        
+
         /// <summary>
         /// Implement this partial method to configure the service endpoint.
         /// </summary>
         /// <param name="serviceEndpoint">The endpoint to configure</param>
         /// <param name="clientCredentials">The client credentials</param>
         static partial void ConfigureEndpoint(System.ServiceModel.Description.ServiceEndpoint serviceEndpoint, System.ServiceModel.Description.ClientCredentials clientCredentials);
-        
-        public WsServicioDeInformacionClient() : 
+
+        public WsServicioDeInformacionClient() :
                 base(WsServicioDeInformacionClient.GetDefaultBinding(), WsServicioDeInformacionClient.GetDefaultEndpointAddress())
         {
             this.Endpoint.Name = EndpointConfiguration.BasicHttpBinding_IWsServicioDeInformacion_soap.ToString();
             ConfigureEndpoint(this.Endpoint, this.ClientCredentials);
         }
-        
-        public WsServicioDeInformacionClient(EndpointConfiguration endpointConfiguration) : 
+
+        public WsServicioDeInformacionClient(EndpointConfiguration endpointConfiguration) :
                 base(WsServicioDeInformacionClient.GetBindingForEndpoint(endpointConfiguration), WsServicioDeInformacionClient.GetEndpointAddress(endpointConfiguration))
         {
             this.Endpoint.Name = endpointConfiguration.ToString();
             ConfigureEndpoint(this.Endpoint, this.ClientCredentials);
         }
-        
-        public WsServicioDeInformacionClient(EndpointConfiguration endpointConfiguration, string remoteAddress) : 
+
+        public WsServicioDeInformacionClient(EndpointConfiguration endpointConfiguration, string remoteAddress) :
                 base(WsServicioDeInformacionClient.GetBindingForEndpoint(endpointConfiguration), new System.ServiceModel.EndpointAddress(remoteAddress))
         {
             this.Endpoint.Name = endpointConfiguration.ToString();
             ConfigureEndpoint(this.Endpoint, this.ClientCredentials);
         }
-        
-        public WsServicioDeInformacionClient(EndpointConfiguration endpointConfiguration, System.ServiceModel.EndpointAddress remoteAddress) : 
+
+        public WsServicioDeInformacionClient(EndpointConfiguration endpointConfiguration, System.ServiceModel.EndpointAddress remoteAddress) :
                 base(WsServicioDeInformacionClient.GetBindingForEndpoint(endpointConfiguration), remoteAddress)
         {
             this.Endpoint.Name = endpointConfiguration.ToString();
             ConfigureEndpoint(this.Endpoint, this.ClientCredentials);
         }
-        
-        public WsServicioDeInformacionClient(System.ServiceModel.Channels.Binding binding, System.ServiceModel.EndpointAddress remoteAddress) : 
+
+        public WsServicioDeInformacionClient(System.ServiceModel.Channels.Binding binding, System.ServiceModel.EndpointAddress remoteAddress) :
                 base(binding, remoteAddress)
         {
         }
-        
+
         [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
         System.Threading.Tasks.Task<ServiceReference.ObtDocDigitalizadoResponse> ServiceReference.IWsServicioDeInformacion.ObtDocDigitalizadoAsync(ServiceReference.ObtDocDigitalizadoRequest request)
         {
             return base.Channel.ObtDocDigitalizadoAsync(request);
         }
-        
+
         public System.Threading.Tasks.Task<ServiceReference.ObtDocDigitalizadoResponse> ObtDocDigitalizadoAsync(ServiceReference.ParamObtDocDigitalizado param)
         {
             ServiceReference.ObtDocDigitalizadoRequest inValue = new ServiceReference.ObtDocDigitalizadoRequest();
@@ -664,19 +664,19 @@ namespace ServiceReference
             inValue.Body.param = param;
             return ((ServiceReference.IWsServicioDeInformacion)(this)).ObtDocDigitalizadoAsync(inValue);
         }
-        
+
         public virtual System.Threading.Tasks.Task OpenAsync()
         {
             return System.Threading.Tasks.Task.Factory.FromAsync(((System.ServiceModel.ICommunicationObject)(this)).BeginOpen(null, null), new System.Action<System.IAsyncResult>(((System.ServiceModel.ICommunicationObject)(this)).EndOpen));
         }
-        
-        #if !NET6_0_OR_GREATER
+
+#if !NET6_0_OR_GREATER
         public virtual System.Threading.Tasks.Task CloseAsync()
         {
             return System.Threading.Tasks.Task.Factory.FromAsync(((System.ServiceModel.ICommunicationObject)(this)).BeginClose(null, null), new System.Action<System.IAsyncResult>(((System.ServiceModel.ICommunicationObject)(this)).EndClose));
         }
-        #endif
-        
+#endif
+
         private static System.ServiceModel.Channels.Binding GetBindingForEndpoint(EndpointConfiguration endpointConfiguration)
         {
             if ((endpointConfiguration == EndpointConfiguration.BasicHttpBinding_IWsServicioDeInformacion_soap))
@@ -690,7 +690,7 @@ namespace ServiceReference
             }
             throw new System.InvalidOperationException(string.Format("Could not find endpoint with name \'{0}\'.", endpointConfiguration));
         }
-        
+
         private static System.ServiceModel.EndpointAddress GetEndpointAddress(EndpointConfiguration endpointConfiguration)
         {
             if ((endpointConfiguration == EndpointConfiguration.BasicHttpBinding_IWsServicioDeInformacion_soap))
@@ -699,20 +699,20 @@ namespace ServiceReference
             }
             throw new System.InvalidOperationException(string.Format("Could not find endpoint with name \'{0}\'.", endpointConfiguration));
         }
-        
+
         private static System.ServiceModel.Channels.Binding GetDefaultBinding()
         {
             return WsServicioDeInformacionClient.GetBindingForEndpoint(EndpointConfiguration.BasicHttpBinding_IWsServicioDeInformacion_soap);
         }
-        
+
         private static System.ServiceModel.EndpointAddress GetDefaultEndpointAddress()
         {
             return WsServicioDeInformacionClient.GetEndpointAddress(EndpointConfiguration.BasicHttpBinding_IWsServicioDeInformacion_soap);
         }
-        
+
         public enum EndpointConfiguration
         {
-            
+
             BasicHttpBinding_IWsServicioDeInformacion_soap,
         }
     }
