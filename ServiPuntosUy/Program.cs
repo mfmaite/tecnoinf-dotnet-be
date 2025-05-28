@@ -114,7 +114,6 @@ app.UseCorsConfiguration();
 app.UseRequestContent(); // Middleware para identificar tenant y tipo de usuario
 app.UseApiResponseWrapper(); // Middleware para envolver respuestas en ApiResponse
 app.UseJwtAuthentication(); // Middleware personalizado para autenticación JWT (chequea token)
-app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

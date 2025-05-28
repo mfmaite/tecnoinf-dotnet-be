@@ -41,6 +41,17 @@ namespace ServiPuntosUy.DataServices
 
         public void ConfigureServices(string tenantId, UserType userType, HttpContext httpContext = null)
         {
+            // Verificar si el usuario está autenticado
+            bool isAuthenticated = httpContext?.User?.Identity?.IsAuthenticated == true;
+
+            // Si no está autenticado, solo configurar servicios comunes para login
+            if (!isAuthenticated)
+            {
+                ConfigureCommonServicesForLogin();
+                return;
+            }
+
+            // El resto del código original para usuarios autenticados
             // Limpiar la colección de servicios antes de configurar
             _serviceCollection.Clear();
 
@@ -73,6 +84,39 @@ namespace ServiPuntosUy.DataServices
             }
 
             // Construir el proveedor de servicios para este tenant/usuario
+            _scopedServiceProvider = _serviceCollection.BuildServiceProvider();
+        }
+
+        /// <summary>
+        /// Configura solo los servicios comunes necesarios para el login
+        /// </summary>
+        private void ConfigureCommonServicesForLogin()
+        {
+            _serviceCollection.Clear();
+            
+            // Registrar servicios mínimos necesarios para login
+            _serviceCollection.AddSingleton(_configuration);
+            
+            // Obtener servicios globales ya registrados en Program.cs
+            _serviceCollection.AddScoped<IAuthLogic>(sp => _serviceProvider.GetRequiredService<IAuthLogic>());
+            _serviceCollection.AddScoped<ITenantResolver>(sp => _serviceProvider.GetRequiredService<ITenantResolver>());
+            
+            // Obtener el DbContext del contenedor principal
+            _serviceCollection.AddScoped<DbContext>(sp => _serviceProvider.GetRequiredService<DbContext>());
+            
+            // Registrar el GenericRepository que usa el DbContext
+            _serviceCollection.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+            
+            // Registrar un servicio de autenticación básico
+            _serviceCollection.AddScoped<IAuthService>(sp =>
+                new CommonAuthService(
+                    sp.GetRequiredService<DbContext>(),
+                    _configuration,
+                    sp.GetRequiredService<IAuthLogic>(),
+                    null, // No necesitamos LoyaltyService para login
+                    null)); // No hay tenant para login
+            
+            // Construir el proveedor de servicios para login
             _scopedServiceProvider = _serviceCollection.BuildServiceProvider();
         }
 
