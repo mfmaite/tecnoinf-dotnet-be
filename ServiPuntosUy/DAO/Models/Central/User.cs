@@ -38,5 +38,5 @@ public class User
 
     public bool NotificationsEnabled { get; set; } = true;
 
-    public DateTime LastLoginDate { get; set; }
+    public DateTime LastLoginDate { get; set; } = DateTime.UtcNow;
 }

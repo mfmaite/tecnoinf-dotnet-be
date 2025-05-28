@@ -286,6 +286,18 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             // Implementación básica para el scaffold
             throw new NotImplementedException();
         }
+
+        /// <summary>
+        /// Verifica si los puntos del usuario han expirado según la política de expiración
+        /// y actualiza la fecha del último login
+        /// </summary>
+        /// <param name="userId">ID del usuario</param>
+        /// <returns>True si los puntos expiraron, False en caso contrario</returns>
+        public Task<bool> CheckPointsExpirationAsync(int userId)
+        {
+            // Para administradores de tenant, no aplicamos la lógica de expiración de puntos
+            return Task.FromResult(false);
+        }
     }
 
     /// <summary>

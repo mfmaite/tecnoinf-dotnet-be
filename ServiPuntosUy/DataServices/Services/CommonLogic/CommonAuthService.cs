@@ -17,16 +17,19 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
         private readonly DbContext _dbContext;
         private readonly IConfiguration _configuration;
         private readonly string _tenantId;
+        private readonly ILoyaltyService _loyaltyService;
 
         public CommonAuthService(
             DbContext dbContext,
             IConfiguration configuration,
             IAuthLogic authLogic,
+            ILoyaltyService loyaltyService = null,
             string tenantId = null)
         {
             _dbContext = dbContext;
             _configuration = configuration;
             _authLogic = authLogic;
+            _loyaltyService = loyaltyService;
             _tenantId = tenantId;
         }
 
@@ -47,6 +50,25 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
             if (!_authLogic.VerifyPassword(password, user.Password, user.PasswordSalt))
                 return null;
 
+            // Verificar expiración de puntos solo para usuarios finales
+            if (user.Role == Enums.UserType.EndUser && _loyaltyService != null)
+            {
+                try
+                {
+                    // Verificar expiración de puntos usando el servicio inyectado
+                    await _loyaltyService.CheckPointsExpirationAsync(user.Id);
+                }
+                catch (Exception ex)
+                {
+                    // Logging del error pero permitir que el login continúe
+                    Console.WriteLine($"Error checking point expiration: {ex.Message}");
+                }
+            }
+
+            // Actualizar la fecha del último login (siempre)
+            user.LastLoginDate = DateTime.UtcNow;
+            await _dbContext.SaveChangesAsync();
+
             // Generar token JWT
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]);
@@ -59,7 +81,8 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
                 new Claim("userType", ((int)user.Role).ToString()),
                 new Claim("tenantId", user.TenantId.ToString()),
                 new Claim("name", user.Name),
-                new Claim("userId", user.Id.ToString())
+                new Claim("userId", user.Id.ToString()),
+                new Claim("lastLoginDate", user.LastLoginDate.ToString("o"))
             };
 
             // Agregar branchId al token si el usuario es de tipo Branch
