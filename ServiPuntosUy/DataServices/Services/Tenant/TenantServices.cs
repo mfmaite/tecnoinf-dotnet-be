@@ -354,14 +354,9 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             // Devolver el DTO del producto creado
 
             return GetProductDTO(createdProduct);
-            
-
-            // Implementación básica para el scaffold
-            throw new NotImplementedException();
+        
         }
 
-        // Implementar los métodos de la interfaz IProductService
-        // Esta es una implementación básica para el scaffold
     }
 
     /// <summary>
