@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using ServiPuntosUy.Controllers.Base;
 using ServiPuntosUy.DataServices;
 using ServiPuntosUy.DTO;
+using ServiPuntosUy.Requests;
 using ServiPuntosUY.Controllers.Response;
 using System.Security.Claims;
 
@@ -82,5 +83,33 @@ namespace ServiPuntosUy.Controllers
                 Data = user
             });
         }
+
+        // /// <summary>
+        // /// Registra a un usuario
+        // /// </summary>
+        // /// <param name="request">Credenciales del usuario</param>
+        // /// <returns>Token JWT</returns>
+        // [HttpPost("signup")]
+        // [ProducesResponseType(typeof(ApiResponse<UserSessionDTO>), 200)]
+        // [ProducesResponseType(typeof(ApiResponse<object>), 401)]
+        // public async Task<IActionResult> Signup([FromBody] SignupRequest request)
+        // {
+        //     var userSession = await AuthService.Signup(request.Email, request.Password, request.Name);
+
+        //     if (userSession == null || string.IsNullOrEmpty(userSession.token))
+        //         return Unauthorized(new ApiResponse<object>
+        //         {
+        //             Error = true,
+        //             Message = "Error al registrar usuario"
+        //         });
+
+        //     return Ok(new ApiResponse<UserSessionDTO>
+        //     {
+        //         Error = false,
+        //         Message = "Usuario registrado correctamente",
+        //         Data = userSession
+        //     });
+        // }
+
     }
 }
