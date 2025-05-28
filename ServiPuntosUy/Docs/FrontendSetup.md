@@ -6,7 +6,7 @@ Este documento proporciona una guía detallada para configurar una aplicación f
 
 ServiPuntosUy utiliza un enfoque de multi-tenancy basado en subdominios, donde cada tenant (cadena de estaciones de servicio) tiene su propio subdominio. Para los usuarios finales, el patrón de URL es:
 
-- `{tenant-id}.app.servipuntos.uy` - Para acceder a la aplicación de un tenant específico
+- `{tenant-name}.app.servipuntos.uy` - Para acceder a la aplicación de un tenant específico
 - `app.servipuntos.uy` - Para la aplicación genérica sin tenant específico
 
 Esta guía te ayudará a configurar una aplicación frontend que pueda trabajar con estos patrones de URL y obtener la información específica del tenant para personalizar la experiencia del usuario.

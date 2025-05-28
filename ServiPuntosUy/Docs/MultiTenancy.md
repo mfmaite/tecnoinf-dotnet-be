@@ -73,9 +73,9 @@ El `TenantAccessor` proporciona acceso al tenant actual desde cualquier parte de
 La aplicación utiliza la siguiente estructura de dominios para diferenciar entre los diferentes tipos de usuarios:
 
 - **admin.servipuntos.uy**: Administrador central (SuperAdmin)
-- **{tenant-id}.admin.servipuntos.uy**: Administrador de tenant
-- **{tenant-id}.branch.admin.servipuntos.uy**: Administrador de estación
-- **{tenant-id}.app.servipuntos.uy**: Usuario final (EndUser) con tenant específico
+- **{tenant-name}.admin.servipuntos.uy**: Administrador de tenant
+- **{tenant-name}.branch.admin.servipuntos.uy**: Administrador de estación
+- **{tenant-name}.app.servipuntos.uy**: Usuario final (EndUser) con tenant específico
 
 ## Modelo de Datos
 

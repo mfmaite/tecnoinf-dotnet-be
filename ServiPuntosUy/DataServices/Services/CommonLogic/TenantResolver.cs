@@ -36,7 +36,7 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
                 return tenantId;
             }
 
-            // 3. Intentar obtener del header custom (X-Tenant-Id) en caso de mobile
+            // 3. Intentar obtener del header custom (X-Tenant-Name) en caso de mobile
             tenantId = GetTenantIdFromCustomHeader(context);
             if (!string.IsNullOrEmpty(tenantId))
             {
@@ -181,7 +181,7 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
 
         private string GetTenantIdFromCustomHeader(HttpContext context)
         {
-            if (context.Request.Headers.TryGetValue("X-Tenant-Id", out var tenantNameHeader))
+            if (context.Request.Headers.TryGetValue("X-Tenant-Name", out var tenantNameHeader))
             {
                 // Obtener el nombre del tenant del header
                 string tenantName = tenantNameHeader.ToString();
