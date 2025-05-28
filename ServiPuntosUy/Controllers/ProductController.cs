@@ -21,11 +21,11 @@ public class ProductController : BaseController
     }
 
     /// <summary>
-    /// Crear un nuevo branch
+    /// Crear un nuevo producto
     /// </summary>
-    /// <param name="product">Datos del branch a crear</param>
-    /// <returns>El branch creado</returns>
-    /// <response code="200">Retorna el branch creado</response>
+    /// <param name="product">Datos del producto a crear</param>
+    /// <returns>El producto creado</returns>
+    /// <response code="200">Retorna el producto creado</response>
     /// <response code="400">Si hay un error en la creación</response>
     [HttpPost("Create")]
     [ProducesResponseType(typeof(ProductDTO), 200)]
@@ -36,11 +36,11 @@ public class ProductController : BaseController
             if (request == null)
                 return BadRequest("Los datos del producto son requeridos.");
 
-            // if (int.Parse(ObtainTenantFromToken()) != request.tenantId)
-            //     return BadRequest("No tiene permisos para crear productos en este tenant.");
+            if (int.Parse(ObtainTenantFromToken()) != request.tenantId)
+                return BadRequest("No tiene permisos para crear productos en este tenant.");
 
-            // if (ObtainUserTypeFromToken() != UserType.Tenant)
-            //     return BadRequest("No tiene permisos para crear productos.");
+            if (ObtainUserTypeFromToken() != UserType.Tenant)
+                return BadRequest("No tiene permisos para crear productos.");
 
             // Validar que ningún campo requerido esté vacío
             if (string.IsNullOrWhiteSpace(request.Name) || string.IsNullOrWhiteSpace(request.Description) 
