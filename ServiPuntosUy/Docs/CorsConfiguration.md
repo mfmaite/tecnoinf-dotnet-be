@@ -2,28 +2,75 @@
 
 Este documento explica la configuración de CORS (Cross-Origin Resource Sharing) en ServiPuntosUy, tanto para desarrollo como para producción.
 
-## Configuración Actual (Desarrollo)
+## Configuración Actual
 
-Actualmente, la API está configurada para permitir solicitudes de cualquier origen (CORS abierto) para facilitar el desarrollo. Esta configuración se encuentra en `Program.cs`:
+La configuración de CORS está encapsulada en la clase utilitaria `CorsConfigurationUtility` ubicada en `ServiPuntosUy/Utils/CorsConfigurationUtility.cs`. Esta clase proporciona métodos de extensión para configurar CORS de manera consistente en toda la aplicación.
+
+### Uso en Program.cs
 
 ```csharp
-// Configurar CORS para desarrollo (permitir cualquier origen)
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowAll", policy =>
-    {
-        policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader();
-    });
-});
+// Configurar CORS utilizando el utilitario
+builder.Services.AddCorsConfiguration(builder.Environment);
+
+// Y más adelante en el código:
+// Habilitar CORS utilizando el utilitario
+app.UseCorsConfiguration();
 ```
 
-Y el middleware CORS se habilita con:
+### Implementación del Utilitario
 
 ```csharp
-// Habilitar CORS
-app.UseCors("AllowAll");
+public static class CorsConfigurationUtility
+{
+    private const string DefaultCorsPolicyName = "CorsPolicy";
+
+    public static IServiceCollection AddCorsConfiguration(
+        this IServiceCollection services, 
+        IHostEnvironment environment,
+        string policyName = DefaultCorsPolicyName)
+    {
+        if (environment.IsDevelopment())
+        {
+            // Development configuration
+            services.AddCors(options =>
+            {
+                options.AddPolicy(policyName, policy =>
+                {
+                    policy.SetIsOriginAllowed(_ => true)
+                          .AllowAnyMethod()
+                          .AllowAnyHeader()
+                          .AllowCredentials();
+                });
+            });
+        }
+        else
+        {
+            // Production configuration
+            services.AddCors(options =>
+            {
+                options.AddPolicy(policyName, policy =>
+                {
+                    policy.SetIsOriginAllowed(origin => {
+                        // Validate that the origin ends with .servipuntos.me
+                        return origin.EndsWith(".servipuntos.me");
+                    })
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .AllowCredentials();
+                });
+            });
+        }
+
+        return services;
+    }
+
+    public static IApplicationBuilder UseCorsConfiguration(
+        this IApplicationBuilder app,
+        string policyName = DefaultCorsPolicyName)
+    {
+        return app.UseCors(policyName);
+    }
+}
 ```
 
 ## Consideraciones de Seguridad
