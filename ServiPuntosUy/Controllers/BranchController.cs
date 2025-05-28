@@ -38,8 +38,10 @@ public class BranchController : BaseController
             if (!TimeOnly.TryParse(request.ClosingTime, out var closingTime))
                 return BadRequest("Formato de hora inválido para ClosingTime. Use HH:mm.");
 
+            var loggedUser = ObtainUserFromToken();
+
             var newBranch = TenantBranchService?.CreateBranch(
-                request.TenantId,
+                int.Parse(loggedUser.TenantId),
                 request.Latitud,
                 request.Longitud,
                 request.Address,
