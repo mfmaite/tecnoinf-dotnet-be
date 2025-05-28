@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ServiPuntosUy.DAO.Data.Central;
 
@@ -11,9 +12,11 @@ using ServiPuntosUy.DAO.Data.Central;
 namespace ServiPuntosUy.DAO.Migrations.Central
 {
     [DbContext(typeof(CentralDbContext))]
-    partial class CentralDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250528184349_UpdateUserSeedLastLoginDate")]
+    partial class UpdateUserSeedLastLoginDate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -506,8 +509,8 @@ namespace ServiPuntosUy.DAO.Migrations.Central
                             LastLoginDate = new DateTime(2025, 5, 28, 18, 43, 49, 337, DateTimeKind.Utc).AddTicks(5880),
                             Name = "Admin Central",
                             NotificationsEnabled = true,
-                            Password = "UjRJ6aZDtLSNtS4Z2iNavTbYI2QIjVviCTuggKJpfso=",
-                            PasswordSalt = "JCfmyZickAH/jRYWkSuL9w==",
+                            Password = "vIxaoEQaRXF8lq6Hhh+b5N3S2Mz3BDviTzh53hiI/OA=",
+                            PasswordSalt = "TV32TVXeq4n01fZUsGBB9A==",
                             PointBalance = 0,
                             Role = 1
                         },
@@ -519,8 +522,8 @@ namespace ServiPuntosUy.DAO.Migrations.Central
                             LastLoginDate = new DateTime(2025, 5, 28, 18, 43, 49, 337, DateTimeKind.Utc).AddTicks(5903),
                             Name = "Admin Tenant",
                             NotificationsEnabled = true,
-                            Password = "UjRJ6aZDtLSNtS4Z2iNavTbYI2QIjVviCTuggKJpfso=",
-                            PasswordSalt = "JCfmyZickAH/jRYWkSuL9w==",
+                            Password = "vIxaoEQaRXF8lq6Hhh+b5N3S2Mz3BDviTzh53hiI/OA=",
+                            PasswordSalt = "TV32TVXeq4n01fZUsGBB9A==",
                             PointBalance = 0,
                             Role = 2,
                             TenantId = 1
