@@ -194,7 +194,7 @@ namespace ServiPuntosUy.DataServices
 
             // Registrar los demás servicios
             _serviceCollection.AddScoped<IPromotionService, Services.EndUser.PromotionService>();
-            // _serviceCollection.AddScoped<IProductService, Services.EndUser.ProductService>();
+            _serviceCollection.AddScoped<IProductService, Services.EndUser.ProductService>();
             _serviceCollection.AddScoped<IUserService, Services.EndUser.UserService>();
             _serviceCollection.AddScoped<INotificationService, Services.EndUser.NotificationService>();
             _serviceCollection.AddScoped<IVerificationService, Services.EndUser.VerificationService>();
