@@ -1,11 +1,13 @@
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 using System.Text;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using ServiPuntosUy.DAO.Models.Central;
 using ServiPuntosUy.DTO;
 using ServiPuntosUy.Enums;
+using System.Security.Claims;
+using ServiPuntosUy.Models.DAO;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using ServiPuntosUy.DAO.Models.Central;
+using ServiPuntosUy.DataServices.Services.CommonLogic;
 
 namespace ServiPuntosUy.DataServices.Services.CommonLogic
 {
@@ -18,17 +20,21 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
         private readonly DbContext _dbContext;
         private readonly IConfiguration _configuration;
         private readonly string _tenantId;
+        private readonly IGenericRepository<DAO.Models.Central.User> _userRepository;
 
         public CommonAuthService(
             DbContext dbContext,
             IConfiguration configuration,
             IAuthLogic authLogic,
-            string tenantId = null)
+            IGenericRepository<DAO.Models.Central.User> userRepository,
+            string tenantId = null
+        )
         {
             _dbContext = dbContext;
             _configuration = configuration;
             _authLogic = authLogic;
             _tenantId = tenantId;
+            _userRepository = userRepository;
         }
 
         /// Genera un token JWT para un usuario
@@ -145,6 +151,11 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
         /// <returns>Usuario registrado</returns>
         public async Task<UserSessionDTO> Signup(string email, string password, string name, int tenantId)
         {
+            // En tiempo de ejecución, usamos AuthLogic para generar hash y salt
+            var authLogic = new AuthLogic(_configuration);
+            string salt;
+            var passwordHash = authLogic.HashPassword(password, out salt);
+
             var newUser = new User
             {
                 Email = email,
@@ -159,10 +170,17 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
                 PasswordSalt = "",
             };
 
-            _dbContext.Set<User>().Add(newUser);
-            await _dbContext.SaveChangesAsync();
+            var createdUser = await _userRepository.AddAsync(newUser);
+            await _userRepository.SaveChangesAsync();
 
-            return await AuthenticateAsync(email, password);
+            return await GenerateJwtToken(
+                createdUser.Id,
+                createdUser.Email,
+                createdUser.Name,
+                createdUser.Role,
+                createdUser.TenantId,
+                null
+            );
         }
     }
 }
