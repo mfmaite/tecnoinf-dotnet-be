@@ -356,6 +356,45 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             return GetProductDTO(createdProduct);
         
         }
+        
+        public ProductDTO UpdateProduct(int productId, string? name, string? description, string? imageUrl, decimal? price, bool? ageRestricted)
+        {
+            var product = _productRepository.GetByIdAsync(productId);
+            if (product == null)
+            {
+                throw new Exception($"No existe un producto con el ID {productId}");
+            }
+
+            var updatedProduct = new DAO.Models.Central.Product
+            {
+                Id = product.Id,
+                TenantId = product.TenantId,
+                Name = name ?? product.Name,
+                Description = description ?? product.Description,
+                ImageUrl = imageUrl ?? product.ImageUrl,
+                Price = price ?? product.Price,
+                AgeRestricted = ageRestricted ?? product.AgeRestricted
+            };
+
+
+            _productRepository.UpdateAsync(updatedProduct).GetAwaiter().GetResult();
+            _productRepository.SaveChangesAsync().GetAwaiter().GetResult();
+
+            return GetProductDTO(updatedProduct);
+        }
+
+        public void DeleteProduct(int productId)
+        {
+            var product = _productRepository.GetByIdAsync(productId);;
+            if (product == null)
+            {
+                throw new Exception($"No existe un producto con el ID {productId}");
+            }
+
+            _productRepository.DeleteAsync(productId).GetAwaiter().GetResult();
+            _productRepository.SaveChangesAsync().GetAwaiter().GetResult();
+
+        }
 
     }
 
