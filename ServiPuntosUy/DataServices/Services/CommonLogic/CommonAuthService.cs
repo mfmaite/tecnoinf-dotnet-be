@@ -31,7 +31,7 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
             _tenantId = tenantId;
         }
 
-                /// Genera un token JWT para un usuario
+        /// Genera un token JWT para un usuario
         /// </summary>
         /// <param name="userId">ID del usuario</param>
         /// <param name="email">Email del usuario</param>
@@ -136,26 +136,33 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
             return _authLogic.ValidateToken(token);
         }
 
-    //     /// <summary>
-    //     /// Registra a un usuario
-    //     /// </summary>
-    //     /// <param name="email">Email del usuario</param>
-    //     /// <param name="password">Contraseña del usuario</param>
-    //     /// <param name="name">Nombre del usuario</param>
-    //     /// <returns>Usuario registrado</returns>
-    //     public async Task<UserSessionDTO> Signup(string email, string password, string name)
-    //     {
-    //         var newUser = new User
-    //         {
-    //             Email = email,
-    //             Password = password,
-    //             Name = name
-    //         };
+        /// <summary>
+        /// Registra a un usuario
+        /// </summary>
+        /// <param name="email">Email del usuario</param>
+        /// <param name="password">Contraseña del usuario</param>
+        /// <param name="name">Nombre del usuario</param>
+        /// <returns>Usuario registrado</returns>
+        public async Task<UserSessionDTO> Signup(string email, string password, string name, int tenantId)
+        {
+            var newUser = new User
+            {
+                Email = email,
+                Name = name,
+                TenantId = tenantId,
+                Role = UserType.EndUser,
+                IsVerified = false,
+                NotificationsEnabled = true,
+                LastLoginDate = DateTime.UtcNow,
+                PointBalance = 0,
+                Password = password,
+                PasswordSalt = "",
+            };
 
-    //         _dbContext.Set<User>().Add(newUser);
-    //         await _dbContext.SaveChangesAsync();
+            _dbContext.Set<User>().Add(newUser);
+            await _dbContext.SaveChangesAsync();
 
-    //         return await AuthenticateAsync(email, password);
-    //     }
+            return await AuthenticateAsync(email, password);
+        }
     }
 }

@@ -30,14 +30,14 @@ namespace ServiPuntosUy.DataServices.Services
         /// <returns>true si el token es válido, false en caso contrario</returns>
         bool ValidateToken(string token);
 
-        // /// <summary>
-        // /// Registra a un usuario
-        // /// </summary>
-        // /// <param name="email">Email del usuario</param>
-        // /// <param name="password">Contraseña del usuario</param>
-        // /// <param name="name">Nombre del usuario</param>
-        // /// <returns>Usuario registrado</returns>
-        // Task<UserSessionDTO> Signup(string email, string password, string name);
+        /// <summary>
+        /// Registra a un usuario
+        /// </summary>
+        /// <param name="email">Email del usuario</param>
+        /// <param name="password">Contraseña del usuario</param>
+        /// <param name="name">Nombre del usuario</param>
+        /// <returns>Usuario registrado</returns>
+        Task<UserSessionDTO> Signup(string email, string password, string name, int tenantId);
 
         /// <summary>
         /// Genera un token JWT para un usuario
