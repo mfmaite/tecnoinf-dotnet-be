@@ -42,11 +42,6 @@ public class ProductController : BaseController
             if (ObtainUserTypeFromToken() != UserType.Tenant)
                 return BadRequest("No tiene permisos para crear productos.");
 
-            // Validar que ningún campo requerido esté vacío
-            if (string.IsNullOrWhiteSpace(request.Name) || string.IsNullOrWhiteSpace(request.Description) 
-                || string.IsNullOrWhiteSpace(request.ImageUrl) || request.Price <= 0)
-                return BadRequest("Verifica que todos los campos requeridos estén completos: Name, Description, ImageUrl y Price.");
-
             var newProduct = ProductService?.CreateProduct(
                 request.tenantId,
                 request.Name,
@@ -76,6 +71,5 @@ public class ProductController : BaseController
             });
         }
     }
-
 
 }
