@@ -222,24 +222,7 @@ namespace ServiPuntosUy.DataServices.Services.Branch
     /// <summary>
     /// Implementación del servicio de productos para el administrador de branch
     /// </summary>
-    public class ProductService : IProductService
-    {
-        private readonly DbContext _dbContext;
-        private readonly IConfiguration _configuration;
-        private readonly string _tenantId;
-        private readonly int _branchId;
-
-        public ProductService(DbContext dbContext, IConfiguration configuration, string tenantId, int branchId)
-        {
-            _dbContext = dbContext;
-            _configuration = configuration;
-            _tenantId = tenantId;
-            _branchId = branchId;
-        }
-
-        // Implementar los métodos de la interfaz IProductService
-        // Esta es una implementación básica para el scaffold
-    }
+    // public class ProductService : IProductService
 
     /// <summary>
     /// Implementación del servicio de usuarios para el administrador de branch
