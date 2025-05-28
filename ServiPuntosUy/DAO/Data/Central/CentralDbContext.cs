@@ -101,6 +101,7 @@ public class CentralDbContext : DbContext
                     Password = "AdminPassword", // En producción, esto sería un hash
                     PasswordSalt = "DefaultSalt", // En producción, esto sería un salt real
                     Role = UserType.Central,
+                    LastLoginDate = DateTime.UtcNow // Establecer fecha de último login
                 }
             );
 
@@ -114,6 +115,7 @@ public class CentralDbContext : DbContext
                     Password = "AdminPassword", // En producción, esto sería un hash
                     PasswordSalt = "DefaultSalt", // En producción, esto sería un salt real
                     Role = UserType.Tenant,
+                    LastLoginDate = DateTime.UtcNow // Establecer fecha de último login
                 }
             );
             return;
@@ -134,6 +136,7 @@ public class CentralDbContext : DbContext
                 Password = passwordHash,
                 PasswordSalt = salt,
                 Role = UserType.Central,
+                LastLoginDate = DateTime.UtcNow 
             }
         );
 
@@ -148,6 +151,7 @@ public class CentralDbContext : DbContext
                 PasswordSalt = salt,
                 Role = UserType.Tenant,
                 TenantId = 1,
+                LastLoginDate = DateTime.UtcNow 
             }
         );
     }
