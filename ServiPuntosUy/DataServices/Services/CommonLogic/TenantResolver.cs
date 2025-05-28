@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Text.RegularExpressions;
+using ServiPuntosUy.DAO.Data.Central;
 using ServiPuntosUy.Enums;
 
 namespace ServiPuntosUy.DataServices.Services.CommonLogic
@@ -10,13 +11,15 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
     public class TenantResolver : ITenantResolver
     {
         private readonly IConfiguration _configuration;
+        private readonly CentralDbContext _dbContext;
 
-        public TenantResolver(IConfiguration configuration)
+        public TenantResolver(IConfiguration configuration, CentralDbContext dbContext)
         {
             _configuration = configuration;
+            _dbContext = dbContext;
         }
 
-     
+
         public string ResolveTenantId(HttpContext context)
         {
             // 1. Intentar obtener del token JWT
@@ -33,7 +36,7 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
                 return tenantId;
             }
 
-            // 3. Intentar obtener del header custom (X-Tenant-Id) en caso de mobile
+            // 3. Intentar obtener del header custom (X-Tenant-Name) en caso de mobile
             tenantId = GetTenantIdFromCustomHeader(context);
             if (!string.IsNullOrEmpty(tenantId))
             {
@@ -44,7 +47,7 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
             return null;
         }
 
-    
+
         public UserType ResolveUserType(HttpContext context)
         {
             // 1. Intentar obtener del token JWT
@@ -90,7 +93,6 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
             return null;
         }
 
-        #region Métodos privados
 
         private string GetTenantIdFromToken(HttpContext context)
         {
@@ -114,44 +116,64 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
             }
         }
 
+        /// <summary>
+        /// Busca el ID del tenant a partir de su nombre
+        /// </summary>
+        /// <param name="tenantName">Nombre del tenant</param>
+        /// <returns>ID del tenant como string, o null si no se encuentra</returns>
+        private string GetTenantIdByName(string tenantName)
+        {
+            if (string.IsNullOrEmpty(tenantName))
+                return null;
+
+            var tenant = _dbContext.Tenants.FirstOrDefault(t => t.Name == tenantName);
+            return tenant?.Id.ToString();
+        }
+
         private string GetTenantIdFromHost(HttpContext context)
         {
             string host = context.Request.Host.Host;
 
             // Patrones de host para diferentes tipos de usuario
             // admin.servipuntos.uy -> Central (no tiene tenant)
-            // {tenant-id}.admin.servipuntos.uy -> Tenant
-            // {tenant-id}.branch.admin.servipuntos.uy -> Branch
-            // {tenant-id}.app.servipuntos.uy -> EndUser (el tenant se obtiene del subdominio)
+            // {tenant-name}.admin.servipuntos.uy -> Tenant
+            // {tenant-name}.branch.admin.servipuntos.uy -> Branch
+            // {tenant-name}.app.servipuntos.uy -> EndUser (el tenant se obtiene del subdominio)
 
-            // Para administrador de tenant: {tenant-id}.admin.servipuntos.uy
+            string tenantName = null;
+
+            // Para administrador de tenant: {tenant-name}.admin.servipuntos.uy
             var tenantAdminRegex = new Regex(@"^([^.]+)\.admin\.");
             var tenantAdminMatch = tenantAdminRegex.Match(host);
             if (tenantAdminMatch.Success)
             {
-                return tenantAdminMatch.Groups[1].Value;
+                tenantName = tenantAdminMatch.Groups[1].Value;
+                return GetTenantIdByName(tenantName);
             }
 
-            // Para administrador de estación: {tenant-id}.branch.admin.servipuntos.uy
+            // Para administrador de estación: {tenant-name}.branch.admin.servipuntos.uy
             var branchAdminRegex = new Regex(@"^([^.]+)\.branch\.");
             var branchAdminMatch = branchAdminRegex.Match(host);
             if (branchAdminMatch.Success)
             {
-                return branchAdminMatch.Groups[1].Value;
+                tenantName = branchAdminMatch.Groups[1].Value;
+                return GetTenantIdByName(tenantName);
             }
 
-            // Para usuario final: {tenant-id}.app.servipuntos.uy
+            // Para usuario final: {tenant-name}.app.servipuntos.uy
             var endUserTenantRegex = new Regex(@"^([^.]+)\.app\.");
             var endUserTenantMatch = endUserTenantRegex.Match(host);
             if (endUserTenantMatch.Success)
             {
-                return endUserTenantMatch.Groups[1].Value;
+                tenantName = endUserTenantMatch.Groups[1].Value;
+                return GetTenantIdByName(tenantName);
             }
 
             // Para desarrollo local, se puede usar un query parameter
             if (context.Request.Query.TryGetValue("tenant", out var tenantParam))
             {
-                return tenantParam.ToString();
+                tenantName = tenantParam.ToString();
+                return GetTenantIdByName(tenantName);
             }
 
             return null;
@@ -159,13 +181,14 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
 
         private string GetTenantIdFromCustomHeader(HttpContext context)
         {
-            if (context.Request.Headers.TryGetValue("X-Tenant-Id", out var tenantIdHeader))
+            if (context.Request.Headers.TryGetValue("X-Tenant-Name", out var tenantNameHeader))
             {
-                // Devolver el valor del header si no está vacío
-                string tenantId = tenantIdHeader.ToString();
-                if (!string.IsNullOrWhiteSpace(tenantId))
+                // Obtener el nombre del tenant del header
+                string tenantName = tenantNameHeader.ToString();
+                if (!string.IsNullOrWhiteSpace(tenantName))
                 {
-                    return tenantId;
+                    // Buscar el ID a partir del nombre
+                    return GetTenantIdByName(tenantName);
                 }
             }
 
@@ -279,6 +302,5 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
             return null;
         }
 
-        #endregion
     }
 }
