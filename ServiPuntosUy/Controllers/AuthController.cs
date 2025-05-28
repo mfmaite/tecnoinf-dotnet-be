@@ -94,21 +94,29 @@ namespace ServiPuntosUy.Controllers
         [ProducesResponseType(typeof(ApiResponse<object>), 401)]
         public async Task<IActionResult> Signup([FromBody] SignupRequest request)
         {
-            var userSession = await AuthService.Signup(request.Email, request.Password, request.Name, request.TenantId);
+            try {
+                var userSession = await AuthService.Signup(request.Email, request.Password, request.Name, request.TenantId);
 
-            if (userSession == null || string.IsNullOrEmpty(userSession.token))
-                return Unauthorized(new ApiResponse<object>
+                if (userSession == null || string.IsNullOrEmpty(userSession.token))
+                    return Unauthorized(new ApiResponse<object>
+                    {
+                        Error = true,
+                        Message = "Error al registrar usuario"
+                    });
+
+                return Ok(new ApiResponse<UserSessionDTO>
+                {
+                    Error = false,
+                    Message = "Usuario registrado correctamente",
+                    Data = userSession
+                });
+            } catch (Exception ex) {
+                return BadRequest(new ApiResponse<object>
                 {
                     Error = true,
-                    Message = "Error al registrar usuario"
+                    Message = ex.Message
                 });
-
-            return Ok(new ApiResponse<UserSessionDTO>
-            {
-                Error = false,
-                Message = "Usuario registrado correctamente",
-                Data = userSession
-            });
+            }
         }
 
     }

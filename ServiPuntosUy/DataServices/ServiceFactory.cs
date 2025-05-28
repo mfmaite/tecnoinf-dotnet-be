@@ -107,6 +107,8 @@ namespace ServiPuntosUy.DataServices
                     sp.GetRequiredService<DbContext>(),
                     _configuration,
                     sp.GetRequiredService<IAuthLogic>(),
+                    sp.GetRequiredService<IGenericRepository<DAO.Models.Central.User>>(),
+                    sp.GetRequiredService<IGenericRepository<DAO.Models.Central.Tenant>>(),
                     null)); // null para Central
 
             // Registrar los demás servicios para el administrador central
@@ -129,6 +131,7 @@ namespace ServiPuntosUy.DataServices
                     _configuration,
                     sp.GetRequiredService<IAuthLogic>(),
                     sp.GetRequiredService<IGenericRepository<DAO.Models.Central.User>>(),
+                    sp.GetRequiredService<IGenericRepository<DAO.Models.Central.Tenant>>(),
                     tenantId));
 
             _serviceCollection.AddScoped<ITenantBranchService, TenantBranchService>();
@@ -151,6 +154,7 @@ namespace ServiPuntosUy.DataServices
                     _configuration,
                     sp.GetRequiredService<IAuthLogic>(),
                     sp.GetRequiredService<IGenericRepository<DAO.Models.Central.User>>(),
+                    sp.GetRequiredService<IGenericRepository<DAO.Models.Central.Tenant>>(),
                     tenantId));
 
             // Registrar los servicios implementados
@@ -180,6 +184,7 @@ namespace ServiPuntosUy.DataServices
                     _configuration,
                     sp.GetRequiredService<IAuthLogic>(),
                     sp.GetRequiredService<IGenericRepository<DAO.Models.Central.User>>(),
+                    sp.GetRequiredService<IGenericRepository<DAO.Models.Central.Tenant>>(),
                     tenantId));
 
 

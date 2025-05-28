@@ -21,12 +21,14 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
         private readonly IConfiguration _configuration;
         private readonly string _tenantId;
         private readonly IGenericRepository<DAO.Models.Central.User> _userRepository;
+        private readonly IGenericRepository<DAO.Models.Central.Tenant> _tenantRepository;
 
         public CommonAuthService(
             DbContext dbContext,
             IConfiguration configuration,
             IAuthLogic authLogic,
             IGenericRepository<DAO.Models.Central.User> userRepository,
+            IGenericRepository<DAO.Models.Central.Tenant> tenantRepository,
             string tenantId = null
         )
         {
@@ -35,6 +37,7 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
             _authLogic = authLogic;
             _tenantId = tenantId;
             _userRepository = userRepository;
+            _tenantRepository = tenantRepository;
         }
 
         /// Genera un token JWT para un usuario
@@ -151,10 +154,19 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
         /// <returns>Usuario registrado</returns>
         public async Task<UserSessionDTO> Signup(string email, string password, string name, int tenantId)
         {
-            // En tiempo de ejecución, usamos AuthLogic para generar hash y salt
             var authLogic = new AuthLogic(_configuration);
             string salt;
             var passwordHash = authLogic.HashPassword(password, out salt);
+
+            var existingUser = await _userRepository.GetQueryable().FirstOrDefaultAsync(u => u.Email == email);
+            if (existingUser != null) {
+                throw new Exception($"Ya existe un usuario con el email {email}");
+            }
+
+            var existingTenant = await _tenantRepository.GetQueryable().FirstOrDefaultAsync(t => t.Id == tenantId);
+            if (existingTenant == null) {
+                throw new Exception($"El tenant {tenantId} no existe");
+            }
 
             var newUser = new User
             {
