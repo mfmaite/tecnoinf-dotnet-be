@@ -91,6 +91,14 @@ Puedes conectarte usando estas credenciales desde cualquier herramienta SQL (com
 - Puerto: `1433`
 - Usuario y contraseña: las definidas en el archivo `.env`
 
+#### 🧬 Crear una migración
+
+Para generar una nueva migración, ejecutá el siguiente comando:
+
+```bash
+dotnet ef migrations add <migration_name> \
+  --output-dir DAO/Migrations/Central
+```
 
 ## 🖥️ Configuración del Archivo Hosts
 
@@ -121,9 +129,9 @@ Para probar el sistema multi-tenant en desarrollo local, configura el archivo ho
 ```
 
 Esto debido a que la resolución de tenant y rol se basa en el dominio y subdominio de las requests.
-Podemos agregar tantos tenants como se nos de la gana, no fomentamos el uso de wildcard (*) porque no en todos los sistemas opeartivos funciona. 
+Podemos agregar tantos tenants como se nos de la gana, no fomentamos el uso de wildcard (*) porque no en todos los sistemas opeartivos funciona.
 
-Ej: si quisiera agregar ancap, sería agregar: 
+Ej: si quisiera agregar ancap, sería agregar:
 ```
 127.0.0.1    ancap.admin.servipuntos.local
 127.0.0.1    ancap.branch.admin.servipuntos.local

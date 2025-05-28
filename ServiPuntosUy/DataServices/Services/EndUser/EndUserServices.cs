@@ -6,6 +6,7 @@ using ServiPuntosUy.Models.DAO;
 using Microsoft.EntityFrameworkCore;
 using ServiPuntosUy.DTO;
 
+
 namespace ServiPuntosUy.DataServices.Services.EndUser
 {
     /// <summary>
@@ -51,23 +52,6 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
     /// <summary>
     /// Implementación del servicio de productos para el usuario final
     /// </summary>
-    public class ProductService : IProductService
-    {
-        private readonly DbContext _dbContext;
-        private readonly IConfiguration _configuration;
-        private readonly string _tenantId;
-
-        public ProductService(DbContext dbContext, IConfiguration configuration, string tenantId)
-        {
-            _dbContext = dbContext;
-            _configuration = configuration;
-            _tenantId = tenantId;
-        }
-
-        // Implementar los métodos de la interfaz IProductService
-        // Esta es una implementación básica para el scaffold
-    }
-
 
     /// <summary>
     /// Implementación del servicio de usuarios para el usuario final

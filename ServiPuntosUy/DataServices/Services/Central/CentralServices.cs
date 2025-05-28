@@ -67,6 +67,11 @@ namespace ServiPuntosUy.DataServices.Services.Central
 
             return GetTenantDTO(createdTenant);
         }
+
+        public TenantDTO[] GetTenantsList() {
+            var tenants = _tenantRepository.GetQueryable().ToList();
+            return tenants.Select(t => GetTenantDTO(t)).ToArray();
+        }
     }
 
     /// <summary>
@@ -230,20 +235,8 @@ namespace ServiPuntosUy.DataServices.Services.Central
     /// <summary>
     /// Implementación del servicio de productos para el administrador central
     /// </summary>
-    public class ProductService : IProductService
-    {
-        private readonly CentralDbContext _dbContext;
-        private readonly IConfiguration _configuration;
 
-        public ProductService(CentralDbContext dbContext, IConfiguration configuration)
-        {
-            _dbContext = dbContext;
-            _configuration = configuration;
-        }
 
-        // Implementar los métodos de la interfaz IProductService
-        // Esta es una implementación básica para el scaffold
-    }
 
     /// <summary>
     /// Implementación del servicio de usuarios para el administrador central

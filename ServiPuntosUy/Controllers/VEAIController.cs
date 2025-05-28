@@ -19,19 +19,23 @@ public class VEAIController : BaseController
     [HttpPost]
     public async Task<IActionResult> Post([FromBody] PersonaRequest request)
     {
-        try {
+        try
+        {
             var user = ObtainUserFromToken();
-            var result = await VEAIService.VerificarIdentidad(user.Id, request.NroDocumento);
+            var result = await VEAIService.VerificarIdentidad(user.Id, request.DocumentNumber);
 
 
-            return Ok(new ApiResponse<UserDTO>{
+            return Ok(new ApiResponse<UserDTO>
+            {
                 Error = false,
                 Message = "Verificación de edad exitosa",
                 Data = result
             });
         }
-        catch (Exception ex) {
-            return BadRequest(new ApiResponse<string>{
+        catch (Exception ex)
+        {
+            return BadRequest(new ApiResponse<string>
+            {
                 Error = true,
                 Message = ex.Message
             });

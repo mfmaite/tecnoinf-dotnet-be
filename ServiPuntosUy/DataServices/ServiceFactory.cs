@@ -112,7 +112,7 @@ namespace ServiPuntosUy.DataServices
             // Registrar los demás servicios para el administrador central
             _serviceCollection.AddScoped<ILoyaltyService, Services.Central.LoyaltyService>();
             _serviceCollection.AddScoped<IPromotionService, Services.Central.PromotionService>();
-            _serviceCollection.AddScoped<IProductService, Services.Central.ProductService>();
+            // _serviceCollection.AddScoped<IProductService, Services.Central.ProductService>();
             _serviceCollection.AddScoped<IUserService, Services.Central.UserService>();
             _serviceCollection.AddScoped<INotificationService, Services.Central.NotificationService>();
             _serviceCollection.AddScoped<IVerificationService, Services.Central.VerificationService>();
@@ -162,7 +162,7 @@ namespace ServiPuntosUy.DataServices
 
             _serviceCollection.AddScoped<ILoyaltyService, Services.Branch.LoyaltyService>();
             _serviceCollection.AddScoped<IPromotionService, Services.Branch.PromotionService>();
-            _serviceCollection.AddScoped<IProductService, Services.Branch.ProductService>();
+            // _serviceCollection.AddScoped<IProductService, Services.Branch.ProductService>();
             _serviceCollection.AddScoped<IUserService, Services.Branch.UserService>();
             _serviceCollection.AddScoped<INotificationService, Services.Branch.NotificationService>();
             _serviceCollection.AddScoped<IVerificationService, Services.Branch.VerificationService>();
@@ -182,7 +182,7 @@ namespace ServiPuntosUy.DataServices
 
             _serviceCollection.AddScoped<ILoyaltyService, Services.EndUser.LoyaltyService>();
             _serviceCollection.AddScoped<IPromotionService, Services.EndUser.PromotionService>();
-            _serviceCollection.AddScoped<IProductService, Services.EndUser.ProductService>();
+            // _serviceCollection.AddScoped<IProductService, Services.EndUser.ProductService>();
             _serviceCollection.AddScoped<IUserService, Services.EndUser.UserService>();
             _serviceCollection.AddScoped<INotificationService, Services.EndUser.NotificationService>();
             _serviceCollection.AddScoped<IVerificationService, Services.EndUser.VerificationService>();

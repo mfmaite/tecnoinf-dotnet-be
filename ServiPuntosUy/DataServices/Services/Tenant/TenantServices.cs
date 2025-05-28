@@ -8,6 +8,7 @@ using System.Linq.Expressions;
 using ServiPuntosUy.Models.DAO;
 using System.Text.RegularExpressions;
 using ServiPuntosUy.DAO.Data.Central;
+using ServiPuntosUy.DataServices.Services;
 using ServiPuntosUy.DataServices.Services.Branch;
 
 namespace ServiPuntosUy.DataServices.Services.Tenant
@@ -312,19 +313,50 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
     /// </summary>
     public class ProductService : IProductService
     {
-        private readonly DbContext _dbContext;
-        private readonly IConfiguration _configuration;
-        private readonly string _tenantId;
+        private readonly IGenericRepository<DAO.Models.Central.Product> _productRepository;
+        
 
-        public ProductService(DbContext dbContext, IConfiguration configuration, string tenantId)
+
+        public ProductService(IGenericRepository<DAO.Models.Central.Product> productRepository)
         {
-            _dbContext = dbContext;
-            _configuration = configuration;
-            _tenantId = tenantId;
+            _productRepository = productRepository;
         }
 
-        // Implementar los métodos de la interfaz IProductService
-        // Esta es una implementación básica para el scaffold
+        public ProductDTO GetProductDTO(DAO.Models.Central.Product product)
+        {
+            return new ProductDTO
+            {
+                Id = product.Id,
+                TenantId = product.TenantId,
+                Name = product.Name,
+                Description = product.Description,
+                ImageUrl = product.ImageUrl,
+                Price = product.Price,
+                AgeRestricted = product.AgeRestricted
+            };
+        }
+
+        public ProductDTO CreateProduct(int tenantId, string name, string description, string imageUrl, decimal price, bool ageRestricted)
+        {
+            var product = new DAO.Models.Central.Product
+            {
+                TenantId = tenantId,
+                Name = name,
+                Description = description,
+                ImageUrl = imageUrl,
+                Price = price,
+                AgeRestricted = ageRestricted
+            };
+
+            // Guardar el producto en la base de datos usando el repositorio de la clase
+            var createdProduct = _productRepository.AddAsync(product).GetAwaiter().GetResult();
+            _productRepository.SaveChangesAsync().GetAwaiter().GetResult();
+            // Devolver el DTO del producto creado
+
+            return GetProductDTO(createdProduct);
+        
+        }
+
     }
 
     /// <summary>
