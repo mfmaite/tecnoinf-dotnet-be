@@ -242,7 +242,7 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
             {
                 if (DateTime.TryParseExact(persona.FechaNacimiento, "yyyy-MM-dd", null, System.Globalization.DateTimeStyles.None, out var fechaNacimiento))
                 {
-                    var hoy = DateTime.UtcNow.Date;
+                    var hoy = DateTime.Today;
                     var edad = hoy.Year - fechaNacimiento.Year;
                     if (fechaNacimiento > hoy.AddYears(-edad))
                     {
