@@ -166,8 +166,8 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
                 NotificationsEnabled = true,
                 LastLoginDate = DateTime.UtcNow,
                 PointBalance = 0,
-                Password = password,
-                PasswordSalt = "",
+                Password = passwordHash,
+                PasswordSalt = salt,
             };
 
             var createdUser = await _userRepository.AddAsync(newUser);
