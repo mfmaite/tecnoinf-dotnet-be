@@ -51,7 +51,7 @@ public class ProductController : BaseController
 
             if (newProduct == null)
             {
-                return BadRequest(new ApiResponse<object>
+                return StatusCode(500, new ApiResponse<object>
                 {
                     Error = true,
                     Message = "No se pudo crear el producto. El servicio no está disponible."
@@ -156,6 +156,7 @@ public class ProductController : BaseController
     [HttpPost("Update")]
     [ProducesResponseType(typeof(ProductDTO), 200)]
     [ProducesResponseType(400)]
+    [ProducesResponseType(500)]
     public async Task<IActionResult> UpdateProduct([FromBody] AddNewProductRequest request) {
         try {
 
@@ -176,7 +177,7 @@ public class ProductController : BaseController
 
             if (product == null)
             {
-                return BadRequest(new ApiResponse<object>{
+                return StatusCode(500, new ApiResponse<object>{
                     Error = true,
                     Message = "No se pudo editar el producto. El servicio no está disponible."
                 });
