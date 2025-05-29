@@ -17,14 +17,15 @@ ServiPuntosUy utiliza un enfoque de **discriminador por tenant** para implementa
 
 El `TenantResolver` es responsable de identificar el tenant y el tipo de usuario a partir del contexto HTTP. Implementa la interfaz `ITenantResolver` con los siguientes métodos:
 
-- `ResolveTenantId(HttpContext)`: Determina el ID del tenant basado en:
-  - Token JWT (claim "tenantId")
-  - Host de la solicitud (subdominio)
+- `ResolveTenantId(HttpContext)`: Determina el ID del tenant basado en (en orden de prioridad):
+  - Token JWT (claim "tenantId") si el usuario está autenticado
+  - Host de la solicitud (patrón {tenant-name}.app.servipuntos.uy)
+  - Header X-Tenant-Name (para usuarios móviles)
   - Query parameter "tenant" (para desarrollo)
 
-- `ResolveUserType(HttpContext)`: Determina el tipo de usuario basado en:
-  - Token JWT (claim "userType")
-  - Host de la solicitud (patrón de subdominio)
+- `ResolveUserType(HttpContext)`: Determina el tipo de usuario basado en (en orden de prioridad):
+  - Token JWT (claim "userType") si el usuario está autenticado
+  - Host de la solicitud (solo identifica EndUser para patrón {tenant-name}.app.servipuntos.uy)
   - Query parameter "userType" (para desarrollo)
 
 - `ResolveBranchId(HttpContext)`: Determina el ID de la estación para administradores de estación basado en:
@@ -51,6 +52,10 @@ El `ServiceFactory` es responsable de configurar y proporcionar los servicios ad
 
 El `ServiceFactory` utiliza un enfoque de "scope" para cada tenant/usuario, creando un nuevo `IServiceProvider` con los servicios adecuados para cada combinación de tenant y tipo de usuario.
 
+Además, el `ServiceFactory` verifica si el usuario está autenticado:
+- Si el usuario no está autenticado, solo configura servicios comunes necesarios para el login
+- Si el usuario está autenticado, configura los servicios completos según el tenant y tipo de usuario
+
 ### 4. TenantAccessor
 
 El `TenantAccessor` proporciona acceso al tenant actual desde cualquier parte de la aplicación. Implementa la interfaz `ITenantAccessor` con el siguiente método:
@@ -61,21 +66,26 @@ El `TenantAccessor` proporciona acceso al tenant actual desde cualquier parte de
 
 1. Una solicitud llega al servidor
 2. El `RequestContentMiddleware` intercepta la solicitud
-3. El middleware utiliza el `TenantResolver` para identificar el tenant y tipo de usuario
-4. El middleware configura los servicios usando el `ServiceFactory`
-5. El middleware almacena el tenant y tipo de usuario en el contexto HTTP
-6. La solicitud continúa su procesamiento normal
-7. Los controladores y servicios utilizan el `ServiceFactory` para obtener los servicios adecuados
-8. Los servicios utilizan el `TenantAccessor` para obtener el tenant actual cuando sea necesario
+3. El `JwtAuthenticationMiddleware` verifica si el token JWT es válido:
+   - Si es válido, establece `User.Identity.IsAuthenticated = true` y crea un `ClaimsPrincipal` con los claims del token
+   - Si no es válido, devuelve un 401 Unauthorized
+4. El middleware utiliza el `TenantResolver` para identificar el tenant y tipo de usuario
+5. El `ServiceFactory` verifica si el usuario está autenticado:
+   - Si no está autenticado, solo configura servicios comunes para login
+   - Si está autenticado, configura los servicios completos según el tenant y tipo de usuario
+6. El middleware almacena el tenant y tipo de usuario en el contexto HTTP (si el usuario está autenticado)
+7. La solicitud continúa su procesamiento normal
+8. Los controladores y servicios utilizan el `ServiceFactory` para obtener los servicios adecuados
+9. Los servicios utilizan el `TenantAccessor` para obtener el tenant actual cuando sea necesario
 
 ## Estructura de Dominios
 
 La aplicación utiliza la siguiente estructura de dominios para diferenciar entre los diferentes tipos de usuarios:
 
-- **admin.servipuntos.uy**: Administrador central (SuperAdmin)
-- **{tenant-name}.admin.servipuntos.uy**: Administrador de tenant
-- **{tenant-name}.branch.admin.servipuntos.uy**: Administrador de estación
+- **admin.servipuntos.uy**: Panel de administración unificado (para Central, Tenant y Branch admins)
 - **{tenant-name}.app.servipuntos.uy**: Usuario final (EndUser) con tenant específico
+
+Para los administradores (Central, Tenant y Branch), el tipo de usuario se determina a partir del JWT después del login, no de la URL. Esto permite tener un único panel de administración para todos los tipos de administradores.
 
 ## Modelo de Datos
 
