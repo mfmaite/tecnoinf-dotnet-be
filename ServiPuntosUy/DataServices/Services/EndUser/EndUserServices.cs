@@ -6,11 +6,38 @@ using ServiPuntosUy.Models.DAO;
 using Microsoft.EntityFrameworkCore;
 using ServiPuntosUy.DTO;
 using ServiPuntosUy.DAO.Models.Central;
+using ServiPuntosUy.Enums;
 
 
 
 namespace ServiPuntosUy.DataServices.Services.EndUser
 {
+    /// <summary>
+    /// Implementación del servicio de precios de combustible para el usuario final
+    /// </summary>
+    public class FuelService : IFuelService
+    {
+        private readonly IGenericRepository<FuelPrices> _fuelPricesRepository;
+
+        public FuelService(IGenericRepository<FuelPrices> fuelPricesRepository)
+        {
+            _fuelPricesRepository = fuelPricesRepository;
+        }
+
+        public FuelPrices UpdateFuelPrice(int branchId, FuelType fuelType, decimal price)
+        {
+            // El usuario final no puede actualizar precios
+            throw new UnauthorizedAccessException("El usuario final no puede actualizar precios de combustible");
+        }
+
+        public FuelPrices GetFuelPrice(int branchId, FuelType fuelType)
+        {
+            var fuelPrice = _fuelPricesRepository.GetQueryable()
+                .FirstOrDefault(fp => fp.BranchId == branchId && fp.FuelType == fuelType) ?? throw new Exception($"No existe un precio configurado para el combustible {fuelType} en la estación {branchId}");
+            return fuelPrice;
+        }
+    }
+
     /// <summary>
     /// Implementación del servicio de lealtad para el usuario final
     /// </summary>
@@ -323,4 +350,3 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
         }
     }
 }
-
