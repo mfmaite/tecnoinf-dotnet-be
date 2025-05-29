@@ -1,9 +1,11 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using ServiPuntosUy.DataServices.Services.CommonLogic;
 
 namespace ServiPuntosUy.Middlewares
 {
     /// <summary>
-    /// Middleware para verificar la autenticación JWT en todas las solicitudes
+    /// Middleware para verificar la autenticación JWT en todas las solicitudes y establecer el usuario autenticado
     /// </summary>
     public class JwtAuthenticationMiddleware
     {
@@ -67,7 +69,15 @@ namespace ServiPuntosUy.Middlewares
                     return;
                 }
                 
-                // Token JWT válido, continuar con el pipeline
+                // Token JWT válido, crear un ClaimsPrincipal y asignarlo a HttpContext.User
+                var claims = authLogic.GetTokenClaims(token);
+                var identity = new ClaimsIdentity(claims, JwtBearerDefaults.AuthenticationScheme, "userId", "userType");
+                var principal = new ClaimsPrincipal(identity);
+                
+                // Establecer el usuario autenticado en el contexto
+                context.User = principal;
+                
+                // Continuar con el pipeline
                 await _next(context);
             }
             catch (Exception ex)

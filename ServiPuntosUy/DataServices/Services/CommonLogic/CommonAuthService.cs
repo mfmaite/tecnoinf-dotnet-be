@@ -75,8 +75,6 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
 
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Email, user.Email),
                 new Claim("email", user.Email),
                 new Claim("userType", ((int)user.Role).ToString()),
                 new Claim("tenantId", user.TenantId.ToString()),

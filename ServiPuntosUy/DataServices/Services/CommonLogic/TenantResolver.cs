@@ -22,48 +22,54 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
 
         public string ResolveTenantId(HttpContext context)
         {
-            // 1. Intentar obtener del token JWT
-            string tenantId = GetTenantIdFromToken(context);
-            if (!string.IsNullOrEmpty(tenantId))
+            // 1. Si el usuario está autenticado, obtener el tenant ID del token JWT
+            if (context.User?.Identity?.IsAuthenticated == true)
             {
-                return tenantId;
+                string tenantId = GetTenantIdFromToken(context);
+                if (!string.IsNullOrEmpty(tenantId))
+                {
+                    return tenantId;
+                }
             }
-
-            // 2. Intentar obtener del host
-            tenantId = GetTenantIdFromHost(context);
-            if (!string.IsNullOrEmpty(tenantId))
+            
+            // 2. Intentar obtener del host (GetTenantIdFromHost ya maneja el caso de admin.*)
+            string tenantIdFromHost = GetTenantIdFromHost(context);
+            if (!string.IsNullOrEmpty(tenantIdFromHost))
             {
-                return tenantId;
+                return tenantIdFromHost;
             }
-
-            // 3. Intentar obtener del header custom (X-Tenant-Name) en caso de mobile
-            tenantId = GetTenantIdFromCustomHeader(context);
-            if (!string.IsNullOrEmpty(tenantId))
+            
+            // 3. Intentar obtener del header custom (X-Tenant-Name)
+            string tenantIdFromHeader = GetTenantIdFromCustomHeader(context);
+            if (!string.IsNullOrEmpty(tenantIdFromHeader))
             {
-                return tenantId;
+                return tenantIdFromHeader;
             }
-
-            // 3. Si no se pudo resolver, devolver null o un valor por defecto
+            
+            // Si no se pudo resolver, devolver null
             return null;
         }
 
 
         public UserType ResolveUserType(HttpContext context)
         {
-            // 1. Intentar obtener del token JWT
-            UserType? userType = GetUserTypeFromToken(context);
-            if (userType.HasValue)
+            // 1. Si el usuario está autenticado, obtener el user type del token JWT
+            if (context.User?.Identity?.IsAuthenticated == true)
             {
-                return userType.Value;
+                UserType? userType = GetUserTypeFromToken(context);
+                if (userType.HasValue)
+                {
+                    return userType.Value;
+                }
             }
-
-            // 2. Intentar obtener del host
-            userType = GetUserTypeFromHost(context);
-            if (userType.HasValue)
+            
+            // 2. Intentar obtener del host (GetUserTypeFromHost ya maneja el caso de admin.*)
+            UserType? userTypeFromHost = GetUserTypeFromHost(context);
+            if (userTypeFromHost.HasValue)
             {
-                return userType.Value;
+                return userTypeFromHost.Value;
             }
-
+            
             // 3. Si no se pudo resolver, asumir usuario final
             return UserType.EndUser;
         }
@@ -134,35 +140,17 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
         {
             string host = context.Request.Host.Host;
 
-            // Patrones de host para diferentes tipos de usuario
-            // admin.servipuntos.uy -> Central (no tiene tenant)
-            // {tenant-name}.admin.servipuntos.uy -> Tenant
-            // {tenant-name}.branch.admin.servipuntos.uy -> Branch
-            // {tenant-name}.app.servipuntos.uy -> EndUser (el tenant se obtiene del subdominio)
-
-            string tenantName = null;
-
-            // Para administrador de tenant: {tenant-name}.admin.servipuntos.uy
-            var tenantAdminRegex = new Regex(@"^([^.]+)\.admin\.");
-            var tenantAdminMatch = tenantAdminRegex.Match(host);
-            if (tenantAdminMatch.Success)
+            // Para administradores: admin.servipuntos.uy
+            // No intentamos resolver el tenant desde la URL
+            if (host.StartsWith("admin."))
             {
-                tenantName = tenantAdminMatch.Groups[1].Value;
-                return GetTenantIdByName(tenantName);
-            }
-
-            // Para administrador de estación: {tenant-name}.branch.admin.servipuntos.uy
-            var branchAdminRegex = new Regex(@"^([^.]+)\.branch\.");
-            var branchAdminMatch = branchAdminRegex.Match(host);
-            if (branchAdminMatch.Success)
-            {
-                tenantName = branchAdminMatch.Groups[1].Value;
-                return GetTenantIdByName(tenantName);
+                return null; // Devolvemos null para que el sistema use el JWT
             }
 
             // Para usuario final: {tenant-name}.app.servipuntos.uy
             var endUserTenantRegex = new Regex(@"^([^.]+)\.app\.");
             var endUserTenantMatch = endUserTenantRegex.Match(host);
+            string tenantName;
             if (endUserTenantMatch.Success)
             {
                 tenantName = endUserTenantMatch.Groups[1].Value;
@@ -227,22 +215,18 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
         {
             string host = context.Request.Host.Host;
 
-            // Patrones de host para diferentes tipos de usuario
-            if (host.StartsWith("admin."))
-            {
-                return UserType.Central;
-            }
-            else if (host.Contains(".admin."))
-            {
-                return UserType.Tenant;
-            }
-            else if (host.Contains(".branch."))
-            {
-                return UserType.Branch;
-            }
-            else if (host.Contains(".app."))
+            // Para usuarios finales: {tenant-name}.app.servipuntos.uy
+            if (host.Contains(".app."))
             {
                 return UserType.EndUser;
+            }
+            
+            // Para administradores: admin.servipuntos.uy
+            // No determinamos el tipo específico de administrador desde la URL
+            if (host.StartsWith("admin."))
+            {
+                // Devolvemos null para que el sistema use el JWT
+                return null;
             }
 
             // Para desarrollo local, se puede usar un query parameter
