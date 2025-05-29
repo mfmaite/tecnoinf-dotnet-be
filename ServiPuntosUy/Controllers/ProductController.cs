@@ -34,11 +34,11 @@ public class ProductController : BaseController
             if (request == null)
                 return BadRequest("Los datos del producto son requeridos.");
 
-            if (int.Parse(ObtainTenantFromToken()) != request.tenantId)
-                return BadRequest("No tiene permisos para crear productos en este producto.");
+            // if (int.Parse(ObtainTenantFromToken()) != request.tenantId)
+            //     return BadRequest("No tiene permisos para crear productos en este producto.");
 
-            if (ObtainUserTypeFromToken() != UserType.Tenant)
-                return BadRequest("No tiene permisos para crear productos.");
+            // if (ObtainUserTypeFromToken() != UserType.Tenant)
+            //     return BadRequest("No tiene permisos para crear productos.");
 
             var newProduct = ProductService?.CreateProduct(
                 request.tenantId,
@@ -156,16 +156,16 @@ public class ProductController : BaseController
     [HttpPost("Update")]
     [ProducesResponseType(typeof(ProductDTO), 200)]
     [ProducesResponseType(400)]
-    public IActionResult UpdateProduct([FromBody] AddNewProductRequest request) {
+    public async Task<IActionResult> UpdateProduct([FromBody] AddNewProductRequest request) {
         try {
 
             if (request == null)
                 return BadRequest("Los datos del producto son requeridos.");
 
-            if (ObtainUserTypeFromToken() != UserType.Tenant)
-                return BadRequest("No tiene permisos para editar productos.");
+            // if (ObtainUserTypeFromToken() != UserType.Tenant)
+            //     return BadRequest("No tiene permisos para editar productos.");
 
-            var product = ProductService?.UpdateProduct(
+            var product = await ProductService?.UpdateProduct(
                 request.productId,
                 request.Name,
                 request.Description,
@@ -195,19 +195,27 @@ public class ProductController : BaseController
         }
     }
 
-    [HttpPost("Update")]
+    [HttpPost("Delete")]
     [ProducesResponseType(typeof(ProductDTO), 200)]
     [ProducesResponseType(400)]
-    public IActionResult DeleteProduct([FromBody] AddNewProductRequest request) {
+    public async Task<IActionResult> DeleteProduct([FromBody] AddNewProductRequest request) {
         try {
 
-            if (request == null)
-                return BadRequest("El id del producto es requerido");
+            // if (request == null)
+            //     return BadRequest("El id del producto es requerido");
 
-            if (ObtainUserTypeFromToken() != UserType.Tenant)
-                return BadRequest("No tiene permisos para eliminar productos.");
+            // if (ObtainUserTypeFromToken() != UserType.Tenant)
+            //     return BadRequest("No tiene permisos para eliminar productos.");
 
-            ProductService?.DeleteProduct(request.productId);
+           var deleteProduct =  await ProductService?.DeleteProduct(request.productId);
+           if (!deleteProduct)
+            {
+                return NotFound(new ApiResponse<object>
+                {
+                    Error = true,
+                    Message = $"No existe un producto con el ID {request.productId}"
+                });
+            }
 
             return Ok(new ApiResponse<ProductDTO>{
                 Error = false,

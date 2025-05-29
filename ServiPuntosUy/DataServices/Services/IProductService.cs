@@ -9,9 +9,10 @@ namespace ServiPuntosUy.DataServices.Services
     public interface IProductService
     {
         ProductDTO CreateProduct(int tenantId, string name, string description, string imageUrl, decimal price, bool ageRestricted);
-        void DeleteProduct(int productId);
+        Task<bool> DeleteProduct(int productId);
         Task<ProductDTO?> GetProductById(int productId);
         ProductDTO[] GetProductList(int tenantId);
+        Task<ProductDTO?> UpdateProduct(int productId, string? name, string? description, string? imageUrl, decimal? price, bool? ageRestricted);
 
     }
 }
