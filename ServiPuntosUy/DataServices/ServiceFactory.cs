@@ -7,6 +7,7 @@ using ServiPuntosUy.DataServices.Services.CommonLogic;
 using ServiPuntosUy.Enums;
 using ServiPuntosUy.DataServices.Services.Tenant;
 using ServiPuntosUy.DataServices.Services.EndUser;
+using ServiPuntosUy.DAO.Models.Central;
 namespace ServiPuntosUy.DataServices
 {
     /// <summary>
@@ -208,11 +209,35 @@ namespace ServiPuntosUy.DataServices
                     branchId));
 
 
-            _serviceCollection.AddScoped<IPromotionService, Services.Branch.PromotionService>();
+            _serviceCollection.AddScoped<IPromotionService>(sp =>
+                new Services.Branch.PromotionService(
+                    sp.GetRequiredService<DbContext>(),
+                    _configuration,
+                    tenantId,
+                    branchId));
             // _serviceCollection.AddScoped<IProductService, Services.Branch.ProductService>();
-            _serviceCollection.AddScoped<IUserService, Services.Branch.UserService>();
-            _serviceCollection.AddScoped<INotificationService, Services.Branch.NotificationService>();
-            _serviceCollection.AddScoped<IVerificationService, Services.Branch.VerificationService>();
+            _serviceCollection.AddScoped<IUserService>(sp =>
+                new Services.Branch.UserService(
+                    sp.GetRequiredService<DbContext>(),
+                    _configuration,
+                    tenantId,
+                    branchId));
+            _serviceCollection.AddScoped<INotificationService>(sp =>
+                new Services.Branch.NotificationService(
+                    sp.GetRequiredService<DbContext>(),
+                    _configuration,
+                    tenantId,
+                    branchId));
+            _serviceCollection.AddScoped<IVerificationService>(sp =>
+                new Services.Branch.VerificationService(
+                    sp.GetRequiredService<DbContext>(),
+                    _configuration,
+                    tenantId,
+                    branchId));
+            _serviceCollection.AddScoped<IFuelService>(sp =>
+                new Services.Branch.FuelService(
+                    sp.GetRequiredService<IGenericRepository<FuelPrices>>(),
+                    branchId));
 
         }
 
@@ -244,6 +269,7 @@ namespace ServiPuntosUy.DataServices
             _serviceCollection.AddScoped<IVerificationService, Services.EndUser.VerificationService>();
             _serviceCollection.AddScoped<IPaymentService, Services.EndUser.PaymentService>();
             _serviceCollection.AddScoped<IVEAIService, Services.EndUser.VEAIService>();
+            _serviceCollection.AddScoped<IFuelService, Services.EndUser.FuelService>();
         }
     }
 }
