@@ -57,7 +57,7 @@ namespace ServiPuntosUy.Controllers
         [ProducesResponseType(typeof(ApiResponse<object>), 404)]
         public async Task<IActionResult> GetCurrentUser()
         {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            var userIdClaim = User.FindFirst("userId");
             if (userIdClaim == null)
                 return Unauthorized(new ApiResponse<object>
                 {

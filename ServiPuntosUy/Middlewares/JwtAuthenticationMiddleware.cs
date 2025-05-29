@@ -71,7 +71,7 @@ namespace ServiPuntosUy.Middlewares
                 
                 // Token JWT válido, crear un ClaimsPrincipal y asignarlo a HttpContext.User
                 var claims = authLogic.GetTokenClaims(token);
-                var identity = new ClaimsIdentity(claims, JwtBearerDefaults.AuthenticationScheme);
+                var identity = new ClaimsIdentity(claims, JwtBearerDefaults.AuthenticationScheme, "userId", "userType");
                 var principal = new ClaimsPrincipal(identity);
                 
                 // Establecer el usuario autenticado en el contexto
