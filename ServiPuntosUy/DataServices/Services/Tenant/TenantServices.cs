@@ -361,7 +361,11 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
         }
         public async Task<ProductDTO?> GetProductById(int productId)
         {
-            var product = await _productRepository.GetByIdAsync(productId);
+            // var product = await _productRepository.GetByIdAsync(productId)
+                var product = await _productRepository.GetQueryable()
+                                          .AsNoTracking()
+                                          .FirstOrDefaultAsync(p => p.Id == productId);
+
             return product is not null ? GetProductDTO(product) : null;
         }
 
@@ -389,6 +393,56 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
 
             return GetProductDTO(createdProduct);
 
+        }
+
+                // Método de mapeo
+        private DAO.Models.Central.Product MapToProduct(ProductDTO productDTO)
+        {
+            return new DAO.Models.Central.Product
+            {
+                Id = productDTO.Id,
+                TenantId = productDTO.TenantId,
+                Name = productDTO.Name,
+                Description = productDTO.Description,
+                Price = productDTO.Price,
+            };
+        }
+        
+        public async Task<ProductDTO?> UpdateProduct(int productId, string? name, string? description, string? imageUrl, decimal? price, bool? ageRestricted)
+        {
+
+            var productDTO = await GetProductById(productId);
+            if (productDTO == null)
+            {
+                throw new Exception($"No existe un producto con el ID {productId}");
+            }
+
+            var product = MapToProduct(productDTO); //Update no espera DTO 
+
+            product.Name = name ?? product.Name;
+            product.Description = description ?? product.Description;
+            product.ImageUrl = imageUrl ?? product.ImageUrl;
+            product.Price = price ?? product.Price;
+            product.AgeRestricted = ageRestricted ?? product.AgeRestricted;
+
+
+            await _productRepository.UpdateAsync(product);
+            await _productRepository.SaveChangesAsync();
+
+            return GetProductDTO(product);
+        }
+
+        public async Task<bool> DeleteProduct(int productId)
+        {
+            var productDTO = await GetProductById(productId);
+            if (productDTO == null)
+            {
+                return false;
+            }
+
+            _productRepository.DeleteAsync(productId).GetAwaiter().GetResult();
+            _productRepository.SaveChangesAsync().GetAwaiter().GetResult();
+            return true;
         }
 
     }

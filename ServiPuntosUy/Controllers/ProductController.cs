@@ -31,7 +31,6 @@ public class ProductController : BaseController
     {
         try
         {
-
             if (request == null)
                 return BadRequest("Los datos del producto son requeridos.");
 
@@ -40,11 +39,6 @@ public class ProductController : BaseController
 
             // if (ObtainUserTypeFromToken() != UserType.Tenant)
             //     return BadRequest("No tiene permisos para crear productos.");
-
-            // Validar que ningún campo requerido esté vacío
-            if (string.IsNullOrWhiteSpace(request.Name) || string.IsNullOrWhiteSpace(request.Description)
-                || string.IsNullOrWhiteSpace(request.ImageUrl) || request.Price <= 0)
-                return BadRequest("Verifica que todos los campos requeridos estén completos: Name, Description, ImageUrl y Price.");
 
             var newProduct = ProductService?.CreateProduct(
                 request.tenantId,
@@ -57,7 +51,7 @@ public class ProductController : BaseController
 
             if (newProduct == null)
             {
-                return BadRequest(new ApiResponse<object>
+                return StatusCode(500, new ApiResponse<object>
                 {
                     Error = true,
                     Message = "No se pudo crear el producto. El servicio no está disponible."
@@ -158,5 +152,86 @@ public class ProductController : BaseController
             });
         }
     }
+
+    [HttpPost("Update")]
+    [ProducesResponseType(typeof(ProductDTO), 200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(500)]
+    public async Task<IActionResult> UpdateProduct([FromBody] AddNewProductRequest request) {
+        try {
+
+            if (request == null)
+                return BadRequest("Los datos del producto son requeridos.");
+
+            // if (ObtainUserTypeFromToken() != UserType.Tenant)
+            //     return BadRequest("No tiene permisos para editar productos.");
+
+            var product = await ProductService?.UpdateProduct(
+                request.productId,
+                request.Name,
+                request.Description,
+                request.ImageUrl,
+                request.Price,
+                request.AgeRestricted
+            );
+
+            if (product == null)
+            {
+                return StatusCode(500, new ApiResponse<object>{
+                    Error = true,
+                    Message = "No se pudo editar el producto. El servicio no está disponible."
+                });
+            }
+            return Ok(new ApiResponse<ProductDTO>{
+                Error = false,
+                Message = "Producto editado correctamente",
+                Data = product
+            });
+        }
+        catch (Exception ex) {
+            return BadRequest(new ApiResponse<object>{
+                Error = true,
+                Message = ex.Message
+            });
+        }
+    }
+
+    [HttpPost("Delete")]
+    [ProducesResponseType(typeof(ProductDTO), 200)]
+    [ProducesResponseType(400)]
+    public async Task<IActionResult> DeleteProduct([FromBody] AddNewProductRequest request) {
+        try {
+
+            // if (request == null)
+            //     return BadRequest("El id del producto es requerido");
+
+            // if (ObtainUserTypeFromToken() != UserType.Tenant)
+            //     return BadRequest("No tiene permisos para eliminar productos.");
+
+           var deleteProduct =  await ProductService?.DeleteProduct(request.productId);
+           if (!deleteProduct)
+            {
+                return NotFound(new ApiResponse<object>
+                {
+                    Error = true,
+                    Message = $"No existe un producto con el ID {request.productId}"
+                });
+            }
+
+            return Ok(new ApiResponse<ProductDTO>{
+                Error = false,
+                Message = "Producto eliminado correctamente",
+                Data = new ProductDTO()
+            });
+        }
+        catch (Exception ex) {
+            return BadRequest(new ApiResponse<object>{
+                Error = true,
+                Message = ex.Message
+            });
+        }
+
+    }
+
 
 }

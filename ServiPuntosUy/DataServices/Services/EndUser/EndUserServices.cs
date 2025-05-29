@@ -321,6 +321,14 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
             var products = _productRepository.GetQueryable().Where(product => product.TenantId == tenantId).ToList();
             return [.. products.Select(GetProductDTO)];
         }
+        public async Task<bool> DeleteProduct(int productId)
+        {
+            throw new Exception("El usuario final no puede eliminar productos");
+        }
+        public async Task<ProductDTO?> UpdateProduct(int productId, string? name, string? description, string? imageUrl, decimal? price, bool? ageRestricted)
+        {
+            throw new Exception("El usuario final no puede actualizar productos");
+        }
     }
 }
 
