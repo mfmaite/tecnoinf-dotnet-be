@@ -64,19 +64,11 @@ namespace ServiPuntosUy.DataServices.Services.Branch
     /// </summary>
     public class BranchService : IBranchService
     {
-        private readonly DbContext _dbContext;
-        private readonly IConfiguration _configuration;
-        private readonly string _tenantId;
-        private readonly int _branchId;
         private readonly IGenericRepository<ServiPuntosUy.DAO.Models.Central.Branch> _branchRepository;
 
-        public BranchService(DbContext dbContext, IConfiguration configuration, string tenantId, int branchId)
+        public BranchService(IGenericRepository<ServiPuntosUy.DAO.Models.Central.Branch> branchRepository)
         {
-            _dbContext = dbContext;
-            _configuration = configuration;
-            _tenantId = tenantId;
-            _branchId = branchId;
-            _branchRepository = new GenericRepository<ServiPuntosUy.DAO.Models.Central.Branch>(dbContext);
+            _branchRepository = branchRepository;
         }
 
         // Métodos del Branch
@@ -104,6 +96,19 @@ namespace ServiPuntosUy.DataServices.Services.Branch
             // Devolver el DTO si se encontró el branch
             return branch != null ? GetBranchDTO(branch) : null;
         }
+
+        public BranchDTO[] GetBranchList(int tenantId)
+        {
+            // Obtener la lista de branches del repositorio filtrando por TenantId
+            var branches = _branchRepository.GetQueryable()
+                .Where(e => e.TenantId == tenantId).ToList();
+
+            return branches.Select(b => GetBranchDTO(b)).ToArray();
+
+        }
+
+
+
     }
 
     /// <summary>

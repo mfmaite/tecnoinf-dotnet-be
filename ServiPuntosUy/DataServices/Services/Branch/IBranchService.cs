@@ -10,6 +10,9 @@ namespace ServiPuntosUy.DataServices.Services.Branch
     {
         BranchDTO GetBranchDTO(ServiPuntosUy.DAO.Models.Central.Branch branch);
         BranchDTO GetBranchById(int id);
+        BranchDTO[] GetBranchList(int tenantId);
+
+
     }
 
 }
