@@ -185,7 +185,7 @@ public class BranchController : BaseController
                     Message = "No tiene acceso al tenant especificado"
                 });
 
-            var branchList = BranchService.GetBranchList(tenantIdInt);
+            var branchList = TenantBranchService.GetBranchList(tenantIdInt);
 
 
             return Ok(new ApiResponse <BranchDTO[]>{

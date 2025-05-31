@@ -96,19 +96,6 @@ namespace ServiPuntosUy.DataServices.Services.Branch
             // Devolver el DTO si se encontró el branch
             return branch != null ? GetBranchDTO(branch) : null;
         }
-
-        public BranchDTO[] GetBranchList(int tenantId)
-        {
-            // Obtener la lista de branches del repositorio filtrando por TenantId
-            var branches = _branchRepository.GetQueryable()
-                .Where(e => e.TenantId == tenantId).ToList();
-
-            return branches.Select(b => GetBranchDTO(b)).ToArray();
-
-        }
-
-
-
     }
 
     /// <summary>
