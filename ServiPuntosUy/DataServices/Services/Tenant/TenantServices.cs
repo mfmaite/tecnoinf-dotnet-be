@@ -110,6 +110,16 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             _branchRepository.DeleteAsync(branchId).GetAwaiter().GetResult();
             _branchRepository.SaveChangesAsync().GetAwaiter().GetResult();
         }
+
+        public BranchDTO[] GetBranchList(int tenantId)
+        {
+            // Obtener la lista de branches del repositorio filtrando por TenantId
+            var branches = _branchRepository.GetQueryable()
+                .Where(e => e.TenantId == tenantId).ToList();
+
+            return branches.Select(b => GetBranchDTO(b)).ToArray();
+
+        }
     }
 
     /// <summary>

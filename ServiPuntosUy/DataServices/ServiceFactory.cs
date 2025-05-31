@@ -179,6 +179,7 @@ namespace ServiPuntosUy.DataServices
                     tenantId));
 
             _serviceCollection.AddScoped<ITenantBranchService, TenantBranchService>();
+            _serviceCollection.AddScoped<IBranchService, BranchService>();
             _serviceCollection.AddScoped<IPromotionService, Services.Tenant.PromotionService>();
             _serviceCollection.AddScoped<IProductService, Services.Tenant.ProductService>();
             _serviceCollection.AddScoped<IUserService, Services.Tenant.UserService>();
@@ -199,14 +200,9 @@ namespace ServiPuntosUy.DataServices
                     sp.GetRequiredService<IAuthLogic>(),
                     null, // No necesitamos LoyaltyService para Branch
                     tenantId));
-
+                    
             // Registrar los servicios implementados
-            _serviceCollection.AddScoped<IBranchService>(sp =>
-                new BranchService(
-                    sp.GetRequiredService<DbContext>(),
-                    _configuration,
-                    tenantId,
-                    branchId));
+            _serviceCollection.AddScoped<IBranchService>(sp => _serviceProvider.GetRequiredService<IBranchService>());
 
 
             _serviceCollection.AddScoped<IPromotionService>(sp =>
