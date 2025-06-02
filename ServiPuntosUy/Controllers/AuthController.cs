@@ -95,7 +95,18 @@ namespace ServiPuntosUy.Controllers
         public async Task<IActionResult> Signup([FromBody] SignupRequest request)
         {
             try {
-                var userSession = await AuthService.Signup(request.Email, request.Password, request.Name, request.TenantId);
+                // Obtener el tenantId del contexto HTTP (jwt o header)
+                var tenantIdStr = HttpContext.Items["CurrentTenant"] as string;
+                if (string.IsNullOrEmpty(tenantIdStr) || !int.TryParse(tenantIdStr, out int tenantId))
+                {
+                    return BadRequest(new ApiResponse<object>
+                    {
+                        Error = true,
+                        Message = "No se pudo determinar el tenant para el registro"
+                    });
+                }
+
+                var userSession = await AuthService.Signup(request.Email, request.Password, request.Name, tenantId);
 
                 if (userSession == null || string.IsNullOrEmpty(userSession.token))
                     return Unauthorized(new ApiResponse<object>

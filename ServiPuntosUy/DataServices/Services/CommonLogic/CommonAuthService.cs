@@ -205,6 +205,7 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
         /// <param name="email">Email del usuario</param>
         /// <param name="password">Contraseña del usuario</param>
         /// <param name="name">Nombre del usuario</param>
+        /// <param name="tenantId">ID del tenant</param>
         /// <returns>Usuario registrado</returns>
         public async Task<UserSessionDTO> Signup(string email, string password, string name, int tenantId)
         {
