@@ -8,6 +8,7 @@ using System.Linq.Expressions;
 using ServiPuntosUy.Models.DAO;
 using System.Text.RegularExpressions;
 using ServiPuntosUy.DAO.Data.Central;
+using ServiPuntosUy.DataServices.Services;
 using ServiPuntosUy.DataServices.Services.Branch;
 
 namespace ServiPuntosUy.DataServices.Services.Tenant
@@ -23,8 +24,10 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
 
         // Métodos de Branch
 
-        public BranchDTO GetBranchDTO(ServiPuntosUy.DAO.Models.Central.Branch branch) {
-            return new BranchDTO {
+        public BranchDTO GetBranchDTO(ServiPuntosUy.DAO.Models.Central.Branch branch)
+        {
+            return new BranchDTO
+            {
                 Id = branch.Id,
                 Address = branch.Address,
                 Latitud = branch.Latitud,
@@ -36,9 +39,11 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             };
         }
 
-        public BranchDTO CreateBranch(int tenantId, string latitud, string longitud, string address, string phone, TimeOnly openTime, TimeOnly closingTime) {
+        public BranchDTO CreateBranch(int tenantId, string latitud, string longitud, string address, string phone, TimeOnly openTime, TimeOnly closingTime)
+        {
             // Crear un nuevo branch
-            var branch = new DAO.Models.Central.Branch {
+            var branch = new DAO.Models.Central.Branch
+            {
                 TenantId = tenantId,
                 Latitud = latitud,
                 Longitud = longitud,
@@ -56,27 +61,35 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             return GetBranchDTO(createdBranch);
         }
 
-        public BranchDTO UpdateBranch(int branchId, string? latitud, string? longitud, string? address, string? phone, TimeOnly? openTime, TimeOnly? closingTime) {
+        public BranchDTO UpdateBranch(int branchId, string? latitud, string? longitud, string? address, string? phone, TimeOnly? openTime, TimeOnly? closingTime)
+        {
             var branch = _branchRepository.GetByIdAsync(branchId).GetAwaiter().GetResult();
-            if (branch == null) {
+            if (branch == null)
+            {
                 throw new Exception("No existe una estación con el ID ${branchId}");
             }
-            if (latitud != null) {
+            if (latitud != null)
+            {
                 branch.Latitud = latitud;
             }
-            if (longitud != null) {
+            if (longitud != null)
+            {
                 branch.Longitud = longitud;
             }
-            if (address != null) {
+            if (address != null)
+            {
                 branch.Address = address;
             }
-            if (phone != null) {
+            if (phone != null)
+            {
                 branch.Phone = phone;
             }
-            if (openTime != null) {
+            if (openTime != null)
+            {
                 branch.OpenTime = openTime.Value;
             }
-            if (closingTime != null) {
+            if (closingTime != null)
+            {
                 branch.ClosingTime = closingTime.Value;
             }
 
@@ -86,14 +99,26 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             return GetBranchDTO(branch);
         }
 
-        public void DeleteBranch(int branchId) {
+        public void DeleteBranch(int branchId)
+        {
             var branch = _branchRepository.GetByIdAsync(branchId).GetAwaiter().GetResult();
-            if (branch == null) {
+            if (branch == null)
+            {
                 throw new Exception("No existe una estación con el ID ${branchId}");
             }
 
             _branchRepository.DeleteAsync(branchId).GetAwaiter().GetResult();
             _branchRepository.SaveChangesAsync().GetAwaiter().GetResult();
+        }
+
+        public BranchDTO[] GetBranchList(int tenantId)
+        {
+            // Obtener la lista de branches del repositorio filtrando por TenantId
+            var branches = _branchRepository.GetQueryable()
+                .Where(e => e.TenantId == tenantId).ToList();
+
+            return branches.Select(b => GetBranchDTO(b)).ToArray();
+
         }
     }
 
@@ -285,6 +310,18 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             // Implementación básica para el scaffold
             throw new NotImplementedException();
         }
+
+        /// <summary>
+        /// Verifica si los puntos del usuario han expirado según la política de expiración
+        /// y actualiza la fecha del último login
+        /// </summary>
+        /// <param name="userId">ID del usuario</param>
+        /// <returns>True si los puntos expiraron, False en caso contrario</returns>
+        public Task<bool> CheckPointsExpirationAsync(int userId)
+        {
+            // Para administradores de tenant, no aplicamos la lógica de expiración de puntos
+            return Task.FromResult(false);
+        }
     }
 
     /// <summary>
@@ -312,19 +349,112 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
     /// </summary>
     public class ProductService : IProductService
     {
-        private readonly DbContext _dbContext;
-        private readonly IConfiguration _configuration;
-        private readonly string _tenantId;
+        private readonly IGenericRepository<DAO.Models.Central.Product> _productRepository;
 
-        public ProductService(DbContext dbContext, IConfiguration configuration, string tenantId)
+        public ProductService(IGenericRepository<DAO.Models.Central.Product> productRepository)
         {
-            _dbContext = dbContext;
-            _configuration = configuration;
-            _tenantId = tenantId;
+            _productRepository = productRepository;
         }
 
-        // Implementar los métodos de la interfaz IProductService
-        // Esta es una implementación básica para el scaffold
+        public ProductDTO GetProductDTO(DAO.Models.Central.Product product)
+        {
+            return new ProductDTO
+            {
+                Id = product.Id,
+                TenantId = product.TenantId,
+                Name = product.Name,
+                Description = product.Description,
+                ImageUrl = product.ImageUrl,
+                Price = product.Price,
+                AgeRestricted = product.AgeRestricted
+            };
+        }
+        public async Task<ProductDTO?> GetProductById(int productId)
+        {
+            // var product = await _productRepository.GetByIdAsync(productId)
+                var product = await _productRepository.GetQueryable()
+                                          .AsNoTracking()
+                                          .FirstOrDefaultAsync(p => p.Id == productId);
+
+            return product is not null ? GetProductDTO(product) : null;
+        }
+
+        public ProductDTO[] GetProductList(int tenantId)
+        {
+            var products = _productRepository.GetQueryable().Where(product => product.TenantId == tenantId).ToList();
+            return [.. products.Select(GetProductDTO)];
+        }
+        public ProductDTO CreateProduct(int tenantId, string name, string description, string imageUrl, decimal price, bool ageRestricted)
+        {
+            var product = new DAO.Models.Central.Product
+            {
+                TenantId = tenantId,
+                Name = name,
+                Description = description,
+                ImageUrl = imageUrl,
+                Price = price,
+                AgeRestricted = ageRestricted
+            };
+
+            // Guardar el producto en la base de datos usando el repositorio de la clase
+            var createdProduct = _productRepository.AddAsync(product).GetAwaiter().GetResult();
+            _productRepository.SaveChangesAsync().GetAwaiter().GetResult();
+            // Devolver el DTO del producto creado
+
+            return GetProductDTO(createdProduct);
+
+        }
+
+                // Método de mapeo
+        private DAO.Models.Central.Product MapToProduct(ProductDTO productDTO)
+        {
+            return new DAO.Models.Central.Product
+            {
+                Id = productDTO.Id,
+                TenantId = productDTO.TenantId,
+                Name = productDTO.Name,
+                Description = productDTO.Description,
+                Price = productDTO.Price,
+            };
+        }
+        
+        public async Task<ProductDTO?> UpdateProduct(int productId, string? name, string? description, string? imageUrl, decimal? price, bool? ageRestricted)
+        {
+
+            var productDTO = await GetProductById(productId);
+            if (productDTO == null)
+            {
+                throw new Exception($"No existe un producto con el ID {productId}");
+            }
+
+            var product = MapToProduct(productDTO); //Update no espera DTO 
+
+            product.Name = name ?? product.Name;
+            product.Description = description ?? product.Description;
+            product.ImageUrl = imageUrl ?? product.ImageUrl;
+            product.Price = price ?? product.Price;
+            product.AgeRestricted = ageRestricted ?? product.AgeRestricted;
+
+
+            await _productRepository.UpdateAsync(product);
+            await _productRepository.SaveChangesAsync();
+
+            return GetProductDTO(product);
+        }
+
+        public async Task<bool> DeleteProduct(int productId)
+        {
+            var productDTO = await GetProductById(productId);
+            if (productDTO == null)
+            {
+                return false;
+            }
+
+            _productRepository.DeleteAsync(productId).GetAwaiter().GetResult();
+            _productRepository.SaveChangesAsync().GetAwaiter().GetResult();
+            return true;
+        }
+
     }
 
     /// <summary>

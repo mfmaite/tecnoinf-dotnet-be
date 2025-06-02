@@ -91,6 +91,14 @@ Puedes conectarte usando estas credenciales desde cualquier herramienta SQL (com
 - Puerto: `1433`
 - Usuario y contraseña: las definidas en el archivo `.env`
 
+#### 🧬 Crear una migración
+
+Para generar una nueva migración, ejecutá el siguiente comando:
+
+```bash
+dotnet ef migrations add <migration_name> \
+  --output-dir DAO/Migrations/Central
+```
 
 ## 🖥️ Configuración del Archivo Hosts
 
@@ -99,33 +107,28 @@ Para probar el sistema multi-tenant en desarrollo local, configura el archivo ho
 #### Windows (C:\Windows\System32\drivers\etc\hosts):
 ```
 127.0.0.1    admin.servipuntos.local
-127.0.0.1    petrobras.admin.servipuntos.local
-127.0.0.1    shell.admin.servipuntos.local
-127.0.0.1    petrobras.branch.admin.servipuntos.local
-127.0.0.1    shell.branch.admin.servipuntos.local
-127.0.0.1    app.servipuntos.local
+127.0.0.1    petrobras.app.servipuntos.local
+127.0.0.1    shell.app.servipuntos.local
 127.0.0.1    api.servipuntos.local
 ```
 
 #### macOS/Linux (/etc/hosts):
 ```
 127.0.0.1    admin.servipuntos.local
-127.0.0.1    petrobras.admin.servipuntos.local
-127.0.0.1    shell.admin.servipuntos.local
-127.0.0.1    petrobras.branch.admin.servipuntos.local
-127.0.0.1    shell.branch.admin.servipuntos.local
-127.0.0.1    app.servipuntos.local
+127.0.0.1    petrobras.app.servipuntos.local
+127.0.0.1    shell.app.servipuntos.local
 127.0.0.1    api.servipuntos.local
 ```
 
-Esto debido a que la resolución de tenant y rol se basa en el dominio y subdominio de las requests.
-Podemos agregar tantos tenants como se nos de la gana, no fomentamos el uso de wildcard (*) porque no en todos los sistemas opeartivos funciona. 
+Esto debido a que la resolución de tenant para usuarios finales se basa en el subdominio de las requests.
+Podemos agregar tantos tenants como se nos de la gana, no fomentamos el uso de wildcard (*) porque no en todos los sistemas operativos funciona.
 
-Ej: si quisiera agregar ancap, sería agregar: 
+Ej: si quisiera agregar ancap para usuarios finales, sería agregar:
 ```
-127.0.0.1    ancap.admin.servipuntos.local
-127.0.0.1    ancap.branch.admin.servipuntos.local
+127.0.0.1    ancap.app.servipuntos.local
 ```
+
+Nota: Ya no necesitamos configurar subdominios específicos para administradores de tenant o estación, ya que todos los administradores ahora usan la misma URL (`admin.servipuntos.local`) y el tipo de administrador se determina desde el JWT.
 
 
 
@@ -161,15 +164,25 @@ ServiPuntosUy/
 
 ## Sistema Multi-Tenant
 
-ServiPuntos.uy utiliza un enfoque de multi-tenancy basado en subdominios, donde cada tenant (cadena de estaciones de servicio) tiene su propio subdominio. Además, cada tipo de usuario tiene un patrón de URL específico:
+ServiPuntos.uy utiliza un enfoque de multi-tenancy basado en JWT para administradores y subdominios para usuarios finales:
 
-### Patrones de URL
+### Resolución de Tenant y Tipo de Usuario
 
-- **Administrador Central**: `admin.servipuntos.uy`
-- **Administrador de Tenant**: `{tenant-id}.admin.servipuntos.uy`
-- **Administrador de Estación**: `{tenant-id}.branch.admin.servipuntos.uy`
-- **Usuario Final**: `app.servipuntos.uy`
+- **Administradores (Central, Tenant, Branch)**: 
+  - URL unificada: `admin.servipuntos.uy`
+  - El tipo de administrador y tenant se determinan exclusivamente desde el JWT después del login
+  - Esto permite tener un único panel de administración para todos los tipos de administradores
+
+- **Usuario Final**: 
+  - URL con subdominio de tenant: `{tenant-name}.app.servipuntos.uy`
+  - Para aplicaciones móviles: Header `X-Tenant-Name` con el nombre del tenant
+
 - **API**: `api.servipuntos.uy`
+
+La resolución de tenant y tipo de usuario sigue este orden de prioridad:
+1. JWT (si el usuario está autenticado)
+2. URL (subdominio para usuarios finales)
+3. Header X-Tenant-Name (para aplicaciones móviles)
 
 Para más detalles sobre el sistema multi-tenant, consulta la [documentación de multi-tenancy](ServiPuntosUy/Docs/MultiTenancy.md).
 
@@ -181,6 +194,7 @@ Para facilitar el desarrollo y mantenimiento del proyecto, se ha creado la sigui
 
 - [**Multi-Tenancy**](ServiPuntosUy/Docs/MultiTenancy.md): Explica cómo funciona el sistema multi-tenant, la resolución de tenants y tipos de usuario.
 - [**BaseController**](ServiPuntosUy/Docs/BaseControllerGuide.md): Guía sobre el controlador base, sus propiedades y métodos heredados, y mejores prácticas para su uso.
+- [**Configuración Frontend**](ServiPuntosUy/Docs/FrontendSetup.md): Guía para configurar una aplicación React que trabaje con el sistema multi-tenant, incluyendo cómo simular subdominios de tenant para usuarios finales.
 
 ### Seguridad
 

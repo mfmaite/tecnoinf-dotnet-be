@@ -5,9 +5,39 @@ using System.Threading.Tasks;
 using ServiPuntosUy.Models.DAO;
 using Microsoft.EntityFrameworkCore;
 using ServiPuntosUy.DTO;
+using ServiPuntosUy.DAO.Models.Central;
+using ServiPuntosUy.Enums;
+
+
 
 namespace ServiPuntosUy.DataServices.Services.EndUser
 {
+    /// <summary>
+    /// Implementación del servicio de precios de combustible para el usuario final
+    /// </summary>
+    public class FuelService : IFuelService
+    {
+        private readonly IGenericRepository<FuelPrices> _fuelPricesRepository;
+
+        public FuelService(IGenericRepository<FuelPrices> fuelPricesRepository)
+        {
+            _fuelPricesRepository = fuelPricesRepository;
+        }
+
+        public FuelPrices UpdateFuelPrice(int branchId, FuelType fuelType, decimal price)
+        {
+            // El usuario final no puede actualizar precios
+            throw new UnauthorizedAccessException("El usuario final no puede actualizar precios de combustible");
+        }
+
+        public FuelPrices GetFuelPrice(int branchId, FuelType fuelType)
+        {
+            var fuelPrice = _fuelPricesRepository.GetQueryable()
+                .FirstOrDefault(fp => fp.BranchId == branchId && fp.FuelType == fuelType) ?? throw new Exception($"No existe un precio configurado para el combustible {fuelType} en la estación {branchId}");
+            return fuelPrice;
+        }
+    }
+
     /// <summary>
     /// Implementación del servicio de lealtad para el usuario final
     /// </summary>
@@ -24,8 +54,69 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
             _tenantId = tenantId;
         }
 
-        // Implementar los métodos de la interfaz ILoyaltyService
-        // Esta es una implementación básica para el scaffold
+        /// <summary>
+        /// Verifica si los puntos del usuario han expirado según la política de expiración
+        /// y actualiza la fecha del último login
+        /// </summary>
+        /// <param name="userId">ID del usuario</param>
+        /// <returns>True si los puntos expiraron, False en caso contrario</returns>
+        public async Task<bool> CheckPointsExpirationAsync(int userId)
+        {
+            try
+            {
+                // Obtener el usuario con AsTracking para asegurar que Entity Framework haga seguimiento de los cambios
+                var user = await _dbContext.Set<User>()
+                    .FirstOrDefaultAsync(u => u.Id == userId);
+                
+                if (user == null)
+                    return false;
+                
+                bool pointsExpired = false;
+                
+                // Verificar si el usuario tiene un tenant asignado
+                if (user.TenantId.HasValue)
+                {
+                    // Obtener la configuración de lealtad del tenant
+                    var loyaltyConfig = await _dbContext.Set<LoyaltyConfig>()
+                        .FirstOrDefaultAsync(lc => lc.TenantId == user.TenantId.Value);
+                    
+                    if (loyaltyConfig != null)
+                    {
+                        // Verificar si es la primera vez que inicia sesión o si la fecha es muy antigua (valor por defecto)
+                        bool isFirstLogin = user.LastLoginDate.Year < 2000;
+                        
+                        if (!isFirstLogin)
+                        {
+                            // Calcular días desde el último login
+                            var daysSinceLastLogin = (DateTime.UtcNow - user.LastLoginDate).TotalDays;
+                            
+                            // Verificar si han pasado más días que los permitidos por la política
+                            if (daysSinceLastLogin > loyaltyConfig.ExpiricyPolicyDays)
+                            {
+                                // Si han pasado más días, los puntos expiran
+                                int previousPoints = user.PointBalance;
+                                user.PointBalance = 0;
+                                pointsExpired = true;
+                                
+                                // Logging (opcional)
+                                Console.WriteLine($"User {user.Id} points expired: {previousPoints} -> 0");
+                            }
+                        }
+                    }
+                }
+                
+                // Guardar los cambios en la base de datos
+                await _dbContext.SaveChangesAsync();
+                
+                return pointsExpired;
+            }
+            catch (Exception ex)
+            {
+                // Logging del error
+                Console.WriteLine($"Error checking point expiration: {ex.Message}");
+                return false;
+            }
+        }
     }
 
     /// <summary>
@@ -51,23 +142,6 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
     /// <summary>
     /// Implementación del servicio de productos para el usuario final
     /// </summary>
-    public class ProductService : IProductService
-    {
-        private readonly DbContext _dbContext;
-        private readonly IConfiguration _configuration;
-        private readonly string _tenantId;
-
-        public ProductService(DbContext dbContext, IConfiguration configuration, string tenantId)
-        {
-            _dbContext = dbContext;
-            _configuration = configuration;
-            _tenantId = tenantId;
-        }
-
-        // Implementar los métodos de la interfaz IProductService
-        // Esta es una implementación básica para el scaffold
-    }
-
 
     /// <summary>
     /// Implementación del servicio de usuarios para el usuario final
@@ -214,7 +288,8 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
                     throw new Exception("Formato de fecha de nacimiento inválido.");
                 }
 
-                return new UserDTO{
+                return new UserDTO
+                {
                     Id = user.Id,
                     TenantId = user.TenantId.ToString(),
                     Email = user.Email,
@@ -230,6 +305,56 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
             {
                 throw new Exception("Error al verificar la identidad del usuario");
             }
+        }
+    }
+
+    /// <summary>
+    /// Implementación del servicio de productos para el usuario final
+    /// </summary>
+    public class ProductService : IProductService
+    {
+        private readonly IGenericRepository<DAO.Models.Central.Product> _productRepository;
+        public ProductService(IGenericRepository<DAO.Models.Central.Product> productRepository)
+        {
+            _productRepository = productRepository;
+        }
+
+        public ProductDTO GetProductDTO(DAO.Models.Central.Product product)
+        {
+            return new ProductDTO
+            {
+                Id = product.Id,
+                TenantId = product.TenantId,
+                Name = product.Name,
+                Description = product.Description,
+                ImageUrl = product.ImageUrl,
+                Price = product.Price,
+                AgeRestricted = product.AgeRestricted
+            };
+        }
+        public ProductDTO CreateProduct(int tenantId, string name, string description, string imageUrl, decimal price, bool ageRestricted)
+        {
+            throw new Exception("El usuario final no puede crear productos");
+        }
+
+
+        public async Task<ProductDTO?> GetProductById(int productId)
+        {
+            var product = await _productRepository.GetByIdAsync(productId);
+            return product is not null ? GetProductDTO(product) : null;
+        }
+        public ProductDTO[] GetProductList(int tenantId)
+        {
+            var products = _productRepository.GetQueryable().Where(product => product.TenantId == tenantId).ToList();
+            return [.. products.Select(GetProductDTO)];
+        }
+        public async Task<bool> DeleteProduct(int productId)
+        {
+            throw new Exception("El usuario final no puede eliminar productos");
+        }
+        public async Task<ProductDTO?> UpdateProduct(int productId, string? name, string? description, string? imageUrl, decimal? price, bool? ageRestricted)
+        {
+            throw new Exception("El usuario final no puede actualizar productos");
         }
     }
 }

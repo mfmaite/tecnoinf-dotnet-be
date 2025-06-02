@@ -212,6 +212,18 @@ namespace ServiPuntosUy.DataServices.Services.Central
             // Implementación básica para el scaffold
             throw new NotImplementedException();
         }
+
+        /// <summary>
+        /// Verifica si los puntos del usuario han expirado según la política de expiración
+        /// y actualiza la fecha del último login
+        /// </summary>
+        /// <param name="userId">ID del usuario</param>
+        /// <returns>True si los puntos expiraron, False en caso contrario</returns>
+        public Task<bool> CheckPointsExpirationAsync(int userId)
+        {
+            // Para usuarios Central, no aplicamos la lógica de expiración de puntos
+            return Task.FromResult(false);
+        }
     }
 
     /// <summary>
@@ -235,20 +247,8 @@ namespace ServiPuntosUy.DataServices.Services.Central
     /// <summary>
     /// Implementación del servicio de productos para el administrador central
     /// </summary>
-    public class ProductService : IProductService
-    {
-        private readonly CentralDbContext _dbContext;
-        private readonly IConfiguration _configuration;
 
-        public ProductService(CentralDbContext dbContext, IConfiguration configuration)
-        {
-            _dbContext = dbContext;
-            _configuration = configuration;
-        }
 
-        // Implementar los métodos de la interfaz IProductService
-        // Esta es una implementación básica para el scaffold
-    }
 
     /// <summary>
     /// Implementación del servicio de usuarios para el administrador central

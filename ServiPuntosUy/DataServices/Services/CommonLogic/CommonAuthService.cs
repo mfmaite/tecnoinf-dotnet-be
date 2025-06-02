@@ -22,6 +22,7 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
         private readonly string _tenantId;
         private readonly IGenericRepository<DAO.Models.Central.User> _userRepository;
         private readonly IGenericRepository<DAO.Models.Central.Tenant> _tenantRepository;
+        private readonly ILoyaltyService _loyaltyService;
 
         public CommonAuthService(
             DbContext dbContext,
@@ -29,12 +30,13 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
             IAuthLogic authLogic,
             IGenericRepository<DAO.Models.Central.User> userRepository,
             IGenericRepository<DAO.Models.Central.Tenant> tenantRepository,
-            string tenantId = null
-        )
+            ILoyaltyService loyaltyService = null,
+            string tenantId = null)
         {
             _dbContext = dbContext;
             _configuration = configuration;
             _authLogic = authLogic;
+            _loyaltyService = loyaltyService;
             _tenantId = tenantId;
             _userRepository = userRepository;
             _tenantRepository = tenantRepository;
@@ -112,6 +114,58 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
                 user.TenantId ?? null,
                 user.BranchId ?? null
             );
+
+            // Verificar expiración de puntos solo para usuarios finales
+            if (user.Role == Enums.UserType.EndUser && _loyaltyService != null)
+            {
+                try
+                {
+                    // Verificar expiración de puntos usando el servicio inyectado
+                    await _loyaltyService.CheckPointsExpirationAsync(user.Id);
+                }
+                catch (Exception ex)
+                {
+                    // Logging del error pero permitir que el login continúe
+                    Console.WriteLine($"Error checking point expiration: {ex.Message}");
+                }
+            }
+
+            // Actualizar la fecha del último login (siempre)
+            user.LastLoginDate = DateTime.UtcNow;
+            await _dbContext.SaveChangesAsync();
+
+            // Generar token JWT
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]);
+
+            var claims = new List<Claim>
+            {
+                new Claim("email", user.Email),
+                new Claim("userType", ((int)user.Role).ToString()),
+                new Claim("tenantId", user.TenantId.ToString()),
+                new Claim("name", user.Name),
+                new Claim("userId", user.Id.ToString()),
+                new Claim("lastLoginDate", user.LastLoginDate.ToString("o"))
+            };
+
+            // Agregar branchId al token si el usuario es de tipo Branch
+            if (user.Role == Enums.UserType.Branch)
+            {
+                claims.Add(new Claim("branchId", user.BranchId.ToString()));
+            }
+
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(claims),
+                Expires = DateTime.UtcNow.AddMinutes(Convert.ToDouble(_configuration["Jwt:Duration"])),
+                Issuer = _configuration["Jwt:Issuer"],
+                Audience = _configuration["Jwt:Audience"],
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            };
+
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            var returnToken = tokenHandler.WriteToken(token);
+            return new(returnToken);
         }
 
         /// <summary>
@@ -154,9 +208,8 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
         /// <returns>Usuario registrado</returns>
         public async Task<UserSessionDTO> Signup(string email, string password, string name, int tenantId)
         {
-            var authLogic = new AuthLogic(_configuration);
             string salt;
-            var passwordHash = authLogic.HashPassword(password, out salt);
+            var passwordHash = _authLogic.HashPassword(password, out salt);
 
             var existingUser = await _userRepository.GetQueryable().FirstOrDefaultAsync(u => u.Email == email);
             if (existingUser != null) {

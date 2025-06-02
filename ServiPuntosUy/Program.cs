@@ -8,6 +8,7 @@ using System.Text;
 using ServiPuntosUy.DataServices;
 using ServiPuntosUy.DataServices.Services.CommonLogic;
 using ServiPuntosUy.Middlewares;
+using ServiPuntosUy.Utils;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,16 +33,8 @@ builder.Services.AddAuthorization();
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-// Configurar CORS para desarrollo (permitir cualquier origen)
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowAll", policy =>
-    {
-        policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader();
-    });
-});
+// Configurar CORS utilizando el utilitario
+builder.Services.AddCorsConfiguration(builder.Environment);
 
 // Add Swagger
 builder.Services.AddEndpointsApiExplorer();
@@ -96,7 +89,11 @@ builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepositor
 
 // Registrar servicios globales que no dependen del tenant/usuario
 builder.Services.AddScoped<IAuthLogic, AuthLogic>();
-builder.Services.AddScoped<ITenantResolver, TenantResolver>();
+builder.Services.AddScoped<ITenantResolver>(provider => 
+    new TenantResolver(
+        provider.GetRequiredService<IConfiguration>(),
+        provider.GetRequiredService<CentralDbContext>()
+    ));
 builder.Services.AddScoped<IServiceFactory, ServiceFactory>();
 
 var app = builder.Build();
@@ -110,14 +107,13 @@ app.UseSwaggerUI(c =>
 
 app.UseRouting();
 
-// Habilitar CORS
-app.UseCors("AllowAll");
+// Habilitar CORS utilizando el utilitario
+app.UseCorsConfiguration();
 
 // Configuración del middleware
 app.UseRequestContent(); // Middleware para identificar tenant y tipo de usuario
 app.UseApiResponseWrapper(); // Middleware para envolver respuestas en ApiResponse
 app.UseJwtAuthentication(); // Middleware personalizado para autenticación JWT (chequea token)
-app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

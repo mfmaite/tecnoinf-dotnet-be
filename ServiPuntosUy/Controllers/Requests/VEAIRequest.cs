@@ -1,4 +1,4 @@
 public class PersonaRequest
 {
-    public string NroDocumento { get; set; }
+    public string DocumentNumber { get; set; }
 }

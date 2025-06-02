@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ServiPuntosUy.DAO.Data.Central;
 
@@ -11,9 +12,11 @@ using ServiPuntosUy.DAO.Data.Central;
 namespace ServiPuntosUy.DAO.Migrations.Central
 {
     [DbContext(typeof(CentralDbContext))]
-    partial class CentralDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250528021345_UpdateProductsImageUrl")]
+    partial class UpdateProductsImageUrl
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -503,11 +506,11 @@ namespace ServiPuntosUy.DAO.Migrations.Central
                             Id = 1,
                             Email = "admin@servipuntos.uy",
                             IsVerified = false,
-                            LastLoginDate = new DateTime(2025, 5, 28, 18, 43, 49, 337, DateTimeKind.Utc).AddTicks(5880),
+                            LastLoginDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "Admin Central",
                             NotificationsEnabled = true,
-                            Password = "UjRJ6aZDtLSNtS4Z2iNavTbYI2QIjVviCTuggKJpfso=",
-                            PasswordSalt = "JCfmyZickAH/jRYWkSuL9w==",
+                            Password = "xZTYp+1wW9S0zRKK5Zma72x6rdOnUwvKucGrx5ewYUs=",
+                            PasswordSalt = "uqVv29SziAuBEu2U5VDSow==",
                             PointBalance = 0,
                             Role = 1
                         },
@@ -516,11 +519,11 @@ namespace ServiPuntosUy.DAO.Migrations.Central
                             Id = 2,
                             Email = "admintenant@servipuntos.uy",
                             IsVerified = false,
-                            LastLoginDate = new DateTime(2025, 5, 28, 18, 43, 49, 337, DateTimeKind.Utc).AddTicks(5903),
+                            LastLoginDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "Admin Tenant",
                             NotificationsEnabled = true,
-                            Password = "UjRJ6aZDtLSNtS4Z2iNavTbYI2QIjVviCTuggKJpfso=",
-                            PasswordSalt = "JCfmyZickAH/jRYWkSuL9w==",
+                            Password = "xZTYp+1wW9S0zRKK5Zma72x6rdOnUwvKucGrx5ewYUs=",
+                            PasswordSalt = "uqVv29SziAuBEu2U5VDSow==",
                             PointBalance = 0,
                             Role = 2,
                             TenantId = 1
