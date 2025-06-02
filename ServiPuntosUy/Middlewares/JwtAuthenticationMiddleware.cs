@@ -22,11 +22,12 @@ namespace ServiPuntosUy.Middlewares
             _next = next;
             _configuration = configuration;
             _logger = logger;
-            
+
             // Rutas excluidas de la autenticación JWT
             _excludedPaths = new List<string>
             {
                 "/api/auth/login",
+                "/api/auth/signup",
                 "/swagger",
                 "/api/auth/register",
                 "/api/health"
@@ -37,17 +38,17 @@ namespace ServiPuntosUy.Middlewares
         {
             // Verificar si la ruta está excluida de la autenticación
             string path = context.Request.Path.Value.ToLower();
-            
+
             if (_excludedPaths.Any(p => path.StartsWith(p)))
             {
                 // Ruta excluida, continuar con el pipeline
                 await _next(context);
                 return;
             }
-            
+
             // Obtener el token JWT del encabezado de autorización
             string authHeader = context.Request.Headers["Authorization"];
-            
+
             if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
             {
                 // No hay token JWT, devolver 401 Unauthorized
@@ -55,9 +56,9 @@ namespace ServiPuntosUy.Middlewares
                 await context.Response.WriteAsJsonAsync(new { error = "No se proporcionó un token de autenticación válido" });
                 return;
             }
-            
+
             string token = authHeader.Substring("Bearer ".Length).Trim();
-            
+
             try
             {
                 // Validar el token JWT
@@ -68,15 +69,15 @@ namespace ServiPuntosUy.Middlewares
                     await context.Response.WriteAsJsonAsync(new { error = "El token de autenticación proporcionado no es válido" });
                     return;
                 }
-                
+
                 // Token JWT válido, crear un ClaimsPrincipal y asignarlo a HttpContext.User
                 var claims = authLogic.GetTokenClaims(token);
                 var identity = new ClaimsIdentity(claims, JwtBearerDefaults.AuthenticationScheme, "userId", "userType");
                 var principal = new ClaimsPrincipal(identity);
-                
+
                 // Establecer el usuario autenticado en el contexto
                 context.User = principal;
-                
+
                 // Continuar con el pipeline
                 await _next(context);
             }
@@ -89,5 +90,5 @@ namespace ServiPuntosUy.Middlewares
             }
         }
     }
-    
+
 }
