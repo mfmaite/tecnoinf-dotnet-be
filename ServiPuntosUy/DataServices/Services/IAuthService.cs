@@ -1,5 +1,6 @@
 using ServiPuntosUy.DTO;
 using ServiPuntosUy.Enums;
+using Microsoft.AspNetCore.Http;
 
 namespace ServiPuntosUy.DataServices.Services
 {
@@ -13,8 +14,9 @@ namespace ServiPuntosUy.DataServices.Services
         /// </summary>
         /// <param name="email">Email del usuario</param>
         /// <param name="password">Contraseña del usuario</param>
+        /// <param name="httpContext">Contexto HTTP para obtener información adicional</param>
         /// <returns>Token JWT si la autenticación es exitosa, null en caso contrario</returns>
-        Task<UserSessionDTO?> AuthenticateAsync(string email, string password);
+        Task<UserSessionDTO?> AuthenticateAsync(string email, string password, HttpContext httpContext);
 
         /// <summary>
         /// Obtiene información del usuario actual
@@ -36,8 +38,10 @@ namespace ServiPuntosUy.DataServices.Services
         /// <param name="email">Email del usuario</param>
         /// <param name="password">Contraseña del usuario</param>
         /// <param name="name">Nombre del usuario</param>
+        /// <param name="tenantId">ID del tenant</param>
+        /// <param name="httpContext">Contexto HTTP para obtener información adicional</param>
         /// <returns>Usuario registrado</returns>
-        Task<UserSessionDTO> Signup(string email, string password, string name, int tenantId);
+        Task<UserSessionDTO> Signup(string email, string password, string name, int tenantId, HttpContext httpContext);
 
         /// <summary>
         /// Genera un token JWT para un usuario
