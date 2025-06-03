@@ -202,4 +202,45 @@ public class BranchController : BaseController
             });
         }
     }
+
+        /// <summary>
+    /// Crear un nuevo branch
+    /// </summary>
+    /// <param name="manageStock">Datos del branch a crear</param>
+    /// <returns>El branch creado</returns>
+    /// <response code="200">Retorna el branch creado</response>
+    /// <response code="400">Si hay un error en la creación</response>
+    [HttpPost("stock")]
+    [ProducesResponseType(typeof(BranchDTO), 200)]
+    [ProducesResponseType(400)]
+    public IActionResult manageStock([FromBody] CreateBranchRequest request) {
+        try {
+
+
+            var loggedUser = ObtainUserFromToken();
+            var branchId = loggedUser.BranchId;
+
+           
+            var productStock = BranchService?.manageStock(request.productId, branchId, request.stock);
+            if (productStock == null)
+            {
+                return BadRequest(new ApiResponse<object>{
+                    Error = true,
+                    Message = "No se pudo actualizar el stock. El servicio no está disponible."
+                });
+            }
+            return Ok(new ApiResponse<object>{
+                Error = false,
+                Message = "Stock actualizado correctamente",
+                Data = productStock
+            });
+        }
+        catch (Exception ex) {
+            return BadRequest(new ApiResponse<object>{
+                Error = true,
+                Message = ex.Message
+            });
+        }
+    }
+
 }
