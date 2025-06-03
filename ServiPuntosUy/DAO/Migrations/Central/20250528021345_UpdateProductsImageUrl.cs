@@ -10,10 +10,18 @@ namespace ServiPuntosUy.DAO.Migrations.Central
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.RenameColumn(
-                name: "ImgaeUrl",
-                table: "Products",
-                newName: "ImageUrl");
+            // Verificar si la columna ImgaeUrl existe antes de intentar renombrarla
+            migrationBuilder.Sql(@"
+                IF EXISTS (
+                    SELECT 1
+                    FROM sys.columns 
+                    WHERE Name = N'ImgaeUrl'
+                    AND Object_ID = Object_ID(N'Products')
+                )
+                BEGIN
+                    EXEC sp_rename N'[Products].[ImgaeUrl]', N'ImageUrl', N'COLUMN';
+                END
+            ");
 
             migrationBuilder.UpdateData(
                 table: "Users",
@@ -33,10 +41,18 @@ namespace ServiPuntosUy.DAO.Migrations.Central
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.RenameColumn(
-                name: "ImageUrl",
-                table: "Products",
-                newName: "ImgaeUrl");
+            // Verificar si la columna ImageUrl existe antes de intentar renombrarla
+            migrationBuilder.Sql(@"
+                IF EXISTS (
+                    SELECT 1
+                    FROM sys.columns 
+                    WHERE Name = N'ImageUrl'
+                    AND Object_ID = Object_ID(N'Products')
+                )
+                BEGIN
+                    EXEC sp_rename N'[Products].[ImageUrl]', N'ImgaeUrl', N'COLUMN';
+                END
+            ");
 
             migrationBuilder.UpdateData(
                 table: "Users",
