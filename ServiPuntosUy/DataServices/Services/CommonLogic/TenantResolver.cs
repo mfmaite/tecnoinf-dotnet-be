@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.Hosting;
 using ServiPuntosUy.DAO.Data.Central;
 using ServiPuntosUy.Enums;
 
@@ -12,11 +13,13 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
     {
         private readonly IConfiguration _configuration;
         private readonly CentralDbContext _dbContext;
+        private readonly IHostEnvironment _environment;
 
-        public TenantResolver(IConfiguration configuration, CentralDbContext dbContext)
+        public TenantResolver(IConfiguration configuration, CentralDbContext dbContext, IHostEnvironment environment)
         {
             _configuration = configuration;
             _dbContext = dbContext;
+            _environment = environment;
         }
 
 
@@ -31,22 +34,22 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
                     return tenantId;
                 }
             }
-            
+
             // 2. Intentar obtener del host (GetTenantIdFromHost ya maneja el caso de admin.*)
             string tenantIdFromHost = GetTenantIdFromHost(context);
             if (!string.IsNullOrEmpty(tenantIdFromHost))
             {
                 return tenantIdFromHost;
             }
-            
+
             // 3. Intentar obtener del header custom (X-Tenant-Name)
             string tenantIdFromHeader = GetTenantIdFromCustomHeader(context);
             if (!string.IsNullOrEmpty(tenantIdFromHeader))
             {
                 return tenantIdFromHeader;
             }
-            
-            // Si no se pudo resolver, devolver null
+
+            // 4. Si no se pudo resolver, devolver null
             return null;
         }
 
@@ -62,15 +65,22 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
                     return userType.Value;
                 }
             }
-            
+
             // 2. Intentar obtener del host (GetUserTypeFromHost ya maneja el caso de admin.*)
             UserType? userTypeFromHost = GetUserTypeFromHost(context);
             if (userTypeFromHost.HasValue)
             {
                 return userTypeFromHost.Value;
             }
-            
-            // 3. Si no se pudo resolver, asumir usuario final
+
+            // 3. Intentar obtener de un custom header (X-User-Type) -> (solo para dev mode)
+            UserType? userTypeFromCustomHeader = GetUserTypeFromCustomHeader(context);
+            if (userTypeFromCustomHeader.HasValue)
+            {
+                return userTypeFromCustomHeader.Value;
+            }
+
+            // 4. Si no se pudo resolver, asumir usuario final
             return UserType.EndUser;
         }
 
@@ -127,7 +137,7 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
         /// </summary>
         /// <param name="tenantName">Nombre del tenant</param>
         /// <returns>ID del tenant como string, o null si no se encuentra</returns>
-        private string GetTenantIdByName(string tenantName)
+        private string? GetTenantIdByName(string tenantName)
         {
             if (string.IsNullOrEmpty(tenantName))
                 return null;
@@ -183,6 +193,28 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
             return null;
         }
 
+        private UserType? GetUserTypeFromCustomHeader(HttpContext context)
+        {
+            // Solo procesar el header en entorno de desarrollo
+            if (!_environment.IsDevelopment())
+            {
+                return null;
+            }
+
+            if (context.Request.Headers.TryGetValue("X-User-Type", out var userTypeHeader))
+            {
+                // Obtener el nombre del tenant del header
+                string userType = userTypeHeader.ToString();
+                if (!string.IsNullOrWhiteSpace(userType))
+                {
+                    // Buscar el ID a partir del nombre
+                    return (UserType)Enum.Parse(typeof(UserType), userType);
+                }
+            }
+
+            return null;
+        }
+
 
         private UserType? GetUserTypeFromToken(HttpContext context)
         {
@@ -220,7 +252,7 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
             {
                 return UserType.EndUser;
             }
-            
+
             // Para administradores: admin.servipuntos.uy
             // No determinamos el tipo específico de administrador desde la URL
             if (host.StartsWith("admin."))
