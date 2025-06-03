@@ -6,27 +6,69 @@ using System;
 using System.Linq;
 using Microsoft.Extensions.Configuration;
 using ServiPuntosUy.DataServices.Services.Central;
+using ServiPuntosUy.Enums;
 
 namespace ServiPuntosUy.DataServices.Services.Branch
 {
+    /// <summary>
+    /// Implementación del servicio de precios de combustible para el administrador de branch
+    /// </summary>
+    public class FuelService : IFuelService
+    {
+        private readonly IGenericRepository<FuelPrices> _fuelPricesRepository;
+        private readonly int _branchId;
+
+        public FuelService(IGenericRepository<FuelPrices> fuelPricesRepository, int branchId)
+        {
+            _fuelPricesRepository = fuelPricesRepository;
+            _branchId = branchId;
+        }
+
+        public FuelPrices UpdateFuelPrice(int branchId, FuelType fuelType, decimal price)
+        {
+            // Verificar que el usuario solo pueda actualizar precios de su propia estación
+            if (branchId != _branchId)
+            {
+                throw new UnauthorizedAccessException("Solo puede actualizar precios de su propia estación");
+            }
+
+            // Buscar si ya existe un precio para este combustible en esta estación
+            var existingPrice = _fuelPricesRepository.GetQueryable()
+                .FirstOrDefault(fp => fp.BranchId == branchId && fp.FuelType == fuelType);
+
+            if (existingPrice != null)
+            {
+                // Actualizar el precio existente
+                existingPrice.Price = price;
+                _fuelPricesRepository.UpdateAsync(existingPrice).GetAwaiter().GetResult();
+                _fuelPricesRepository.SaveChangesAsync().GetAwaiter().GetResult();
+                return existingPrice;
+            }
+            else
+            {
+                // No crear un nuevo registro, lanzar excepción
+                throw new Exception($"No existe un precio configurado para el combustible {fuelType} en la estación {branchId}");
+            }
+        }
+
+        public FuelPrices GetFuelPrice(int branchId, FuelType fuelType)
+        {
+            var fuelPrice = _fuelPricesRepository.GetQueryable()
+                .FirstOrDefault(fp => fp.BranchId == branchId && fp.FuelType == fuelType) ?? throw new Exception($"No existe un precio configurado para el combustible {fuelType} en la estación {branchId}");
+            return fuelPrice;
+        }
+    }
+
     /// <summary>
     /// Implementación del servicio de branches para el administrador de branch
     /// </summary>
     public class BranchService : IBranchService
     {
-        private readonly DbContext _dbContext;
-        private readonly IConfiguration _configuration;
-        private readonly string _tenantId;
-        private readonly int _branchId;
         private readonly IGenericRepository<ServiPuntosUy.DAO.Models.Central.Branch> _branchRepository;
 
-        public BranchService(DbContext dbContext, IConfiguration configuration, string tenantId, int branchId)
+        public BranchService(IGenericRepository<ServiPuntosUy.DAO.Models.Central.Branch> branchRepository)
         {
-            _dbContext = dbContext;
-            _configuration = configuration;
-            _tenantId = tenantId;
-            _branchId = branchId;
-            _branchRepository = new GenericRepository<ServiPuntosUy.DAO.Models.Central.Branch>(dbContext);
+            _branchRepository = branchRepository;
         }
 
         // Métodos del Branch

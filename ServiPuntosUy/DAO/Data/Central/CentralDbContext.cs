@@ -16,7 +16,6 @@ public class CentralDbContext : DbContext
 
     public DbSet<Branch> Branches { get; set; }
     public DbSet<FuelPrices> FuelPrices { get; set; }
-    public DbSet<Login> Logins { get; set; }
     public DbSet<LoyaltyConfig> LoyaltyConfigs { get; set; }
     public DbSet<Product> Products { get; set; }
     public DbSet<ProductStock> ProductStocks { get; set; }

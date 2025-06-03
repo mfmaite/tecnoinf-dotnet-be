@@ -10,16 +10,21 @@ using System.Text.RegularExpressions;
 using ServiPuntosUy.DAO.Data.Central;
 using ServiPuntosUy.DataServices.Services;
 using ServiPuntosUy.DataServices.Services.Branch;
+using ServiPuntosUy.Enums;
 
 namespace ServiPuntosUy.DataServices.Services.Tenant
 {
     public class TenantBranchService : ITenantBranchService
     {
         private readonly IGenericRepository<DAO.Models.Central.Branch> _branchRepository;
+        private readonly IGenericRepository<DAO.Models.Central.FuelPrices> _fuelPricesRepository;
 
-        public TenantBranchService(IGenericRepository<DAO.Models.Central.Branch> branchRepository)
+        public TenantBranchService(
+            IGenericRepository<DAO.Models.Central.Branch> branchRepository,
+            IGenericRepository<DAO.Models.Central.FuelPrices> fuelPricesRepository)
         {
             _branchRepository = branchRepository;
+            _fuelPricesRepository = fuelPricesRepository;
         }
 
         // Métodos de Branch
@@ -57,8 +62,37 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             var createdBranch = _branchRepository.AddAsync(branch).GetAwaiter().GetResult();
             _branchRepository.SaveChangesAsync().GetAwaiter().GetResult();
 
+            // Inicializar los precios de combustibles para este branch
+            InitializeFuelPrices(createdBranch.Id, tenantId);
+
             // Devolver el DTO del branch creado
             return GetBranchDTO(createdBranch);
+        }
+
+        // Método privado para inicializar los precios de combustibles
+        private void InitializeFuelPrices(int branchId, int tenantId)
+        {
+            // Crear un registro para cada tipo de combustible
+            var fuelTypes = Enum.GetValues(typeof(FuelType)).Cast<FuelType>();
+            
+            foreach (var fuelType in fuelTypes)
+            {
+                // Obtener el precio predeterminado del enum FuelPrice
+                decimal price = (int)Enum.Parse(typeof(FuelPrice), fuelType.ToString());
+                
+                var fuelPrice = new DAO.Models.Central.FuelPrices
+                {
+                    BranchId = branchId,
+                    TenantId = tenantId, 
+                    FuelType = fuelType,
+                    Price = price
+                };
+                
+                _fuelPricesRepository.AddAsync(fuelPrice).GetAwaiter().GetResult();
+            }
+            
+            // Guardar todos los cambios
+            _fuelPricesRepository.SaveChangesAsync().GetAwaiter().GetResult();
         }
 
         public BranchDTO UpdateBranch(int branchId, string? latitud, string? longitud, string? address, string? phone, TimeOnly? openTime, TimeOnly? closingTime)
@@ -131,6 +165,13 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             return GetBranchDTO(branch);
         }
         {
+        public BranchDTO[] GetBranchList(int tenantId)
+        {
+            // Obtener la lista de branches del repositorio filtrando por TenantId
+            var branches = _branchRepository.GetQueryable()
+                .Where(e => e.TenantId == tenantId).ToList();
+
+            return branches.Select(b => GetBranchDTO(b)).ToArray();
 
         }
     }

@@ -4,6 +4,9 @@ using ServiPuntosUy.Models.DAO;
 using System.Text.RegularExpressions;
 using ServiPuntosUy.DAO.Data.Central;
 using ServiPuntosUy.DataServices.Services.Branch;
+using ServiPuntosUy.DAO.Models.Central;
+using ServiPuntosUy.Enums;
+using ServiPuntosUy.DataServices.Services.CommonLogic;
 
 namespace ServiPuntosUy.DataServices.Services.Central
 {
@@ -11,10 +14,17 @@ namespace ServiPuntosUy.DataServices.Services.Central
     public class TenantService : ICentralTenantService
     {
         private readonly IGenericRepository<DAO.Models.Central.Tenant> _tenantRepository;
+        private readonly IGenericRepository<User> _userRepository;
+        private readonly IAuthLogic _authLogic;
 
-        public TenantService(IGenericRepository<DAO.Models.Central.Tenant> tenantRepository)
+        public TenantService(
+            IGenericRepository<DAO.Models.Central.Tenant> tenantRepository,
+            IGenericRepository<User> userRepository,
+            IAuthLogic authLogic)
         {
             _tenantRepository = tenantRepository;
+            _userRepository = userRepository;
+            _authLogic = authLogic;
         }
 
         // Métodos del Tenant
@@ -57,7 +67,7 @@ namespace ServiPuntosUy.DataServices.Services.Central
                 throw new ArgumentException($"El Tenant '{tenantName}' ya existe. Debe ser único.");
             }
 
-
+            // Crear el nuevo tenant
             var newTenant = new DAO.Models.Central.Tenant {
                 Name = tenantName,
             };
@@ -65,7 +75,41 @@ namespace ServiPuntosUy.DataServices.Services.Central
             var createdTenant = _tenantRepository.AddAsync(newTenant).GetAwaiter().GetResult();
             _tenantRepository.SaveChangesAsync().GetAwaiter().GetResult();
 
+            // Crear un usuario administrador para el tenant
+            CreateTenantAdminUser(createdTenant);
+
             return GetTenantDTO(createdTenant);
+        }
+
+        /// <summary>
+        /// Crea un usuario administrador para un tenant
+        /// </summary>
+        /// <param name="tenant">Tenant al que pertenecerá el usuario</param>
+        private void CreateTenantAdminUser(DAO.Models.Central.Tenant tenant)
+        {
+            // Generar email y contraseña para el administrador del tenant
+            string adminEmail = $"{tenant.Name}-admin@mail.com";
+            string adminPassword = $"{tenant.Name}-admin-password";
+            
+            // Generar hash y salt para la contraseña
+            string passwordHash = _authLogic.HashPassword(adminPassword, out string passwordSalt);
+            
+            // Crear el usuario administrador
+            var adminUser = new User
+            {
+                TenantId = tenant.Id,
+                Email = adminEmail,
+                Name = $"Default {tenant.Name} Administrator",
+                Password = passwordHash,
+                PasswordSalt = passwordSalt,
+                Role = UserType.Tenant, // Tipo de usuario: Tenant admin
+                IsVerified = true, // El usuario ya está verificado
+                NotificationsEnabled = true
+            };
+            
+            // Guardar el usuario en la base de datos
+            _userRepository.AddAsync(adminUser).GetAwaiter().GetResult();
+            _userRepository.SaveChangesAsync().GetAwaiter().GetResult();
         }
 
         public TenantDTO[] GetTenantsList() {

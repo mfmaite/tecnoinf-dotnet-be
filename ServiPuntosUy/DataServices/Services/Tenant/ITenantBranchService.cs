@@ -8,5 +8,6 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
         BranchDTO UpdateBranch(int branchId, string? latitud, string? longitud, string? address, string? phone, TimeOnly? openTime, TimeOnly? closingTime);
         void DeleteBranch(int branchId);
         BranchDTO setBranchHours(int id, string openTime, string closingTime);
+        BranchDTO[] GetBranchList(int tenantId);
     }
 }

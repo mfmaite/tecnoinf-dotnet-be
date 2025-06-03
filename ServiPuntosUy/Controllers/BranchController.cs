@@ -6,6 +6,7 @@ using ServiPuntosUy.Controllers.Base;
 using ServiPuntosUY.Controllers.Response;
 using Microsoft.AspNetCore.Authorization;
 using ServiPuntosUy.DataServices.Services.Tenant;
+using ServiPuntosUy.DataServices.Services.Branch;
 
 namespace ServiPuntosUy.Controllers;
 
@@ -179,6 +180,42 @@ public class BranchController : BaseController
             });
         }
         catch (Exception ex) {
+    /// <summary>
+    /// Obtiene la lista de tenants
+    /// </summary>
+    /// <returns>La lista de tenants</returns>
+    /// <response code="200">Retorna la lista de tenants</response>
+    /// <response code="400">Si hay un error en la búsqueda</response>
+    [HttpGet("")]
+    [ProducesResponseType(typeof(BranchDTO[]), 200)]
+    [ProducesResponseType(404)]
+    [ProducesResponseType(400)]
+    public IActionResult GetBranchList()
+    {
+        try
+        {
+            var tenantId = ObtainUserFromToken().TenantId;
+            if (!int.TryParse(tenantId, out int tenantIdInt))
+                return BadRequest("No se pudo obtener el TenantId del usuario");
+                
+            var user = ObtainUserFromToken();
+            if (!HasAccessToTenant(user.TenantId))
+                return Unauthorized(new ApiResponse<object>{
+                    Error = true,
+                    Message = "No tiene acceso al tenant especificado"
+                });
+
+            var branchList = TenantBranchService.GetBranchList(tenantIdInt);
+
+
+            return Ok(new ApiResponse <BranchDTO[]>{
+                Error = false,
+                Message = "Lista de tenants obtenida correctamente",
+                Data = branchList
+            });
+        }
+        catch (Exception ex)
+        {
             return BadRequest(new ApiResponse<object>{
                 Error = true,
                 Message = ex.Message

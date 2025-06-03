@@ -255,6 +255,11 @@ namespace ServiPuntosUy.Controllers.Base
         /// </summary>
         protected IVEAIService VEAIService => _serviceFactory.GetService<IVEAIService>();
 
+        /// <summary>
+        /// Obtiene el servicio de precios de combustible
+        /// </summary>
+        protected IFuelService FuelService => _serviceFactory.GetService<IFuelService>();
+
         #endregion
     }
 }
