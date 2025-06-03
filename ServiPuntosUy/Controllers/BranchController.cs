@@ -172,7 +172,14 @@ public class BranchController : BaseController
     [ProducesResponseType(400)]
     public IActionResult setBranchHours(int id, [FromBody] SetBranchHoursRequest request) {
         try {
-            var branch = TenantBranchService?.setBranchHours(id, request.OpenTime, request.ClosingTime);
+            // Intentar parsear OpenTime y ClosingTime
+            if (!TimeOnly.TryParse(request.OpenTime, out var openTime))
+                return BadRequest("Formato de hora inválido para OpenTime. Use HH:mm.");
+
+            if (!TimeOnly.TryParse(request.ClosingTime, out var closingTime))
+                return BadRequest("Formato de hora inválido para ClosingTime. Use HH:mm.");
+                
+            var branch = TenantBranchService?.setBranchHours(id, openTime, closingTime) ;
             return Ok(new ApiResponse<BranchDTO>{
                 Error = false,
                 Message = "Horario del branch actualizado correctamente",
@@ -180,6 +187,12 @@ public class BranchController : BaseController
             });
         }
         catch (Exception ex) {
+            return BadRequest(new ApiResponse<object>{
+                Error = true,
+                Message = ex.Message
+            });
+        }
+    }
     /// <summary>
     /// Obtiene la lista de tenants
     /// </summary>

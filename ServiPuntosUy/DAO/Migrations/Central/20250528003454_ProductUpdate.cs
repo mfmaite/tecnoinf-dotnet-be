@@ -11,7 +11,7 @@ namespace ServiPuntosUy.DAO.Migrations.Central
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.RenameColumn(
-                name: "ImgaeUrl",
+                name: "ImageUrl",
                 table: "Products",
                 newName: "ImageUrl");
 
@@ -36,7 +36,7 @@ namespace ServiPuntosUy.DAO.Migrations.Central
             migrationBuilder.RenameColumn(
                 name: "ImageUrl",
                 table: "Products",
-                newName: "ImgaeUrl");
+                newName: "ImageUrl");
 
             migrationBuilder.UpdateData(
                 table: "Users",
