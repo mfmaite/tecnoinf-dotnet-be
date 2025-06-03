@@ -14,6 +14,11 @@ public class FuelPrices
     public int BranchId { get; set; }
     public Branch Branch { get; set; }
 
+    [ForeignKey("Tenant")]
+    [Required]
+    public int TenantId { get; set; }
+    public Tenant Tenant { get; set; }
+
     [Required]
     public FuelType FuelType { get; set; } = FuelType.Super;
 
