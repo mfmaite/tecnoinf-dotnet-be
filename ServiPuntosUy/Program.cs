@@ -92,7 +92,8 @@ builder.Services.AddScoped<IAuthLogic, AuthLogic>();
 builder.Services.AddScoped<ITenantResolver>(provider => 
     new TenantResolver(
         provider.GetRequiredService<IConfiguration>(),
-        provider.GetRequiredService<CentralDbContext>()
+        provider.GetRequiredService<CentralDbContext>(),
+        provider.GetRequiredService<IHostEnvironment>()
     ));
 builder.Services.AddScoped<IServiceFactory, ServiceFactory>();
 
