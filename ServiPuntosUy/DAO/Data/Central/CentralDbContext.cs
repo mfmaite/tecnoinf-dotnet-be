@@ -69,6 +69,13 @@ public class CentralDbContext : DbContext
             .HasForeignKey(sa => sa.ServiceId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        // Configurar FK TenantId en FuelPrices para evitar cascada (multiple cascade paths)
+        modelBuilder.Entity<FuelPrices>()
+            .HasOne(f => f.Tenant)
+            .WithMany()
+            .HasForeignKey(f => f.TenantId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         // Seed para el primer usuario administrador
         SeedAdminUser(modelBuilder);
     }
