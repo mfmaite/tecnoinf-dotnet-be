@@ -12,6 +12,11 @@ public class SatisfactionSurvey
     public int? BranchId { get; set; }
     public Branch Branch { get; set; }
 
+    [ForeignKey("Tenant")]
+    [Required]
+    public int TenantId { get; set; }
+    public Tenant Tenant { get; set; }
+
     [Required]
     public int Rating { get; set; } = 1;
 
