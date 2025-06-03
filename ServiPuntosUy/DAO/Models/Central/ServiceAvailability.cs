@@ -18,6 +18,11 @@ public class ServiceAvailability
     public int ServiceId { get; set; }
     public Service Service { get; set; }
 
+    [ForeignKey("Tenant")]
+    [Required]
+    public int TenantId { get; set; }
+    public Tenant Tenant { get; set; }
+
     [Required]
     public TimeOnly StartTime { get; set; } = new TimeOnly(8, 0);
 

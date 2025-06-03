@@ -30,7 +30,7 @@ namespace ServiPuntosUy.Controllers
         [ProducesResponseType(typeof(ApiResponse<object>), 401)]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
-            var userSession = await AuthService.AuthenticateAsync(request.Email, request.Password);
+            var userSession = await AuthService.AuthenticateAsync(request.Email, request.Password, HttpContext);
 
             if (userSession == null || string.IsNullOrEmpty(userSession.token))
                 return Unauthorized(new ApiResponse<object>
@@ -106,7 +106,7 @@ namespace ServiPuntosUy.Controllers
                     });
                 }
 
-                var userSession = await AuthService.Signup(request.Email, request.Password, request.Name, tenantId);
+                var userSession = await AuthService.Signup(request.Email, request.Password, request.Name, tenantId, HttpContext);
 
                 if (userSession == null || string.IsNullOrEmpty(userSession.token))
                     return Unauthorized(new ApiResponse<object>

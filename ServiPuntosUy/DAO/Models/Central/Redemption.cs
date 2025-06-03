@@ -16,7 +16,12 @@ public class Redemption
     [ForeignKey("Branch")]
     [Required]
     public int BranchId { get; set; }
-    public Tenant Branch { get; set; }
+    public Branch Branch { get; set; }
+
+    [ForeignKey("Tenant")]
+    [Required]
+    public int TenantId { get; set; }
+    public Tenant Tenant { get; set; }
 
     [Required]
     public DateTime RedemptionDate { get; set; } = DateTime.UtcNow;
