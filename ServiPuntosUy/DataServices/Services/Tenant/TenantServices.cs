@@ -110,6 +110,29 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             _branchRepository.DeleteAsync(branchId).GetAwaiter().GetResult();
             _branchRepository.SaveChangesAsync().GetAwaiter().GetResult();
         }
+
+        public BranchDTO setBranchHours(int id, string openTime, string closingTime)
+        {
+            // Obtener la estación por ID
+            var branch = _branchRepository.GetByIdAsync(id).GetAwaiter().GetResult();
+            if (branch == null)
+            {
+                throw new Exception($"No existe una estación con el ID {id}");
+            }
+
+            // Actualizar las horas de apertura y cierre
+            branch.OpenTime = parsedOpenTime;
+            branch.ClosingTime = parsedClosingTime;
+
+            // Guardar los cambios en la base de datos
+            _branchRepository.UpdateAsync(branch).GetAwaiter().GetResult();
+            _branchRepository.SaveChangesAsync().GetAwaiter().GetResult();
+
+            return GetBranchDTO(branch);
+        }
+        {
+
+        }
     }
 
     /// <summary>

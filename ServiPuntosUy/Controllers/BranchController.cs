@@ -158,4 +158,31 @@ public class BranchController : BaseController
             });
         }
     }
+
+        /// <summary>
+    /// Eliminar un branch
+    /// </summary>
+    /// <param name="branch">Id del branch a eliminar</param>
+    /// <returns>El id del branch eliminado</returns>
+    /// <response code="200">OK</response>
+    /// <response code="400">Si hay un error en la eliminación</response>
+    [HttpPost("hours/{id}")]
+    [ProducesResponseType(typeof(BranchDTO), 200)]
+    [ProducesResponseType(400)]
+    public IActionResult setBranchHours(int id, [FromBody] SetBranchHoursRequest request) {
+        try {
+            var branch = TenantBranchService?.setBranchHours(id, request.OpenTime, request.ClosingTime);
+            return Ok(new ApiResponse<BranchDTO>{
+                Error = false,
+                Message = "Horario del branch actualizado correctamente",
+                Data = branch
+            });
+        }
+        catch (Exception ex) {
+            return BadRequest(new ApiResponse<object>{
+                Error = true,
+                Message = ex.Message
+            });
+        }
+    }
 }

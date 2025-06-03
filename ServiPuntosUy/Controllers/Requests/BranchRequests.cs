@@ -19,3 +19,9 @@ public class UpdateBranchRequest
     public string? OpenTime { get; set; }
     public string? ClosingTime { get; set; }
 }
+
+public class SetBranchHoursRequest
+{
+    public string OpenTime { get; set; }
+    public string ClosingTime { get; set; }
+}
