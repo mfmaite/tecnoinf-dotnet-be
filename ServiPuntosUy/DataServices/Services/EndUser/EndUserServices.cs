@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using ServiPuntosUy.DTO;
 using ServiPuntosUy.DAO.Models.Central;
 using ServiPuntosUy.Enums;
+using ServiPuntosUy.DataServices.Services.Tenant;
 
 
 
@@ -67,29 +68,29 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
                 // Obtener el usuario con AsTracking para asegurar que Entity Framework haga seguimiento de los cambios
                 var user = await _dbContext.Set<User>()
                     .FirstOrDefaultAsync(u => u.Id == userId);
-                
+
                 if (user == null)
                     return false;
-                
+
                 bool pointsExpired = false;
-                
+
                 // Verificar si el usuario tiene un tenant asignado
                 if (user.TenantId.HasValue)
                 {
                     // Obtener la configuración de lealtad del tenant
                     var loyaltyConfig = await _dbContext.Set<LoyaltyConfig>()
                         .FirstOrDefaultAsync(lc => lc.TenantId == user.TenantId.Value);
-                    
+
                     if (loyaltyConfig != null)
                     {
                         // Verificar si es la primera vez que inicia sesión o si la fecha es muy antigua (valor por defecto)
                         bool isFirstLogin = user.LastLoginDate.Year < 2000;
-                        
+
                         if (!isFirstLogin)
                         {
                             // Calcular días desde el último login
                             var daysSinceLastLogin = (DateTime.UtcNow - user.LastLoginDate).TotalDays;
-                            
+
                             // Verificar si han pasado más días que los permitidos por la política
                             if (daysSinceLastLogin > loyaltyConfig.ExpiricyPolicyDays)
                             {
@@ -97,17 +98,17 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
                                 int previousPoints = user.PointBalance;
                                 user.PointBalance = 0;
                                 pointsExpired = true;
-                                
+
                                 // Logging (opcional)
                                 Console.WriteLine($"User {user.Id} points expired: {previousPoints} -> 0");
                             }
                         }
                     }
                 }
-                
+
                 // Guardar los cambios en la base de datos
                 await _dbContext.SaveChangesAsync();
-                
+
                 return pointsExpired;
             }
             catch (Exception ex)
@@ -355,6 +356,56 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
         public async Task<ProductDTO?> UpdateProduct(int productId, string? name, string? description, string? imageUrl, decimal? price, bool? ageRestricted)
         {
             throw new Exception("El usuario final no puede actualizar productos");
+        }
+    }
+
+    public class TenantBranchService : ITenantBranchService
+    {
+        private readonly IGenericRepository<DAO.Models.Central.Branch> _branchRepository;
+
+        public TenantBranchService(IGenericRepository<DAO.Models.Central.Branch> branchRepository)
+        {
+            _branchRepository = branchRepository;
+        }
+
+        // Métodos de Branch
+
+        public BranchDTO GetBranchDTO(ServiPuntosUy.DAO.Models.Central.Branch branch)
+        {
+            return new BranchDTO
+            {
+                Id = branch.Id,
+                Address = branch.Address,
+                Latitud = branch.Latitud,
+                Longitud = branch.Longitud,
+                Phone = branch.Phone,
+                OpenTime = branch.OpenTime,
+                ClosingTime = branch.ClosingTime,
+                TenantId = branch.TenantId,
+            };
+        }
+        public BranchDTO[] GetBranchList(int tenantId)
+        {
+            // Obtener la lista de branches del repositorio filtrando por TenantId
+            var branches = _branchRepository.GetQueryable()
+                .Where(e => e.TenantId == tenantId).ToList();
+
+            return branches.Select(b => GetBranchDTO(b)).ToArray();
+
+        }
+        public BranchDTO CreateBranch(int tenantId, string latitud, string longitud, string address, string phone, TimeOnly openTime, TimeOnly closingTime)
+        {
+            throw new UnauthorizedAccessException("El usuario final no puede crear sucursales");
+        }
+
+        public BranchDTO UpdateBranch(int branchId, string? latitud, string? longitud, string? address, string? phone, TimeOnly? openTime, TimeOnly? closingTime)
+        {
+            throw new UnauthorizedAccessException("El usuario final no puede actualizar sucursales");
+        }
+
+        public void DeleteBranch(int branchId)
+        {
+            throw new UnauthorizedAccessException("El usuario final no puede eliminar sucursales");
         }
     }
 }
