@@ -78,6 +78,7 @@ public class CentralDbContext : DbContext
 
         // Seed para el primer usuario administrador
         SeedAdminUser(modelBuilder);
+        Console.WriteLine("SeedAdminUser ejecutado");
     }
 
 
@@ -131,6 +132,8 @@ public class CentralDbContext : DbContext
         var authLogic = new AuthLogic(_configuration);
         string salt;
         var passwordHash = authLogic.HashPassword("Admin123!", out salt);
+        Console.WriteLine("passwordHash: " + passwordHash);
+        Console.WriteLine("salt: " + salt);
 
         // Crea Admin Central
         modelBuilder.Entity<User>().HasData(
