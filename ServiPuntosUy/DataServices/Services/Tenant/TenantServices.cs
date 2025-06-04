@@ -74,23 +74,23 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
         {
             // Crear un registro para cada tipo de combustible
             var fuelTypes = Enum.GetValues(typeof(FuelType)).Cast<FuelType>();
-            
+
             foreach (var fuelType in fuelTypes)
             {
                 // Obtener el precio predeterminado del enum FuelPrice
                 decimal price = (int)Enum.Parse(typeof(FuelPrice), fuelType.ToString());
-                
+
                 var fuelPrice = new DAO.Models.Central.FuelPrices
                 {
                     BranchId = branchId,
-                    TenantId = tenantId, 
+                    TenantId = tenantId,
                     FuelType = fuelType,
                     Price = price
                 };
-                
+
                 _fuelPricesRepository.AddAsync(fuelPrice).GetAwaiter().GetResult();
             }
-            
+
             // Guardar todos los cambios
             _fuelPricesRepository.SaveChangesAsync().GetAwaiter().GetResult();
         }
@@ -197,7 +197,7 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
         public Task<LoyaltyConfigDTO> UpdateLoyaltyConfigAsync(LoyaltyConfigDTO config)
         {
             // Un administrador de tenant solo puede actualizar la configuración de su propio tenant
-            if (config.TenantId != _tenantId)
+            if (config.TenantId != int.Parse(_tenantId))
             {
                 throw new UnauthorizedAccessException("No tiene permisos para acceder a este tenant");
             }
@@ -451,7 +451,7 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
                 Price = productDTO.Price,
             };
         }
-        
+
         public async Task<ProductDTO?> UpdateProduct(int productId, string? name, string? description, string? imageUrl, decimal? price, bool? ageRestricted)
         {
 
@@ -461,7 +461,7 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
                 throw new Exception($"No existe un producto con el ID {productId}");
             }
 
-            var product = MapToProduct(productDTO); //Update no espera DTO 
+            var product = MapToProduct(productDTO); //Update no espera DTO
 
             product.Name = name ?? product.Name;
             product.Description = description ?? product.Description;

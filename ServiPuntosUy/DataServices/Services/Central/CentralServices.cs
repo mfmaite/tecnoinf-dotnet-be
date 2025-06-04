@@ -53,7 +53,7 @@ namespace ServiPuntosUy.DataServices.Services.Central
             return tenant != null ? GetTenantDTO(tenant) : null;
         }
 
-        public TenantDTO CreateTenant(string tenantName) {
+        public TenantDTO CreateTenant(string tenantName, string pointsName, int pointsValue, decimal accumulationRule, int expiricyPolicyDays) {
             // Validar que tenantId contenga solo letras A-Z (mayus y minus)
             if (!Regex.IsMatch(tenantName, @"^[a-zA-Z]+$"))
             {
@@ -163,11 +163,51 @@ namespace ServiPuntosUy.DataServices.Services.Central
     {
         private readonly CentralDbContext _dbContext;
         private readonly IConfiguration _configuration;
+        private readonly IGenericRepository<DAO.Models.Central.LoyaltyConfig> _loyaltyConfigRepository;
 
-        public LoyaltyService(CentralDbContext dbContext, IConfiguration configuration)
+        public LoyaltyService(CentralDbContext dbContext, IConfiguration configuration, IGenericRepository<DAO.Models.Central.LoyaltyConfig> loyaltyConfigRepository)
         {
             _dbContext = dbContext;
             _configuration = configuration;
+            _loyaltyConfigRepository = loyaltyConfigRepository;
+        }
+
+        /// <summary>
+        /// Convierte un modelo de configuración de lealtad a DTO
+        /// </summary>
+        /// <param name="loyaltyConfig">Modelo de configuración de lealtad</param>
+        /// <returns>DTO de configuración de lealtad</returns>
+        public LoyaltyConfigDTO GetLoyaltyConfigDTO(DAO.Models.Central.LoyaltyConfig loyaltyConfig) {
+            return new LoyaltyConfigDTO {
+                Id = loyaltyConfig.Id,
+                TenantId = loyaltyConfig.TenantId,
+                PointsName = loyaltyConfig.PointsName,
+                PointsValue = loyaltyConfig.PointsValue,
+                AccumulationRule = loyaltyConfig.AccumulationRule,
+                ExpiricyPolicyDays = loyaltyConfig.ExpiricyPolicyDays
+            };
+        }
+
+        /// <summary>
+        /// Crea la configuración de lealtad de un tenant
+        /// </summary>
+        /// <param name="tenantId">ID del tenant</param>
+        /// <param name="pointsName">Nombre de los puntos</param>
+        /// <param name="pointsValue">Valor de los puntos</param>
+        /// <param name="accumulationRule">Regla de acumulación de puntos</param>
+        public LoyaltyConfigDTO CreateLoyaltyConfig(int tenantId, string pointsName, int pointsValue, decimal accumulationRule, int expiricyPolicyDays) {
+            var newLoyaltyConfig = new DAO.Models.Central.LoyaltyConfig {
+                TenantId = tenantId,
+                PointsName = pointsName,
+                PointsValue = pointsValue,
+                AccumulationRule = accumulationRule,
+                ExpiricyPolicyDays = expiricyPolicyDays
+            };
+
+            var createdLoyaltyConfig = _loyaltyConfigRepository.AddAsync(newLoyaltyConfig).GetAwaiter().GetResult();
+            _loyaltyConfigRepository.SaveChangesAsync().GetAwaiter().GetResult();
+
+            return GetLoyaltyConfigDTO(createdLoyaltyConfig);
         }
 
         /// <summary>
