@@ -66,18 +66,15 @@ namespace ServiPuntosUy.DataServices.Services.Branch
     {
         private readonly IGenericRepository<ServiPuntosUy.DAO.Models.Central.Branch> _branchRepository;
         private readonly IGenericRepository<ServiPuntosUy.DAO.Models.Central.ProductStock> _productStockRepository;
+        private readonly IGenericRepository<ServiPuntosUy.DAO.Models.Central.Product> _productRepository;
 
 
-        public BranchService(IGenericRepository<ServiPuntosUy.DAO.Models.Central.Branch> branchRepository)
+        public BranchService(IGenericRepository<ServiPuntosUy.DAO.Models.Central.Branch> branchRepository, IGenericRepository<ServiPuntosUy.DAO.Models.Central.ProductStock> productStockRepository, IGenericRepository<ServiPuntosUy.DAO.Models.Central.Product> productRepository)
         {
             _branchRepository = branchRepository;
-        }
-
-        public BranchService(IGenericRepository<ServiPuntosUy.DAO.Models.Central.ProductStock> productStockRepository)
-        {
             _productStockRepository = productStockRepository;
+            _productRepository = productRepository;
         }
-
         // Métodos del Branch
 
         public BranchDTO GetBranchDTO(ServiPuntosUy.DAO.Models.Central.Branch branch)
@@ -105,7 +102,7 @@ namespace ServiPuntosUy.DataServices.Services.Branch
         }
 
 
-        public ProductStockDTO GetProducStocktDTO(DAO.Models.Central.ProductStock productStock)
+        public ProductStockDTO GetProductStockDTO(DAO.Models.Central.ProductStock productStock)
         {
             return new ProductStockDTO
             {
@@ -113,17 +110,17 @@ namespace ServiPuntosUy.DataServices.Services.Branch
                 ProductId = productStock.ProductId,
                 BranchId = productStock.BranchId,
                 Stock = productStock.Stock,
-            }
+            };
         }
 
-        public async Task<ProductStockDTO?> GetProductStockById(int productId)
+        public async Task<ProductStockDTO?> GetProductStockById(int productId, int branchId)
         {
             // var product = await _productRepository.GetByIdAsync(productId)
                 var productStock = await _productStockRepository.GetQueryable()
                                           .AsNoTracking()
-                                          .FirstOrDefaultAsync(p => p.Id == productId);
+                                          .FirstOrDefaultAsync(p => p.Id == productId && p.BranchId == branchId);
 
-            return product is not null ? GetProducStocktDTO(productStock) : null;
+            return productStock is not null ? GetProductStockDTO(productStock) : null;
         }
 
          // Método de mapeo
@@ -137,31 +134,56 @@ namespace ServiPuntosUy.DataServices.Services.Branch
                 Stock = productStockDTO.Stock
             };
         }
+        public async Task<bool> VerifyProductById(int productId)
+        {
+            // var product = await _productRepository.GetByIdAsync(productId)
+                var product = await _productRepository.GetQueryable()
+                                          .AsNoTracking()
+                                          .FirstOrDefaultAsync(p => p.Id == productId);
 
+            return product is not null ? true : false;
+        }
 
-        public  async Task<ProductStockDTO?>  manageStock(int productId, int branchId, int stock)
+        public  async Task<ProductStockDTO?> manageStock(int productId, int branchId, int stock)
         {
             try{
                 // verificar que existe el producto
-                var productStockDTO = await GetProductStockById(productId);
-                if (productStockDTO == null)
-                    return $"Producto con ID {productId} no encontrado en el branch con ID {branchId}.";
+                var product = await VerifyProductById(productId);
+                if (!product)
+                    return null;
                 
-            var stock = MapToProductStock(productStockDTO); //Update no espera DTO 
-            stock.Id = productId; // Asegurarse de que el ID del producto sea correcto
-            stock.Stock = stock;
-            stock.BranchId = branchId; // Asegurarse de que el ID del branch sea correcto
-            stock.ProductId = productId; // Asegurarse de que el ID del producto sea correcto
+                var productStockDTO = await GetProductStockById(productId, branchId);
+                if (productStockDTO == null) // todavia no se le ha cargado stock
+                {
+                    productStockDTO = new ProductStockDTO
+                    {
+                        ProductId = productId,
+                        BranchId = branchId,
+                        Stock = stock
+                    };
+                    var stockDTO = MapToProductStock(productStockDTO);
+                    await _productStockRepository.AddAsync(stockDTO);
+                    await _productStockRepository.SaveChangesAsync();
+                    return GetProductStockDTO(stockDTO);  
+                }else{
+                    // Si ya existe, actualizamos el stock
+                    var stockDTO = MapToProductStock(productStockDTO); //Update no espera DTO 
+                    stockDTO.Id = productId;
+                    stockDTO.Stock = stock;
+                    stockDTO.BranchId = branchId; 
+                    stockDTO.ProductId = productId; 
+                    await _productStockRepository.UpdateAsync(stockDTO);
+                    await _productStockRepository.SaveChangesAsync();
+                    return GetProductStockDTO(stockDTO);  
+                }
 
-            await _productStockRepository.UpdateAsync(stock);
-            await _productStockRepository.SaveChangesAsync();
-
-            return GetProductStockDTO(stock);  
             }
             catch (Exception ex)
             {
-                return $"Error al verificar el stock del producto: {ex.Message}";
+                Console.WriteLine($"Error al actualizar el stock: {ex.Message}");
+                return null;
             }   
+        }
     }
 
     /// <summary>

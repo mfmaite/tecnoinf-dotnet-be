@@ -204,24 +204,19 @@ public class BranchController : BaseController
     }
 
         /// <summary>
-    /// Crear un nuevo branch
+    /// Gestionar stock de un producto en un branch
     /// </summary>
-    /// <param name="manageStock">Datos del branch a crear</param>
+    /// <param name="manageStock"></param>
     /// <returns>El branch creado</returns>
-    /// <response code="200">Retorna el branch creado</response>
+    /// <response code="200">Retorna el stock del producto</response>
     /// <response code="400">Si hay un error en la creación</response>
     [HttpPost("stock")]
     [ProducesResponseType(typeof(BranchDTO), 200)]
     [ProducesResponseType(400)]
-    public IActionResult manageStock([FromBody] CreateBranchRequest request) {
+    public async Task<IActionResult> manageStock([FromBody] ManageProductStockRequest request) {
         try {
-
-
-            var loggedUser = ObtainUserFromToken();
-            var branchId = loggedUser.BranchId;
-
-           
-            var productStock = BranchService?.manageStock(request.productId, branchId, request.stock);
+     
+            var productStock = await BranchService?.manageStock(request.productId, request.branchId, request.stock);
             if (productStock == null)
             {
                 return BadRequest(new ApiResponse<object>{
