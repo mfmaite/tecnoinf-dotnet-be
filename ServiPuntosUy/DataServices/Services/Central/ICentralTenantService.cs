@@ -41,5 +41,19 @@ namespace ServiPuntosUy.DataServices.Services.Central
         /// </summary>
         /// <returns>Lista de tenants</returns>
         TenantDTO[] GetTenantsList();
+
+        /// <summary>
+        /// Elimina un tenant
+        /// </summary>
+        /// <param name="id">ID del tenant</param>
+        void DeleteTenant(int id);
+
+        /// <summary>
+        /// Modifica un tenant
+        /// </summary>
+        /// <param name="id">ID del tenant</param>
+        /// <param name="newName">Nuevo nombre del tenant</param>
+        /// <returns>DTO del tenant modificado</returns>
+        TenantDTO UpdateTenant(int id, string newName);
     }
 }
