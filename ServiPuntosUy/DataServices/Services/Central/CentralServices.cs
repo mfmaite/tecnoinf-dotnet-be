@@ -135,6 +135,25 @@ namespace ServiPuntosUy.DataServices.Services.Central
             _tenantRepository.DeleteAsync(tenant.Id).GetAwaiter().GetResult();
             _tenantRepository.SaveChangesAsync().GetAwaiter().GetResult();
         }
+
+        public TenantDTO UpdateTenant(int id, string newName) {
+            // Validar que tenantId contenga solo letras A-Z (mayus y minus)
+            if (!Regex.IsMatch(newName, @"^[a-zA-Z]+$"))
+            {
+                throw new ArgumentException("El tenant name solo puede contener letras mayúsculas de la A a la Z.");
+            }
+
+            var tenant = _tenantRepository.GetQueryable().FirstOrDefault(t => t.Id == id);
+
+            if (tenant == null) {
+                throw new ArgumentException($"No existe un tenant con el ID {id}");
+            }
+
+            tenant.Name = newName;
+            _tenantRepository.UpdateAsync(tenant).GetAwaiter().GetResult();
+            _tenantRepository.SaveChangesAsync().GetAwaiter().GetResult();
+            return GetTenantDTO(tenant);
+        }
     }
 
     /// <summary>

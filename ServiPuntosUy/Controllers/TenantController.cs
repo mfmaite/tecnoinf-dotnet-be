@@ -5,6 +5,8 @@ using ServiPuntosUy.Controllers.Base;
 using ServiPuntosUy.DAO.Models.Central;
 using Microsoft.AspNetCore.Authorization;
 using ServiPuntosUY.Controllers.Response;
+using ServiPuntosUy.Requests;
+
 namespace ServiPuntosUy.Controllers;
 
 /// <summary>
@@ -139,6 +141,46 @@ public class TenantController : BaseController
             return Ok(new ApiResponse<string>{
                 Error = false,
                 Message = "Tenant eliminado correctamente"
+            });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new ApiResponse<object>{
+                Error = true,
+                Message = ex.Message
+            });
+        }
+    }
+
+    /// <summary>
+    /// Modifica un tenant
+    /// </summary>
+    /// <param name="id">ID del tenant</param>
+    /// <response code="200">Retorna el tenant modificado</response>
+    /// <response code="404">Si el tenant no existe</response>
+    /// <response code="400">Si hay un error en la modificación</response>
+    [HttpPut("{id}")]
+    [ProducesResponseType(typeof(TenantDTO), 200)]
+    [ProducesResponseType(404)]
+    [ProducesResponseType(400)]
+    public IActionResult UpdateTenant(int id, [FromBody] UpdateTenantRequest request)
+    {
+        try
+        {
+            if (request == null || string.IsNullOrWhiteSpace(request.Name))
+            {
+                return BadRequest(new ApiResponse<object>{
+                    Error = true,
+                    Message = "El nombre del tenant es requerido"
+                });
+            }
+
+            var updatedTenant = TenantService.UpdateTenant(id, request.Name);
+
+            return Ok(new ApiResponse<TenantDTO>{
+                Error = false,
+                Message = "Tenant modificado correctamente",
+                Data = updatedTenant
             });
         }
         catch (Exception ex)
