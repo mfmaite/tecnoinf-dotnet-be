@@ -13,9 +13,11 @@ namespace ServiPuntosUy.Controllers;
 [Route("api/[controller]")]
 [ApiController]
 [Authorize]
-public class BranchController(IServiceFactory serviceFactory) : BaseController(serviceFactory)
+public class BranchController : BaseController
 {
-
+    public BranchController(IServiceFactory serviceFactory) : base(serviceFactory)
+    {
+    }
     /// <summary>
     /// Crear un nuevo branch
     /// </summary>
