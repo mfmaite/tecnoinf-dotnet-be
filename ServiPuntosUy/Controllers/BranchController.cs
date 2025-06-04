@@ -13,12 +13,8 @@ namespace ServiPuntosUy.Controllers;
 [Route("api/[controller]")]
 [ApiController]
 [Authorize]
-public class BranchController : BaseController
+public class BranchController(IServiceFactory serviceFactory) : BaseController(serviceFactory)
 {
-
-    public BranchController(IServiceFactory serviceFactory) : base(serviceFactory)
-    {
-    }
 
     /// <summary>
     /// Crear un nuevo branch
@@ -30,8 +26,10 @@ public class BranchController : BaseController
     [HttpPost("Create")]
     [ProducesResponseType(typeof(BranchDTO), 200)]
     [ProducesResponseType(400)]
-    public IActionResult CreateBranch([FromBody] CreateBranchRequest request) {
-        try {
+    public IActionResult CreateBranch([FromBody] CreateBranchRequest request)
+    {
+        try
+        {
             // Intentar parsear OpenTime y ClosingTime
             if (!TimeOnly.TryParse(request.OpenTime, out var openTime))
                 return BadRequest("Formato de hora inválido para OpenTime. Use HH:mm.");
@@ -53,20 +51,24 @@ public class BranchController : BaseController
 
             if (newBranch == null)
             {
-                return BadRequest(new ApiResponse<object>{
+                return BadRequest(new ApiResponse<object>
+                {
                     Error = true,
                     Message = "No se pudo crear el branch. El servicio no está disponible."
                 });
             }
 
-            return Ok(new ApiResponse<BranchDTO>{
+            return Ok(new ApiResponse<BranchDTO>
+            {
                 Error = false,
                 Message = "Branch creado correctamente",
                 Data = newBranch
             });
         }
-        catch (Exception ex) {
-            return BadRequest(new ApiResponse<object>{
+        catch (Exception ex)
+        {
+            return BadRequest(new ApiResponse<object>
+            {
                 Error = true,
                 Message = ex.Message
             });
@@ -83,8 +85,10 @@ public class BranchController : BaseController
     [HttpPatch("{id}/Update")]
     [ProducesResponseType(typeof(BranchDTO), 200)]
     [ProducesResponseType(400)]
-    public IActionResult UpdateBranch(int id, [FromBody] UpdateBranchRequest request) {
-        try {
+    public IActionResult UpdateBranch(int id, [FromBody] UpdateBranchRequest request)
+    {
+        try
+        {
             // Intentar parsear OpenTime y ClosingTime
             TimeOnly? openTime = null;
             if (!string.IsNullOrWhiteSpace(request.OpenTime))
@@ -114,20 +118,24 @@ public class BranchController : BaseController
 
             if (newBranch == null)
             {
-                return BadRequest(new ApiResponse<object>{
+                return BadRequest(new ApiResponse<object>
+                {
                     Error = true,
                     Message = "No se pudo actualizar el branch. El servicio no está disponible."
                 });
             }
 
-            return Ok(new ApiResponse<BranchDTO>{
+            return Ok(new ApiResponse<BranchDTO>
+            {
                 Error = false,
                 Message = "Branch actualizado correctamente",
                 Data = newBranch
             });
         }
-        catch (Exception ex) {
-            return BadRequest(new ApiResponse<object>{
+        catch (Exception ex)
+        {
+            return BadRequest(new ApiResponse<object>
+            {
                 Error = true,
                 Message = ex.Message
             });
@@ -144,16 +152,21 @@ public class BranchController : BaseController
     [HttpDelete("{id}/Delete")]
     [ProducesResponseType(typeof(BranchDTO), 200)]
     [ProducesResponseType(400)]
-    public IActionResult UpdateBranch(int id) {
-        try {
+    public IActionResult UpdateBranch(int id)
+    {
+        try
+        {
             TenantBranchService?.DeleteBranch(id);
-            return Ok(new ApiResponse<object>{
+            return Ok(new ApiResponse<object>
+            {
                 Error = false,
                 Message = "Branch eliminado correctamente"
             });
         }
-        catch (Exception ex) {
-            return BadRequest(new ApiResponse<object>{
+        catch (Exception ex)
+        {
+            return BadRequest(new ApiResponse<object>
+            {
                 Error = true,
                 Message = ex.Message
             });
@@ -177,10 +190,11 @@ public class BranchController : BaseController
             var tenantId = ObtainUserFromToken().TenantId;
             if (!int.TryParse(tenantId, out int tenantIdInt))
                 return BadRequest("No se pudo obtener el TenantId del usuario");
-                
+
             var user = ObtainUserFromToken();
             if (!HasAccessToTenant(user.TenantId))
-                return Unauthorized(new ApiResponse<object>{
+                return Unauthorized(new ApiResponse<object>
+                {
                     Error = true,
                     Message = "No tiene acceso al tenant especificado"
                 });
@@ -188,7 +202,8 @@ public class BranchController : BaseController
             var branchList = TenantBranchService.GetBranchList(tenantIdInt);
 
 
-            return Ok(new ApiResponse <BranchDTO[]>{
+            return Ok(new ApiResponse<BranchDTO[]>
+            {
                 Error = false,
                 Message = "Lista de tenants obtenida correctamente",
                 Data = branchList
@@ -196,7 +211,8 @@ public class BranchController : BaseController
         }
         catch (Exception ex)
         {
-            return BadRequest(new ApiResponse<object>{
+            return BadRequest(new ApiResponse<object>
+            {
                 Error = true,
                 Message = ex.Message
             });
