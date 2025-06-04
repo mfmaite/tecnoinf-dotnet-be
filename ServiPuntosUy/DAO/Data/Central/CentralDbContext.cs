@@ -87,7 +87,7 @@ public class CentralDbContext : DbContext
         modelBuilder.Entity<Tenant>().HasData(
             new Tenant
             {
-                Id = 1,
+                Id = -1,
                 Name = "ancap"
             }
         );
@@ -101,7 +101,7 @@ public class CentralDbContext : DbContext
             modelBuilder.Entity<User>().HasData(
                 new User
                 {
-                    Id = 1,
+                    Id = -1,
                     Name = "Admin Central",
                     Email = "admin@servipuntos.uy",
                     Password = "AdminPassword", // En producción, esto sería un hash
@@ -115,7 +115,7 @@ public class CentralDbContext : DbContext
             modelBuilder.Entity<User>().HasData(
                 new User
                 {
-                    Id = 2,
+                    Id = -2,
                     Name = "Admin Tenant",
                     Email = "admintenant@servipuntos.uy",
                     Password = "AdminPassword", // En producción, esto sería un hash
@@ -136,13 +136,13 @@ public class CentralDbContext : DbContext
         modelBuilder.Entity<User>().HasData(
             new User
             {
-                Id = 1,
+                Id = -1,
                 Name = "Admin Central",
                 Email = "admin@servipuntos.uy",
                 Password = passwordHash,
                 PasswordSalt = salt,
                 Role = UserType.Central,
-                LastLoginDate = DateTime.UtcNow 
+                LastLoginDate = DateTime.UtcNow
             }
         );
 
@@ -150,14 +150,14 @@ public class CentralDbContext : DbContext
         modelBuilder.Entity<User>().HasData(
             new User
             {
-                Id = 2,
+                Id = -2,
                 Name = "Admin Tenant",
                 Email = "admintenant@servipuntos.uy",
                 Password = passwordHash,
                 PasswordSalt = salt,
                 Role = UserType.Tenant,
-                TenantId = 1,
-                LastLoginDate = DateTime.UtcNow 
+                TenantId = -1,
+                LastLoginDate = DateTime.UtcNow
             }
         );
     }
