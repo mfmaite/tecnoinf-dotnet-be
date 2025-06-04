@@ -14,17 +14,20 @@ namespace ServiPuntosUy.DataServices.Services.Central
     public class TenantService : ICentralTenantService
     {
         private readonly IGenericRepository<DAO.Models.Central.Tenant> _tenantRepository;
+        private readonly IGenericRepository<DAO.Models.Central.LoyaltyConfig> _loyaltyConfigRepository;
         private readonly IGenericRepository<User> _userRepository;
         private readonly IAuthLogic _authLogic;
 
         public TenantService(
             IGenericRepository<DAO.Models.Central.Tenant> tenantRepository,
             IGenericRepository<User> userRepository,
-            IAuthLogic authLogic)
+            IAuthLogic authLogic,
+            IGenericRepository<DAO.Models.Central.LoyaltyConfig> loyaltyConfigRepository)
         {
             _tenantRepository = tenantRepository;
             _userRepository = userRepository;
             _authLogic = authLogic;
+            _loyaltyConfigRepository = loyaltyConfigRepository;
         }
 
         // Métodos del Tenant
@@ -60,6 +63,8 @@ namespace ServiPuntosUy.DataServices.Services.Central
                 throw new ArgumentException("El tenant name solo puede contener letras mayúsculas de la A a la Z.");
             }
 
+            Console.WriteLine($"Creating tenant: {tenantName}");
+
             // Verificar que el tenantId no exista
             bool tenantExists = _tenantRepository.GetQueryable().Any(t => t.Name == tenantName);
             if (tenantExists)
@@ -77,6 +82,18 @@ namespace ServiPuntosUy.DataServices.Services.Central
 
             // Crear un usuario administrador para el tenant
             CreateTenantAdminUser(createdTenant);
+
+            // Crear la configuración de lealtad para el tenant
+            var newLoyaltyConfig = new DAO.Models.Central.LoyaltyConfig {
+                TenantId = createdTenant.Id,
+                PointsName = pointsName,
+                PointsValue = pointsValue,
+                AccumulationRule = accumulationRule,
+                ExpiricyPolicyDays = expiricyPolicyDays
+            };
+
+            var createdLoyaltyConfig = _loyaltyConfigRepository.AddAsync(newLoyaltyConfig).GetAwaiter().GetResult();
+            _loyaltyConfigRepository.SaveChangesAsync().GetAwaiter().GetResult();
 
             return GetTenantDTO(createdTenant);
         }
@@ -186,28 +203,6 @@ namespace ServiPuntosUy.DataServices.Services.Central
                 AccumulationRule = loyaltyConfig.AccumulationRule,
                 ExpiricyPolicyDays = loyaltyConfig.ExpiricyPolicyDays
             };
-        }
-
-        /// <summary>
-        /// Crea la configuración de lealtad de un tenant
-        /// </summary>
-        /// <param name="tenantId">ID del tenant</param>
-        /// <param name="pointsName">Nombre de los puntos</param>
-        /// <param name="pointsValue">Valor de los puntos</param>
-        /// <param name="accumulationRule">Regla de acumulación de puntos</param>
-        public LoyaltyConfigDTO CreateLoyaltyConfig(int tenantId, string pointsName, int pointsValue, decimal accumulationRule, int expiricyPolicyDays) {
-            var newLoyaltyConfig = new DAO.Models.Central.LoyaltyConfig {
-                TenantId = tenantId,
-                PointsName = pointsName,
-                PointsValue = pointsValue,
-                AccumulationRule = accumulationRule,
-                ExpiricyPolicyDays = expiricyPolicyDays
-            };
-
-            var createdLoyaltyConfig = _loyaltyConfigRepository.AddAsync(newLoyaltyConfig).GetAwaiter().GetResult();
-            _loyaltyConfigRepository.SaveChangesAsync().GetAwaiter().GetResult();
-
-            return GetLoyaltyConfigDTO(createdLoyaltyConfig);
         }
 
         /// <summary>
