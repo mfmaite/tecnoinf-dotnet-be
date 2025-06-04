@@ -118,4 +118,35 @@ public class TenantController : BaseController
             });
         }
     }
+
+    /// <summary>
+    /// Elimina un tenant
+    /// </summary>
+    /// <param name="id">ID del tenant</param>
+    /// <response code="200">Retorna un mensaje de éxito</response>
+    /// <response code="404">Si el tenant no existe</response>
+    /// <response code="400">Si hay un error en la eliminación</response>
+    [HttpDelete("{id}")]
+    [ProducesResponseType(typeof(string), 200)]
+    [ProducesResponseType(404)]
+    [ProducesResponseType(400)]
+    public IActionResult DeleteTenant(int id)
+    {
+        try
+        {
+            TenantService.DeleteTenant(id);
+
+            return Ok(new ApiResponse<string>{
+                Error = false,
+                Message = "Tenant eliminado correctamente"
+            });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new ApiResponse<object>{
+                Error = true,
+                Message = ex.Message
+            });
+        }
+    }
 }

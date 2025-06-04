@@ -90,10 +90,10 @@ namespace ServiPuntosUy.DataServices.Services.Central
             // Generar email y contraseña para el administrador del tenant
             string adminEmail = $"{tenant.Name}-admin@mail.com";
             string adminPassword = $"{tenant.Name}-admin-password";
-            
+
             // Generar hash y salt para la contraseña
             string passwordHash = _authLogic.HashPassword(adminPassword, out string passwordSalt);
-            
+
             // Crear el usuario administrador
             var adminUser = new User
             {
@@ -106,7 +106,7 @@ namespace ServiPuntosUy.DataServices.Services.Central
                 IsVerified = true, // El usuario ya está verificado
                 NotificationsEnabled = true
             };
-            
+
             // Guardar el usuario en la base de datos
             _userRepository.AddAsync(adminUser).GetAwaiter().GetResult();
             _userRepository.SaveChangesAsync().GetAwaiter().GetResult();
@@ -115,6 +115,25 @@ namespace ServiPuntosUy.DataServices.Services.Central
         public TenantDTO[] GetTenantsList() {
             var tenants = _tenantRepository.GetQueryable().ToList();
             return tenants.Select(t => GetTenantDTO(t)).ToArray();
+        }
+
+        public void DeleteTenant(int id) {
+            // Eliminar todos los usuarios del tenant
+            var users = _userRepository.GetQueryable().Where(u => u.TenantId == id).ToList();
+            foreach (var user in users) {
+                _userRepository.DeleteAsync(user.Id).GetAwaiter().GetResult();
+            }
+            _userRepository.SaveChangesAsync().GetAwaiter().GetResult();
+
+            // Eliminar el tenant
+            var tenant = _tenantRepository.GetQueryable().FirstOrDefault(t => t.Id == id);
+
+            if (tenant == null) {
+                throw new ArgumentException("No se pudo eliminar el tenant");
+            }
+
+            _tenantRepository.DeleteAsync(tenant.Id).GetAwaiter().GetResult();
+            _tenantRepository.SaveChangesAsync().GetAwaiter().GetResult();
         }
     }
 
