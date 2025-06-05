@@ -7,6 +7,7 @@ using ServiPuntosUy.DataServices.Services.Branch;
 using ServiPuntosUy.DAO.Models.Central;
 using ServiPuntosUy.Enums;
 using ServiPuntosUy.DataServices.Services.CommonLogic;
+using Microsoft.EntityFrameworkCore;
 
 namespace ServiPuntosUy.DataServices.Services.Central
 {
@@ -441,5 +442,78 @@ namespace ServiPuntosUy.DataServices.Services.Central
 
         // Implementar los métodos de la interfaz IPaymentService
         // Esta es una implementación básica para el scaffold
+    }
+
+    /// <summary>
+    /// Implementación del servicio de estadísticas para el administrador central
+    /// </summary>
+    public class StatisticsService : IStatisticsService
+    {
+        private readonly CentralDbContext _dbContext;
+        private readonly IConfiguration _configuration;
+
+        public StatisticsService(CentralDbContext dbContext, IConfiguration configuration)
+        {
+            _dbContext = dbContext;
+            _configuration = configuration;
+        }
+
+        /// <summary>
+        /// Obtiene las estadísticas para el administrador central
+        /// </summary>
+        /// <returns>Estadísticas generales de toda la plataforma</returns>
+        public async Task<object> GetStatisticsAsync()
+        {
+            // Contar usuarios por tipo
+            var usersByType = await _dbContext.Users
+                .GroupBy(u => u.Role)
+                .Select(g => new { UserType = g.Key, Count = g.Count() })
+                .ToListAsync();
+
+            // Contar el total de usuarios
+            int totalUsers = await _dbContext.Users.CountAsync();
+
+            // Contar el total de transacciones
+            int totalTransactions = await _dbContext.Set<DAO.Models.Central.Transaction>().CountAsync();
+
+            // Contar promociones por tipo (tenant o branch)
+            var tenantPromotions = await _dbContext.Set<DAO.Models.Central.Promotion>()
+                .Where(p => p.BranchId == null)
+                .CountAsync();
+
+            var branchPromotions = await _dbContext.Set<DAO.Models.Central.Promotion>()
+                .Where(p => p.BranchId != null)
+                .CountAsync();
+
+            int totalPromotions = tenantPromotions + branchPromotions;
+
+            // Construir el objeto de respuesta
+            var statistics = new
+            {
+                users = new
+                {
+                    total = totalUsers,
+                    byType = new
+                    {
+                        central = usersByType.FirstOrDefault(u => u.UserType == UserType.Central)?.Count ?? 0,
+                        tenant = usersByType.FirstOrDefault(u => u.UserType == UserType.Tenant)?.Count ?? 0,
+                        branch = usersByType.FirstOrDefault(u => u.UserType == UserType.Branch)?.Count ?? 0,
+                        endUser = usersByType.FirstOrDefault(u => u.UserType == UserType.EndUser)?.Count ?? 0
+                    }
+                },
+                transactions = new
+                {
+                    total = totalTransactions
+                },
+                promotions = new
+                {
+                    total = totalPromotions,
+                    tenantPromotions,
+                    branchPromotions
+                }
+            };
+
+            return statistics;
+        }
     }
 }

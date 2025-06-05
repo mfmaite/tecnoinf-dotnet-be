@@ -260,6 +260,11 @@ namespace ServiPuntosUy.Controllers.Base
         /// </summary>
         protected IFuelService FuelService => _serviceFactory.GetService<IFuelService>();
 
+        /// <summary>
+        /// Obtiene el servicio de estadísticas
+        /// </summary>
+        protected IStatisticsService StatisticsService => _serviceFactory.GetService<IStatisticsService>();
+
         #endregion
     }
 }

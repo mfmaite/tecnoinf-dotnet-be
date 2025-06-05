@@ -11,6 +11,7 @@ using ServiPuntosUy.DAO.Data.Central;
 using ServiPuntosUy.DataServices.Services;
 using ServiPuntosUy.DataServices.Services.Branch;
 using ServiPuntosUy.Enums;
+using ServiPuntosUy.DataServices.Services.CommonLogic;
 
 namespace ServiPuntosUy.DataServices.Services.Tenant
 {
@@ -589,5 +590,90 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
 
         // Implementar los métodos de la interfaz IPaymentService
         // Esta es una implementación básica para el scaffold
+    }
+
+    /// <summary>
+    /// Implementación del servicio de estadísticas para el administrador de tenant
+    /// </summary>
+    public class StatisticsService : IStatisticsService
+    {
+        private readonly DbContext _dbContext;
+        private readonly IConfiguration _configuration;
+        private readonly string _tenantId;
+
+        public StatisticsService(DbContext dbContext, IConfiguration configuration, ITenantAccessor tenantAccessor)
+        {
+            _dbContext = dbContext;
+            _configuration = configuration;
+            _tenantId = tenantAccessor.GetCurrentTenantId();
+        }
+
+        /// <summary>
+        /// Obtiene las estadísticas para el administrador de tenant
+        /// </summary>
+        /// <returns>Estadísticas específicas del tenant</returns>
+        public async Task<object> GetStatisticsAsync()
+        {
+            // Convertir tenantId a int para las consultas
+            if (!int.TryParse(_tenantId, out int tenantIdInt))
+            {
+                throw new ArgumentException("TenantId inválido");
+            }
+
+            // Contar usuarios por tipo para este tenant
+            var usersByType = await _dbContext.Set<DAO.Models.Central.User>()
+                .Where(u => u.TenantId == tenantIdInt)
+                .GroupBy(u => u.Role)
+                .Select(g => new { UserType = g.Key, Count = g.Count() })
+                .ToListAsync();
+
+            // Contar el total de usuarios para este tenant
+            int totalUsers = await _dbContext.Set<DAO.Models.Central.User>()
+                .Where(u => u.TenantId == tenantIdInt)
+                .CountAsync();
+
+            // Contar el total de transacciones para este tenant
+            int totalTransactions = await _dbContext.Set<DAO.Models.Central.Transaction>()
+                .Where(t => t.TenantId == tenantIdInt)
+                .CountAsync();
+
+            // Contar promociones por tipo (tenant o branch) para este tenant
+            var tenantPromotions = await _dbContext.Set<DAO.Models.Central.Promotion>()
+                .Where(p => p.TenantId == tenantIdInt && p.BranchId == null)
+                .CountAsync();
+
+            var branchPromotions = await _dbContext.Set<DAO.Models.Central.Promotion>()
+                .Where(p => p.TenantId == tenantIdInt && p.BranchId != null)
+                .CountAsync();
+
+            int totalPromotions = tenantPromotions + branchPromotions;
+
+            // Construir el objeto de respuesta
+            var statistics = new
+            {
+                users = new
+                {
+                    total = totalUsers,
+                    byType = new
+                    {
+                        tenant = usersByType.FirstOrDefault(u => u.UserType == UserType.Tenant)?.Count ?? 0,
+                        branch = usersByType.FirstOrDefault(u => u.UserType == UserType.Branch)?.Count ?? 0,
+                        endUser = usersByType.FirstOrDefault(u => u.UserType == UserType.EndUser)?.Count ?? 0
+                    }
+                },
+                transactions = new
+                {
+                    total = totalTransactions
+                },
+                promotions = new
+                {
+                    total = totalPromotions,
+                    tenantPromotions,
+                    branchPromotions
+                }
+            };
+
+            return statistics;
+        }
     }
 }

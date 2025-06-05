@@ -7,6 +7,7 @@ using System.Linq;
 using Microsoft.Extensions.Configuration;
 using ServiPuntosUy.DataServices.Services.Central;
 using ServiPuntosUy.Enums;
+using ServiPuntosUy.DataServices.Services.CommonLogic;
 
 namespace ServiPuntosUy.DataServices.Services.Branch
 {
@@ -477,5 +478,62 @@ namespace ServiPuntosUy.DataServices.Services.Branch
 
         // Implementar los métodos de la interfaz IPaymentService
         // Esta es una implementación básica para el scaffold
+    }
+
+    /// <summary>
+    /// Implementación del servicio de estadísticas para el administrador de branch
+    /// </summary>
+    public class StatisticsService : IStatisticsService
+    {
+        private readonly DbContext _dbContext;
+        private readonly IConfiguration _configuration;
+        private readonly string _tenantId;
+        private readonly int _branchId;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+
+        public StatisticsService(
+            DbContext dbContext, 
+            IConfiguration configuration, 
+            ITenantAccessor tenantAccessor,
+            IHttpContextAccessor httpContextAccessor)
+        {
+            _dbContext = dbContext;
+            _configuration = configuration;
+            _tenantId = tenantAccessor.GetCurrentTenantId();
+            _httpContextAccessor = httpContextAccessor;
+            
+            // Obtener el branchId del contexto HTTP
+            if (httpContextAccessor.HttpContext?.Items["BranchId"] is int branchId)
+            {
+                _branchId = branchId;
+            }
+            else
+            {
+                throw new ArgumentException("No se pudo obtener el BranchId del contexto");
+            }
+        }
+
+        /// <summary>
+        /// Obtiene las estadísticas para el administrador de branch
+        /// </summary>
+        /// <returns>Estadísticas específicas del branch</returns>
+        public async Task<object> GetStatisticsAsync()
+        {
+            // Contar promociones para este branch
+            int branchPromotions = await _dbContext.Set<DAO.Models.Central.Promotion>()
+                .Where(p => p.BranchId == _branchId)
+                .CountAsync();
+
+            // Construir el objeto de respuesta
+            var statistics = new
+            {
+                promotions = new
+                {
+                    total = branchPromotions
+                }
+            };
+
+            return statistics;
+        }
     }
 }
