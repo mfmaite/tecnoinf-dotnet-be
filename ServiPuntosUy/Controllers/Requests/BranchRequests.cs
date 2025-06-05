@@ -24,4 +24,6 @@ public class SetBranchHoursRequest
 {
     public string OpenTime { get; set; }
     public string ClosingTime { get; set; }
+    public int branchId { get; set; }
+
 }
