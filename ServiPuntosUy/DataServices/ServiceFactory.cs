@@ -199,7 +199,6 @@ namespace ServiPuntosUy.DataServices
         {
             // Registrar servicios para el administrador de branch
             _serviceCollection.AddScoped<ILoyaltyService, Services.Branch.LoyaltyService>();
-            _serviceCollection.AddScoped<IBranchService, BranchService>();
             _serviceCollection.AddScoped<IAuthService>(sp =>
                 new CommonAuthService(
                     sp.GetRequiredService<DbContext>(),

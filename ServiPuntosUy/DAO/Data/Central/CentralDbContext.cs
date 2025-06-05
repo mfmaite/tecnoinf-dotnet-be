@@ -164,7 +164,7 @@ public class CentralDbContext : DbContext
                 modelBuilder.Entity<User>().HasData(
             new User
             {
-                Id = 3,
+                Id = -3,
                 Name = "Admin branch",
                 Email = "adminAncap1@servipuntos.uy",
                 Password = passwordHash,
