@@ -15,15 +15,18 @@ namespace ServiPuntosUy.DataServices.Services.Central
     {
         private readonly IGenericRepository<DAO.Models.Central.Tenant> _tenantRepository;
         private readonly IGenericRepository<User> _userRepository;
+        private readonly IGenericRepository<TenantUI> _tenantUIRepository;
         private readonly IAuthLogic _authLogic;
 
         public TenantService(
             IGenericRepository<DAO.Models.Central.Tenant> tenantRepository,
             IGenericRepository<User> userRepository,
+            IGenericRepository<TenantUI> tenantUIRepository,
             IAuthLogic authLogic)
         {
             _tenantRepository = tenantRepository;
             _userRepository = userRepository;
+            _tenantUIRepository = tenantUIRepository;
             _authLogic = authLogic;
         }
 
@@ -77,6 +80,17 @@ namespace ServiPuntosUy.DataServices.Services.Central
 
             // Crear un usuario administrador para el tenant
             CreateTenantAdminUser(createdTenant);
+            
+            // Crear la entrada en la tabla TenantUI con valores por defecto
+            var tenantUI = new TenantUI {
+                TenantId = createdTenant.Id,
+                LogoUrl = Constants.UIConstants.DEFAULT_LOGO_URL,
+                PrimaryColor = Constants.UIConstants.DEFAULT_PRIMARY_COLOR,
+                SecondaryColor = Constants.UIConstants.DEFAULT_SECONDARY_COLOR
+            };
+            
+            _tenantUIRepository.AddAsync(tenantUI).GetAwaiter().GetResult();
+            _tenantUIRepository.SaveChangesAsync().GetAwaiter().GetResult();
 
             return GetTenantDTO(createdTenant);
         }
@@ -124,6 +138,13 @@ namespace ServiPuntosUy.DataServices.Services.Central
                 _userRepository.DeleteAsync(user.Id).GetAwaiter().GetResult();
             }
             _userRepository.SaveChangesAsync().GetAwaiter().GetResult();
+            
+            // Eliminar la entrada de TenantUI
+            var tenantUI = _tenantUIRepository.GetQueryable().FirstOrDefault(t => t.TenantId == id);
+            if (tenantUI != null) {
+                _tenantUIRepository.DeleteAsync(tenantUI.Id).GetAwaiter().GetResult();
+                _tenantUIRepository.SaveChangesAsync().GetAwaiter().GetResult();
+            }
 
             // Eliminar el tenant
             var tenant = _tenantRepository.GetQueryable().FirstOrDefault(t => t.Id == id);
