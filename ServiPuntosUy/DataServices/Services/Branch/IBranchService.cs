@@ -10,6 +10,8 @@ namespace ServiPuntosUy.DataServices.Services.Branch
     {
         BranchDTO GetBranchDTO(ServiPuntosUy.DAO.Models.Central.Branch branch);
         BranchDTO GetBranchById(int id);
+        Task<ProductStockDTO?> manageStock(int productId, int branchId, int stock);
+
     }
 
 }

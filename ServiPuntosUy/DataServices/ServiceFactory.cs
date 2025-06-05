@@ -210,7 +210,12 @@ namespace ServiPuntosUy.DataServices
                     tenantId));
 
             // Registrar los servicios implementados
-            _serviceCollection.AddScoped<IBranchService>(sp => _serviceProvider.GetRequiredService<IBranchService>());
+            // _serviceCollection.AddScoped<IBranchService>(sp => _serviceProvider.GetRequiredService<IBranchService>());
+_serviceCollection.AddScoped<IBranchService>(sp =>
+    new BranchService(
+        sp.GetRequiredService<IGenericRepository<ServiPuntosUy.DAO.Models.Central.Branch>>(),
+        sp.GetRequiredService<IGenericRepository<ServiPuntosUy.DAO.Models.Central.ProductStock>>(),
+        sp.GetRequiredService<IGenericRepository<ServiPuntosUy.DAO.Models.Central.Product>>()));
 
 
             _serviceCollection.AddScoped<IPromotionService>(sp =>

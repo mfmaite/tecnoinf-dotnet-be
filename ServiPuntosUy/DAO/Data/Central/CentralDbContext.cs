@@ -160,5 +160,21 @@ public class CentralDbContext : DbContext
                 LastLoginDate = DateTime.UtcNow
             }
         );
+        // Crea admin branch
+                modelBuilder.Entity<User>().HasData(
+            new User
+            {
+                Id = -3,
+                Name = "Admin branch",
+                Email = "adminAncap1@servipuntos.uy",
+                Password = passwordHash,
+                PasswordSalt = salt,
+                Role = UserType.Branch,
+                TenantId = 1,
+                LastLoginDate = DateTime.UtcNow,
+                BranchId = 1 // Asignar a la primera estación por defecto
+            }
+        );
     }
+    
 }
