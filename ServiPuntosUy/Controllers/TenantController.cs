@@ -34,11 +34,7 @@ public class TenantController : BaseController
     public IActionResult CreateTenant([FromBody] CreateTenantRequest request) {
         try {
             var newTenant = TenantService.CreateTenant(
-                request.Name,
-                request.PointsName,
-                request.PointsValue,
-                request.AccumulationRule,
-                request.ExpiricyPolicyDays
+                request.Name
             );
 
             return Ok(new ApiResponse<TenantDTO>{

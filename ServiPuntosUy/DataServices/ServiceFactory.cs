@@ -254,7 +254,8 @@ namespace ServiPuntosUy.DataServices
                 new Services.EndUser.LoyaltyService(
                     sp.GetRequiredService<DbContext>(),
                     _configuration,
-                    tenantId));
+                    tenantId,
+                    sp.GetRequiredService<IGenericRepository<LoyaltyConfig>>()));
 
             // Luego registramos el AuthService con la dependencia de LoyaltyService
             _serviceCollection.AddScoped<IAuthService>(sp =>

@@ -1,3 +1,4 @@
+using ServiPuntosUy.DTO;
 
 namespace ServiPuntosUy.DataServices.Services
 {
@@ -13,7 +14,12 @@ namespace ServiPuntosUy.DataServices.Services
         /// <param name="userId">ID del usuario</param>
         /// <returns>True si los puntos expiraron, False en caso contrario</returns>
         Task<bool> CheckPointsExpirationAsync(int userId);
-        
-        // Otros métodos para gestionar el sistema de puntos
+
+        /// <summary>
+        /// Obtiene la configuración de lealtad de un tenant
+        /// </summary>
+        /// <param name="tenantId">ID del tenant</param>
+        /// <returns>Configuración de lealtad</returns>
+        LoyaltyConfigDTO GetLoyaltyProgram(int tenantId);
     }
 }

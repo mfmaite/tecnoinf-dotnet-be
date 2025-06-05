@@ -34,7 +34,7 @@ namespace ServiPuntosUy.DataServices.Services.Central
         /// </summary>
         /// <param name="tenantId">TenantId del tenant</param>
         /// <returns>DTO del tenant creado</returns>
-        TenantDTO CreateTenant(string tenantName, string pointsName, int pointsValue, decimal accumulationRule, int expiricyPolicyDays);
+        TenantDTO CreateTenant(string tenantName);
 
         /// <summary>
         /// Obtiene la lista de tenants

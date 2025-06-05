@@ -164,185 +164,14 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
         private readonly DbContext _dbContext;
         private readonly IConfiguration _configuration;
         private readonly string _tenantId;
+        private readonly IGenericRepository<LoyaltyConfig> _loyaltyConfigRepository;
 
-        public LoyaltyService(DbContext dbContext, IConfiguration configuration, string tenantId)
+        public LoyaltyService(DbContext dbContext, IConfiguration configuration, string tenantId, IGenericRepository<LoyaltyConfig> loyaltyConfigRepository)
         {
             _dbContext = dbContext;
             _configuration = configuration;
             _tenantId = tenantId;
-        }
-
-        /// <summary>
-        /// Obtiene la configuración de lealtad de un tenant
-        /// </summary>
-        /// <param name="tenantId">ID del tenant</param>
-        /// <returns>Configuración de lealtad</returns>
-        public Task<LoyaltyConfigDTO> GetLoyaltyConfigAsync(string tenantId)
-        {
-            // Un administrador de tenant solo puede obtener información de su propio tenant
-            if (tenantId != _tenantId)
-            {
-                throw new UnauthorizedAccessException("No tiene permisos para acceder a este tenant");
-            }
-
-            // Implementación básica para el scaffold
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Actualiza la configuración de lealtad de un tenant
-        /// </summary>
-        /// <param name="config">Configuración de lealtad</param>
-        /// <returns>Configuración de lealtad actualizada</returns>
-        public Task<LoyaltyConfigDTO> UpdateLoyaltyConfigAsync(LoyaltyConfigDTO config)
-        {
-            // Un administrador de tenant solo puede actualizar la configuración de su propio tenant
-            if (config.TenantId != int.Parse(_tenantId))
-            {
-                throw new UnauthorizedAccessException("No tiene permisos para acceder a este tenant");
-            }
-
-            // Implementación básica para el scaffold
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Obtiene el saldo de puntos de un usuario
-        /// </summary>
-        /// <param name="userId">ID del usuario</param>
-        /// <param name="tenantId">ID del tenant</param>
-        /// <returns>Saldo de puntos</returns>
-        public Task<int> GetPointsBalanceAsync(int userId, string tenantId)
-        {
-            // Un administrador de tenant solo puede obtener información de su propio tenant
-            if (tenantId != _tenantId)
-            {
-                throw new UnauthorizedAccessException("No tiene permisos para acceder a este tenant");
-            }
-
-            // Implementación básica para el scaffold
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Registra una transacción de lealtad
-        /// </summary>
-        /// <param name="transaction">Datos de la transacción</param>
-        /// <returns>Transacción registrada</returns>
-        public Task<LoyaltyTransactionDTO> RegisterTransactionAsync(LoyaltyTransactionDTO transaction)
-        {
-            // Un administrador de tenant solo puede registrar transacciones en su propio tenant
-            if (transaction.TenantId != _tenantId)
-            {
-                throw new UnauthorizedAccessException("No tiene permisos para acceder a este tenant");
-            }
-
-            // Implementación básica para el scaffold
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Obtiene el historial de transacciones de un usuario
-        /// </summary>
-        /// <param name="userId">ID del usuario</param>
-        /// <param name="tenantId">ID del tenant</param>
-        /// <param name="startDate">Fecha de inicio</param>
-        /// <param name="endDate">Fecha de fin</param>
-        /// <param name="page">Número de página</param>
-        /// <param name="pageSize">Tamaño de página</param>
-        /// <returns>Historial de transacciones</returns>
-        public Task<IEnumerable<LoyaltyTransactionDTO>> GetTransactionHistoryAsync(int userId, string tenantId, DateTime? startDate = null, DateTime? endDate = null, int page = 1, int pageSize = 10)
-        {
-            // Un administrador de tenant solo puede obtener información de su propio tenant
-            if (tenantId != _tenantId)
-            {
-                throw new UnauthorizedAccessException("No tiene permisos para acceder a este tenant");
-            }
-
-            // Implementación básica para el scaffold
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Canjea puntos por un producto o servicio
-        /// </summary>
-        /// <param name="userId">ID del usuario</param>
-        /// <param name="tenantId">ID del tenant</param>
-        /// <param name="points">Puntos a canjear</param>
-        /// <param name="productId">ID del producto (opcional)</param>
-        /// <returns>ID de la redención</returns>
-        public Task<int> RedeemPointsAsync(int userId, string tenantId, int points, int? productId = null)
-        {
-            // Un administrador de tenant solo puede canjear puntos en su propio tenant
-            if (tenantId != _tenantId)
-            {
-                throw new UnauthorizedAccessException("No tiene permisos para acceder a este tenant");
-            }
-
-            // Implementación básica para el scaffold
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Verifica un código QR de redención
-        /// </summary>
-        /// <param name="qrCode">Código QR</param>
-        /// <param name="branchId">ID de la estación</param>
-        /// <returns>ID de la redención</returns>
-        public Task<int> VerifyRedemptionQrAsync(string qrCode, int branchId)
-        {
-            // Implementación básica para el scaffold
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Confirma una redención
-        /// </summary>
-        /// <param name="redemptionId">ID de la redención</param>
-        /// <param name="branchId">ID de la estación</param>
-        /// <returns>True si la confirmación es exitosa, false en caso contrario</returns>
-        public Task<bool> ConfirmRedemptionAsync(int redemptionId, int branchId)
-        {
-            // Implementación básica para el scaffold
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Calcula los puntos a otorgar por una compra
-        /// </summary>
-        /// <param name="tenantId">ID del tenant</param>
-        /// <param name="amount">Monto de la compra</param>
-        /// <param name="productCategory">Categoría del producto</param>
-        /// <returns>Puntos a otorgar</returns>
-        public Task<int> CalculatePointsAsync(string tenantId, decimal amount, string productCategory)
-        {
-            // Un administrador de tenant solo puede calcular puntos en su propio tenant
-            if (tenantId != _tenantId)
-            {
-                throw new UnauthorizedAccessException("No tiene permisos para acceder a este tenant");
-            }
-
-            // Implementación básica para el scaffold
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Obtiene estadísticas de lealtad de un tenant
-        /// </summary>
-        /// <param name="tenantId">ID del tenant</param>
-        /// <param name="startDate">Fecha de inicio</param>
-        /// <param name="endDate">Fecha de fin</param>
-        /// <returns>Estadísticas de lealtad</returns>
-        public Task<object> GetLoyaltyStatsAsync(string tenantId, DateTime startDate, DateTime endDate)
-        {
-            // Un administrador de tenant solo puede obtener estadísticas de su propio tenant
-            if (tenantId != _tenantId)
-            {
-                throw new UnauthorizedAccessException("No tiene permisos para acceder a este tenant");
-            }
-
-            // Implementación básica para el scaffold
-            throw new NotImplementedException();
+            _loyaltyConfigRepository = loyaltyConfigRepository;
         }
 
         /// <summary>
@@ -356,6 +185,39 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             // Para administradores de tenant, no aplicamos la lógica de expiración de puntos
             return Task.FromResult(false);
         }
+
+        /// <summary>
+        /// Convierte un modelo de configuración de lealtad a DTO
+        /// </summary>
+        /// <param name="loyaltyConfig">Modelo de configuración de lealtad</param>
+        /// <returns>DTO de configuración de lealtad</returns>
+        public LoyaltyConfigDTO GetLoyaltyConfigDTO(DAO.Models.Central.LoyaltyConfig loyaltyConfig) {
+            return new LoyaltyConfigDTO {
+                Id = loyaltyConfig.Id,
+                TenantId = loyaltyConfig.TenantId,
+                PointsName = loyaltyConfig.PointsName,
+                PointsValue = loyaltyConfig.PointsValue,
+                AccumulationRule = loyaltyConfig.AccumulationRule,
+                ExpiricyPolicyDays = loyaltyConfig.ExpiricyPolicyDays
+            };
+        }
+
+        /// <summary>
+        /// Obtiene la configuración de lealtad de un tenant
+        /// </summary>
+        /// <param name="tenantId">ID del tenant</param>
+        /// <returns>Configuración de lealtad</returns>
+        public LoyaltyConfigDTO GetLoyaltyProgram(int tenantId)
+        {
+            var loyaltyConfig = _loyaltyConfigRepository.GetQueryable().FirstOrDefault(lc => lc.TenantId == tenantId);
+
+            if (loyaltyConfig == null) {
+                throw new ArgumentException($"No existe una configuración de lealtad para el tenant con el ID {tenantId}");
+            }
+
+            return GetLoyaltyConfigDTO(loyaltyConfig);
+        }
+
     }
 
     /// <summary>
