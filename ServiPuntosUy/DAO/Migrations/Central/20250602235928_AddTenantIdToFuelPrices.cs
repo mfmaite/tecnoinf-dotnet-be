@@ -53,7 +53,7 @@ namespace ServiPuntosUy.DAO.Migrations.Central
                 column: "TenantId",
                 principalTable: "Tenants",
                 principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
+                onDelete: ReferentialAction.Restrict);
         }
 
         /// <inheritdoc />

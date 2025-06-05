@@ -184,7 +184,7 @@ namespace ServiPuntosUy.DataServices
                     null, // No necesitamos LoyaltyService para Tenant
                     tenantId));
 
-            _serviceCollection.AddScoped<ITenantBranchService, TenantBranchService>();
+            _serviceCollection.AddScoped<ITenantBranchService, Services.Tenant.TenantBranchService>();
             _serviceCollection.AddScoped<IBranchService, BranchService>();
             _serviceCollection.AddScoped<IPromotionService, Services.Tenant.PromotionService>();
             _serviceCollection.AddScoped<IProductService, Services.Tenant.ProductService>();
@@ -210,7 +210,12 @@ namespace ServiPuntosUy.DataServices
                     tenantId));
 
             // Registrar los servicios implementados
-            _serviceCollection.AddScoped<IBranchService>(sp => _serviceProvider.GetRequiredService<IBranchService>());
+            // _serviceCollection.AddScoped<IBranchService>(sp => _serviceProvider.GetRequiredService<IBranchService>());
+_serviceCollection.AddScoped<IBranchService>(sp =>
+    new BranchService(
+        sp.GetRequiredService<IGenericRepository<ServiPuntosUy.DAO.Models.Central.Branch>>(),
+        sp.GetRequiredService<IGenericRepository<ServiPuntosUy.DAO.Models.Central.ProductStock>>(),
+        sp.GetRequiredService<IGenericRepository<ServiPuntosUy.DAO.Models.Central.Product>>()));
 
 
             _serviceCollection.AddScoped<IPromotionService>(sp =>
@@ -276,6 +281,7 @@ namespace ServiPuntosUy.DataServices
             _serviceCollection.AddScoped<IPaymentService, Services.EndUser.PaymentService>();
             _serviceCollection.AddScoped<IVEAIService, Services.EndUser.VEAIService>();
             _serviceCollection.AddScoped<IFuelService, Services.EndUser.FuelService>();
+            _serviceCollection.AddScoped<ITenantBranchService, Services.EndUser.TenantBranchService>();
         }
     }
 }

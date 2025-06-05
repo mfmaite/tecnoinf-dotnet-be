@@ -69,6 +69,13 @@ public class CentralDbContext : DbContext
             .HasForeignKey(sa => sa.ServiceId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        // Configurar FK TenantId en FuelPrices para evitar cascada (multiple cascade paths)
+        modelBuilder.Entity<FuelPrices>()
+            .HasOne(f => f.Tenant)
+            .WithMany()
+            .HasForeignKey(f => f.TenantId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         // Seed para el primer usuario administrador
         SeedAdminUser(modelBuilder);
     }
@@ -80,7 +87,7 @@ public class CentralDbContext : DbContext
         modelBuilder.Entity<Tenant>().HasData(
             new Tenant
             {
-                Id = 1,
+                Id = -1,
                 Name = "ancap"
             }
         );
@@ -94,7 +101,7 @@ public class CentralDbContext : DbContext
             modelBuilder.Entity<User>().HasData(
                 new User
                 {
-                    Id = 1,
+                    Id = -1,
                     Name = "Admin Central",
                     Email = "admin@servipuntos.uy",
                     Password = "AdminPassword", // En producción, esto sería un hash
@@ -108,7 +115,7 @@ public class CentralDbContext : DbContext
             modelBuilder.Entity<User>().HasData(
                 new User
                 {
-                    Id = 2,
+                    Id = -2,
                     Name = "Admin Tenant",
                     Email = "admintenant@servipuntos.uy",
                     Password = "AdminPassword", // En producción, esto sería un hash
@@ -129,13 +136,13 @@ public class CentralDbContext : DbContext
         modelBuilder.Entity<User>().HasData(
             new User
             {
-                Id = 1,
+                Id = -1,
                 Name = "Admin Central",
                 Email = "admin@servipuntos.uy",
                 Password = passwordHash,
                 PasswordSalt = salt,
                 Role = UserType.Central,
-                LastLoginDate = DateTime.UtcNow 
+                LastLoginDate = DateTime.UtcNow
             }
         );
 
@@ -143,15 +150,31 @@ public class CentralDbContext : DbContext
         modelBuilder.Entity<User>().HasData(
             new User
             {
-                Id = 2,
+                Id = -2,
                 Name = "Admin Tenant",
                 Email = "admintenant@servipuntos.uy",
                 Password = passwordHash,
                 PasswordSalt = salt,
                 Role = UserType.Tenant,
+                TenantId = -1,
+                LastLoginDate = DateTime.UtcNow
+            }
+        );
+        // Crea admin branch
+                modelBuilder.Entity<User>().HasData(
+            new User
+            {
+                Id = -3,
+                Name = "Admin branch",
+                Email = "adminAncap1@servipuntos.uy",
+                Password = passwordHash,
+                PasswordSalt = salt,
+                Role = UserType.Branch,
                 TenantId = 1,
-                LastLoginDate = DateTime.UtcNow 
+                LastLoginDate = DateTime.UtcNow,
+                BranchId = 1 // Asignar a la primera estación por defecto
             }
         );
     }
+    
 }
