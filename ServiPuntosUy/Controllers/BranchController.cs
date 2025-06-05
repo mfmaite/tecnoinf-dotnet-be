@@ -175,6 +175,39 @@ public class BranchController : BaseController
         }
     }
 
+        /// <summary>
+    /// Actualizar el horario de un branch
+    /// </summary>
+    /// <param name="branch"></param>
+    /// <returns>Horarios del branch</returns>
+    /// <response code="200">OK</response>
+    /// <response code="400">Si hay un error en la eliminación</response>
+    [HttpPost("hours")]
+    [ProducesResponseType(typeof(BranchDTO), 200)]
+    [ProducesResponseType(400)]
+    public async Task<IActionResult> setBranchHours([FromBody] SetBranchHoursRequest request) {
+        try {
+            // Intentar parsear OpenTime y ClosingTime
+            if (!TimeOnly.TryParse(request.OpenTime, out var openTime))
+                return BadRequest("Formato de hora inválido para OpenTime. Use HH:mm.");
+
+            if (!TimeOnly.TryParse(request.ClosingTime, out var closingTime))
+                return BadRequest("Formato de hora inválido para ClosingTime. Use HH:mm.");
+                
+            var branch = await BranchService?.setBranchHours(request.branchId, openTime, closingTime);
+            return Ok(new ApiResponse<BranchDTO?>{
+                Error = false,
+                Message = "Horario del branch actualizado correctamente",
+                Data = branch
+            });
+        }
+        catch (Exception ex) {
+            return BadRequest(new ApiResponse<object>{
+                Error = true,
+                Message = ex.Message
+            });
+        }
+    }
     /// <summary>
     /// Obtiene la lista de tenants
     /// </summary>
