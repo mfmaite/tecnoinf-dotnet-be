@@ -220,4 +220,40 @@ public class BranchController : BaseController
             });
         }
     }
+
+        /// <summary>
+    /// Gestionar stock de un producto en un branch
+    /// </summary>
+    /// <param name="manageStock"></param>
+    /// <returns>El branch creado</returns>
+    /// <response code="200">Retorna el stock del producto</response>
+    /// <response code="400">Si hay un error en la creación</response>
+    [HttpPost("stock")]
+    [ProducesResponseType(typeof(BranchDTO), 200)]
+    [ProducesResponseType(400)]
+    public async Task<IActionResult> manageStock([FromBody] ManageProductStockRequest request) {
+        try {
+     
+            var productStock = await BranchService?.manageStock(request.productId, request.branchId, request.stock);
+            if (productStock == null)
+            {
+                return BadRequest(new ApiResponse<object>{
+                    Error = true,
+                    Message = "No se pudo actualizar el stock. El servicio no está disponible."
+                });
+            }
+            return Ok(new ApiResponse<object>{
+                Error = false,
+                Message = "Stock actualizado correctamente",
+                Data = productStock
+            });
+        }
+        catch (Exception ex) {
+            return BadRequest(new ApiResponse<object>{
+                Error = true,
+                Message = ex.Message
+            });
+        }
+    }
+
 }

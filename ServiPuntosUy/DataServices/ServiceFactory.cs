@@ -126,23 +126,29 @@ namespace ServiPuntosUy.DataServices
         /// <summary>
         /// Configura los servicios básicos comunes a todos los tipos de usuario
         /// </summary>
-        private void ConfigureCommonServices(string tenantId)
-        {
-            // Registrar servicios comunes
-            _serviceCollection.AddSingleton(_configuration);
+private void ConfigureCommonServices(string tenantId)
+{
+    // Registrar servicios comunes
+    _serviceCollection.AddSingleton(_configuration);
 
-            // Obtener servicios globales ya registrados en Program.cs
-            _serviceCollection.AddScoped<IAuthLogic>(sp => _serviceProvider.GetRequiredService<IAuthLogic>());
-            _serviceCollection.AddScoped<ITenantResolver>(sp => _serviceProvider.GetRequiredService<ITenantResolver>());
+    // Obtener servicios globales ya registrados en Program.cs
+    _serviceCollection.AddScoped<IAuthLogic>(sp => _serviceProvider.GetRequiredService<IAuthLogic>());
+    _serviceCollection.AddScoped<ITenantResolver>(sp => _serviceProvider.GetRequiredService<ITenantResolver>());
 
-            // Registrar el TenantAccessor para proporcionar el tenant actual a los servicios
-            _serviceCollection.AddScoped<ITenantAccessor>(sp => new TenantAccessor(tenantId));
+    // Registrar el TenantAccessor para proporcionar el tenant actual a los servicios
+    _serviceCollection.AddScoped<ITenantAccessor>(sp => new TenantAccessor(tenantId));
 
-            // Obtener el DbContext del contenedor principal
-            _serviceCollection.AddScoped<DbContext>(sp => _serviceProvider.GetRequiredService<DbContext>());
+    // Obtener el DbContext del contenedor principal
+    _serviceCollection.AddScoped<DbContext>(sp => _serviceProvider.GetRequiredService<DbContext>());
 
-            // Registrar el GenericRepository que usa el DbContext
-            _serviceCollection.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+    // Registrar el GenericRepository que usa el DbContext
+    _serviceCollection.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+    
+    // Registrar el servicio de TenantUI
+    _serviceCollection.AddScoped<ITenantUIService, TenantUIService>();
+    
+    // Registrar HttpContextAccessor si no está registrado
+    _serviceCollection.AddHttpContextAccessor();
         }
 
         private void ConfigureCentralServices()
@@ -168,6 +174,7 @@ namespace ServiPuntosUy.DataServices
             _serviceCollection.AddScoped<IVerificationService, Services.Central.VerificationService>();
             _serviceCollection.AddScoped<IReportingService, Services.Central.ReportingService>();
             _serviceCollection.AddScoped<IPaymentService, Services.Central.PaymentService>();
+            _serviceCollection.AddScoped<IStatisticsService, Services.Central.StatisticsService>();
         }
 
         private void ConfigureTenantServices(string tenantId)
@@ -199,6 +206,7 @@ namespace ServiPuntosUy.DataServices
             _serviceCollection.AddScoped<IVerificationService, Services.Tenant.VerificationService>();
             _serviceCollection.AddScoped<IReportingService, Services.Tenant.ReportingService>();
             _serviceCollection.AddScoped<IPaymentService, Services.Tenant.PaymentService>();
+            _serviceCollection.AddScoped<IStatisticsService, Services.Tenant.StatisticsService>();
         }
 
         private void ConfigureBranchServices(string tenantId, int branchId)
@@ -216,7 +224,12 @@ namespace ServiPuntosUy.DataServices
                     tenantId));
 
             // Registrar los servicios implementados
-            _serviceCollection.AddScoped<IBranchService>(sp => _serviceProvider.GetRequiredService<IBranchService>());
+            // _serviceCollection.AddScoped<IBranchService>(sp => _serviceProvider.GetRequiredService<IBranchService>());
+_serviceCollection.AddScoped<IBranchService>(sp =>
+    new BranchService(
+        sp.GetRequiredService<IGenericRepository<ServiPuntosUy.DAO.Models.Central.Branch>>(),
+        sp.GetRequiredService<IGenericRepository<ServiPuntosUy.DAO.Models.Central.ProductStock>>(),
+        sp.GetRequiredService<IGenericRepository<ServiPuntosUy.DAO.Models.Central.Product>>()));
 
 
             _serviceCollection.AddScoped<IPromotionService>(sp =>
@@ -248,6 +261,7 @@ namespace ServiPuntosUy.DataServices
                 new Services.Branch.FuelService(
                     sp.GetRequiredService<IGenericRepository<FuelPrices>>(),
                     branchId));
+            _serviceCollection.AddScoped<IStatisticsService, Services.Branch.StatisticsService>();
 
         }
 

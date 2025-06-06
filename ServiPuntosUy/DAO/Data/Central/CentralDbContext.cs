@@ -91,6 +91,18 @@ public class CentralDbContext : DbContext
                 Name = "ancap"
             }
         );
+        
+        // Crear TenantUI para el tenant por defecto
+        modelBuilder.Entity<TenantUI>().HasData(
+            new TenantUI
+            {
+                Id = -1,
+                TenantId = -1,
+                LogoUrl = Constants.UIConstants.DEFAULT_LOGO_URL,
+                PrimaryColor = Constants.UIConstants.DEFAULT_PRIMARY_COLOR,
+                SecondaryColor = Constants.UIConstants.DEFAULT_SECONDARY_COLOR
+            }
+        );
 
         // Si estamos en tiempo de diseño (migraciones), usamos valores por defecto
         if (_configuration == null)
@@ -160,5 +172,21 @@ public class CentralDbContext : DbContext
                 LastLoginDate = DateTime.UtcNow
             }
         );
+        // Crea admin branch
+                modelBuilder.Entity<User>().HasData(
+            new User
+            {
+                Id = -3,
+                Name = "Admin branch",
+                Email = "adminAncap1@servipuntos.uy",
+                Password = passwordHash,
+                PasswordSalt = salt,
+                Role = UserType.Branch,
+                TenantId = 1,
+                LastLoginDate = DateTime.UtcNow,
+                BranchId = 1 // Asignar a la primera estación por defecto
+            }
+        );
     }
+    
 }

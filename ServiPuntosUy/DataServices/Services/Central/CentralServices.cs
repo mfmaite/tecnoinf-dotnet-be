@@ -16,15 +16,18 @@ namespace ServiPuntosUy.DataServices.Services.Central
     {
         private readonly IGenericRepository<DAO.Models.Central.Tenant> _tenantRepository;
         private readonly IGenericRepository<User> _userRepository;
+        private readonly IGenericRepository<TenantUI> _tenantUIRepository;
         private readonly IAuthLogic _authLogic;
 
         public TenantService(
             IGenericRepository<DAO.Models.Central.Tenant> tenantRepository,
             IGenericRepository<User> userRepository,
+            IGenericRepository<TenantUI> tenantUIRepository,
             IAuthLogic authLogic)
         {
             _tenantRepository = tenantRepository;
             _userRepository = userRepository;
+            _tenantUIRepository = tenantUIRepository;
             _authLogic = authLogic;
         }
 
@@ -78,6 +81,17 @@ namespace ServiPuntosUy.DataServices.Services.Central
 
             // Crear un usuario administrador para el tenant
             CreateTenantAdminUser(createdTenant);
+            
+            // Crear la entrada en la tabla TenantUI con valores por defecto
+            var tenantUI = new TenantUI {
+                TenantId = createdTenant.Id,
+                LogoUrl = Constants.UIConstants.DEFAULT_LOGO_URL,
+                PrimaryColor = Constants.UIConstants.DEFAULT_PRIMARY_COLOR,
+                SecondaryColor = Constants.UIConstants.DEFAULT_SECONDARY_COLOR
+            };
+            
+            _tenantUIRepository.AddAsync(tenantUI).GetAwaiter().GetResult();
+            _tenantUIRepository.SaveChangesAsync().GetAwaiter().GetResult();
 
             return GetTenantDTO(createdTenant);
         }
@@ -125,6 +139,13 @@ namespace ServiPuntosUy.DataServices.Services.Central
                 _userRepository.DeleteAsync(user.Id).GetAwaiter().GetResult();
             }
             _userRepository.SaveChangesAsync().GetAwaiter().GetResult();
+            
+            // Eliminar la entrada de TenantUI
+            var tenantUI = _tenantUIRepository.GetQueryable().FirstOrDefault(t => t.TenantId == id);
+            if (tenantUI != null) {
+                _tenantUIRepository.DeleteAsync(tenantUI.Id).GetAwaiter().GetResult();
+                _tenantUIRepository.SaveChangesAsync().GetAwaiter().GetResult();
+            }
 
             // Eliminar el tenant
             var tenant = _tenantRepository.GetQueryable().FirstOrDefault(t => t.Id == id);
@@ -338,5 +359,78 @@ namespace ServiPuntosUy.DataServices.Services.Central
 
         // Implementar los métodos de la interfaz IPaymentService
         // Esta es una implementación básica para el scaffold
+    }
+
+    /// <summary>
+    /// Implementación del servicio de estadísticas para el administrador central
+    /// </summary>
+    public class StatisticsService : IStatisticsService
+    {
+        private readonly CentralDbContext _dbContext;
+        private readonly IConfiguration _configuration;
+
+        public StatisticsService(CentralDbContext dbContext, IConfiguration configuration)
+        {
+            _dbContext = dbContext;
+            _configuration = configuration;
+        }
+
+        /// <summary>
+        /// Obtiene las estadísticas para el administrador central
+        /// </summary>
+        /// <returns>Estadísticas generales de toda la plataforma</returns>
+        public async Task<object> GetStatisticsAsync()
+        {
+            // Contar usuarios por tipo
+            var usersByType = await _dbContext.Users
+                .GroupBy(u => u.Role)
+                .Select(g => new { UserType = g.Key, Count = g.Count() })
+                .ToListAsync();
+
+            // Contar el total de usuarios
+            int totalUsers = await _dbContext.Users.CountAsync();
+
+            // Contar el total de transacciones
+            int totalTransactions = await _dbContext.Set<DAO.Models.Central.Transaction>().CountAsync();
+
+            // Contar promociones por tipo (tenant o branch)
+            var tenantPromotions = await _dbContext.Set<DAO.Models.Central.Promotion>()
+                .Where(p => p.BranchId == null)
+                .CountAsync();
+
+            var branchPromotions = await _dbContext.Set<DAO.Models.Central.Promotion>()
+                .Where(p => p.BranchId != null)
+                .CountAsync();
+
+            int totalPromotions = tenantPromotions + branchPromotions;
+
+            // Construir el objeto de respuesta
+            var statistics = new
+            {
+                users = new
+                {
+                    total = totalUsers,
+                    byType = new
+                    {
+                        central = usersByType.FirstOrDefault(u => u.UserType == UserType.Central)?.Count ?? 0,
+                        tenant = usersByType.FirstOrDefault(u => u.UserType == UserType.Tenant)?.Count ?? 0,
+                        branch = usersByType.FirstOrDefault(u => u.UserType == UserType.Branch)?.Count ?? 0,
+                        endUser = usersByType.FirstOrDefault(u => u.UserType == UserType.EndUser)?.Count ?? 0
+                    }
+                },
+                transactions = new
+                {
+                    total = totalTransactions
+                },
+                promotions = new
+                {
+                    total = totalPromotions,
+                    tenantPromotions,
+                    branchPromotions
+                }
+            };
+
+            return statistics;
+        }
     }
 }

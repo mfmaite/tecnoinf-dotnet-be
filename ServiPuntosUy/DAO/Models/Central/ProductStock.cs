@@ -18,11 +18,6 @@ public class ProductStock
     public int ProductId { get; set; }
     public Product Product { get; set; }
 
-    [ForeignKey("Tenant")]
-    [Required]
-    public int TenantId { get; set; }
-    public Tenant Tenant { get; set; }
-
     [Required]
     public int Stock { get; set; } = 0;
 }
