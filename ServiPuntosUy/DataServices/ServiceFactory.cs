@@ -174,6 +174,7 @@ private void ConfigureCommonServices(string tenantId)
             _serviceCollection.AddScoped<IVerificationService, Services.Central.VerificationService>();
             _serviceCollection.AddScoped<IReportingService, Services.Central.ReportingService>();
             _serviceCollection.AddScoped<IPaymentService, Services.Central.PaymentService>();
+            _serviceCollection.AddScoped<IStatisticsService, Services.Central.StatisticsService>();
         }
 
         private void ConfigureTenantServices(string tenantId)
@@ -199,6 +200,7 @@ private void ConfigureCommonServices(string tenantId)
             _serviceCollection.AddScoped<IVerificationService, Services.Tenant.VerificationService>();
             _serviceCollection.AddScoped<IReportingService, Services.Tenant.ReportingService>();
             _serviceCollection.AddScoped<IPaymentService, Services.Tenant.PaymentService>();
+            _serviceCollection.AddScoped<IStatisticsService, Services.Tenant.StatisticsService>();
         }
 
         private void ConfigureBranchServices(string tenantId, int branchId)
@@ -253,6 +255,7 @@ _serviceCollection.AddScoped<IBranchService>(sp =>
                 new Services.Branch.FuelService(
                     sp.GetRequiredService<IGenericRepository<FuelPrices>>(),
                     branchId));
+            _serviceCollection.AddScoped<IStatisticsService, Services.Branch.StatisticsService>();
 
         }
 
