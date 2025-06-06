@@ -173,6 +173,10 @@ namespace ServiPuntosUy.DataServices.Services.Central
             _loyaltyConfigRepository = loyaltyConfigRepository;
         }
 
+         public LoyaltyConfigDTO CreateLoyaltyProgram(int tenantId, string pointsName, int pointsValue, decimal accumulationRule, int expiricyPolicyDays) {
+            throw new UnauthorizedAccessException("El administrador central no puede crear un programa de fidelidad");
+        }
+
         /// <summary>
         /// Convierte un modelo de configuración de lealtad a DTO
         /// </summary>

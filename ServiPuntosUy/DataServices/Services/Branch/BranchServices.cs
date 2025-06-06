@@ -118,6 +118,10 @@ namespace ServiPuntosUy.DataServices.Services.Branch
             _loyaltyConfigRepository = loyaltyConfigRepository;
         }
 
+        public LoyaltyConfigDTO CreateLoyaltyProgram(int tenantId, string pointsName, int pointsValue, decimal accumulationRule, int expiricyPolicyDays) {
+            throw new UnauthorizedAccessException("El administrador de branch no puede crear un programa de fidelidad");
+        }
+
         /// <summary>
         /// Verifica si los puntos del usuario han expirado según la política de expiración
         /// y actualiza la fecha del último login

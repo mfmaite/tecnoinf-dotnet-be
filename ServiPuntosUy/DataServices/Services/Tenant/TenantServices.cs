@@ -174,6 +174,29 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             _loyaltyConfigRepository = loyaltyConfigRepository;
         }
 
+        public LoyaltyConfigDTO CreateLoyaltyProgram(int tenantId, string pointsName, int pointsValue, decimal accumulationRule, int expiricyPolicyDays)
+        {
+            var existingLoyaltyConfig = _loyaltyConfigRepository.GetQueryable().FirstOrDefault(lc => lc.TenantId == tenantId);
+
+            if (existingLoyaltyConfig != null) {
+                throw new Exception($"Ya existe una configuración de lealtad para el tenant con el ID {tenantId}");
+            }
+
+            // Crear la configuración de lealtad para el tenant
+            var newLoyaltyConfig = new DAO.Models.Central.LoyaltyConfig {
+                TenantId = tenantId,
+                PointsName = pointsName,
+                PointsValue = pointsValue,
+                AccumulationRule = accumulationRule,
+                ExpiricyPolicyDays = expiricyPolicyDays
+            };
+
+            var createdLoyaltyConfig = _loyaltyConfigRepository.AddAsync(newLoyaltyConfig).GetAwaiter().GetResult();
+            _loyaltyConfigRepository.SaveChangesAsync().GetAwaiter().GetResult();
+
+            return GetLoyaltyConfigDTO(createdLoyaltyConfig);
+        }
+
         /// <summary>
         /// Verifica si los puntos del usuario han expirado según la política de expiración
         /// y actualiza la fecha del último login
@@ -191,7 +214,7 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
         /// </summary>
         /// <param name="loyaltyConfig">Modelo de configuración de lealtad</param>
         /// <returns>DTO de configuración de lealtad</returns>
-        public LoyaltyConfigDTO GetLoyaltyConfigDTO(DAO.Models.Central.LoyaltyConfig loyaltyConfig) {
+        public LoyaltyConfigDTO GetLoyaltyConfigDTO(LoyaltyConfig loyaltyConfig) {
             return new LoyaltyConfigDTO {
                 Id = loyaltyConfig.Id,
                 TenantId = loyaltyConfig.TenantId,

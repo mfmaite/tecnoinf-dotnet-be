@@ -173,7 +173,6 @@ namespace ServiPuntosUy.DataServices
         private void ConfigureTenantServices(string tenantId)
         {
             // Registrar servicios para el administrador de tenant
-            _serviceCollection.AddScoped<ILoyaltyService, Services.Tenant.LoyaltyService>();
             _serviceCollection.AddScoped<IAuthService>(sp =>
                 new CommonAuthService(
                     sp.GetRequiredService<DbContext>(),
@@ -183,6 +182,13 @@ namespace ServiPuntosUy.DataServices
                     sp.GetRequiredService<IGenericRepository<DAO.Models.Central.Tenant>>(),
                     null, // No necesitamos LoyaltyService para Tenant
                     tenantId));
+
+            _serviceCollection.AddScoped<ILoyaltyService>(sp =>
+                new Services.Tenant.LoyaltyService(
+                    sp.GetRequiredService<DbContext>(),
+                    _configuration,
+                    tenantId,
+                    sp.GetRequiredService<IGenericRepository<LoyaltyConfig>>()));
 
             _serviceCollection.AddScoped<ITenantBranchService, Services.Tenant.TenantBranchService>();
             _serviceCollection.AddScoped<IBranchService, BranchService>();
