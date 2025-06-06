@@ -174,6 +174,44 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             _loyaltyConfigRepository = loyaltyConfigRepository;
         }
 
+        /// <summary>
+        /// Actualiza un programa de fidelidad para un tenant
+        /// </summary>
+        /// <param name="tenantId">ID del tenant</param>
+        /// <param name="pointsName">Nombre de los puntos</param>
+        /// <param name="pointsValue">Valor de los puntos</param>
+        /// <param name="accumulationRule">Regla de acumulación de puntos</param>
+        /// <param name="expiricyPolicyDays">Días de expiración de los puntos</param>
+        /// <returns>Configuración de lealtad actualizada</returns>
+        public LoyaltyConfigDTO UpdateLoyaltyProgram(int tenantId, string? pointsName, int? pointsValue, decimal? accumulationRule, int? expiricyPolicyDays)
+        {
+            var existingLoyaltyConfig = _loyaltyConfigRepository.GetQueryable().FirstOrDefault(lc => lc.TenantId == tenantId);
+
+            if (existingLoyaltyConfig == null) {
+                throw new Exception($"No existe una configuración de lealtad para el tenant con el ID {tenantId}");
+            }
+
+            // Crear la configuración de lealtad para el tenant
+            existingLoyaltyConfig.PointsName = pointsName ?? existingLoyaltyConfig.PointsName;
+            existingLoyaltyConfig.PointsValue = pointsValue ?? existingLoyaltyConfig.PointsValue;
+            existingLoyaltyConfig.AccumulationRule = accumulationRule ?? existingLoyaltyConfig.AccumulationRule;
+            existingLoyaltyConfig.ExpiricyPolicyDays = expiricyPolicyDays ?? existingLoyaltyConfig.ExpiricyPolicyDays;
+
+            _loyaltyConfigRepository.UpdateAsync(existingLoyaltyConfig).GetAwaiter().GetResult();
+            _loyaltyConfigRepository.SaveChangesAsync().GetAwaiter().GetResult();
+
+            return GetLoyaltyConfigDTO(existingLoyaltyConfig);
+        }
+
+        /// <summary>
+        /// Crea un programa de fidelidad para un tenant
+        /// </summary>
+        /// <param name="tenantId">ID del tenant</param>
+        /// <param name="pointsName">Nombre de los puntos</param>
+        /// <param name="pointsValue">Valor de los puntos</param>
+        /// <param name="accumulationRule">Regla de acumulación de puntos</param>
+        /// <param name="expiricyPolicyDays">Días de expiración de los puntos</param>
+        /// <returns>Configuración de lealtad creado</returns>
         public LoyaltyConfigDTO CreateLoyaltyProgram(int tenantId, string pointsName, int pointsValue, decimal accumulationRule, int expiricyPolicyDays)
         {
             var existingLoyaltyConfig = _loyaltyConfigRepository.GetQueryable().FirstOrDefault(lc => lc.TenantId == tenantId);

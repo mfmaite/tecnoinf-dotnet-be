@@ -220,6 +220,10 @@ namespace ServiPuntosUy.DataServices.Services.Central
             // Para usuarios Central, no aplicamos la lógica de expiración de puntos
             return Task.FromResult(false);
         }
+
+        public LoyaltyConfigDTO UpdateLoyaltyProgram(int tenantId, string? pointsName, int? pointsValue, decimal? accumulationRule, int? expiricyPolicyDays) {
+            throw new UnauthorizedAccessException("El admin central no puede actualizar un programa de fidelidad");
+        }
     }
 
     /// <summary>

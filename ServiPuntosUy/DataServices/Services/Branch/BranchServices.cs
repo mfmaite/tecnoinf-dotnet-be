@@ -156,6 +156,12 @@ namespace ServiPuntosUy.DataServices.Services.Branch
                 ExpiricyPolicyDays = loyaltyConfig.ExpiricyPolicyDays
             };
         }
+
+
+        public LoyaltyConfigDTO UpdateLoyaltyProgram(int tenantId, string? pointsName, int? pointsValue, decimal? accumulationRule, int? expiricyPolicyDays) {
+            throw new UnauthorizedAccessException("El admin branch no puede actualizar un programa de fidelidad");
+        }
+
     }
 
     /// <summary>

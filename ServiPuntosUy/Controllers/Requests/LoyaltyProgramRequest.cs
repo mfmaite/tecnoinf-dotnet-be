@@ -16,3 +16,14 @@ public class CreateLoyaltyProgramRequest
   [Required(ErrorMessage = "El día de expiración de los puntos es requerido")]
   public int ExpiricyPolicyDays { get; set; }
 }
+
+public class UpdateLoyaltyProgramRequest
+{
+  public string? PointsName { get; set; }
+
+  public int PointsValue { get; set; }
+
+  public decimal? AccumulationRule { get; set; }
+
+  public int ExpiricyPolicyDays { get; set; }
+}

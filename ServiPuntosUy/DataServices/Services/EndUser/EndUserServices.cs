@@ -157,6 +157,10 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
 
             return GetLoyaltyConfigDTO(loyaltyConfig);
         }
+
+        public LoyaltyConfigDTO UpdateLoyaltyProgram(int tenantId, string? pointsName, int? pointsValue, decimal? accumulationRule, int? expiricyPolicyDays) {
+            throw new UnauthorizedAccessException("El usuario final no puede actualizar un programa de fidelidad");
+        }
     }
 
     /// <summary>

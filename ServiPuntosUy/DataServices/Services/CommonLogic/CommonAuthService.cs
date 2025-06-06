@@ -107,10 +107,10 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
             // Buscar usuario por email, tenantId y rol
             var query = _dbContext.Set<User>().Where(u => u.Email == email);
 
-            if (tenantId.HasValue) {
-                query = query.Where(u => u.TenantId == tenantId);
-                query = query.Where(u => u.Role == userType);
-            }
+            // if (tenantId.HasValue) {
+            //     query = query.Where(u => u.TenantId == tenantId);
+            //     query = query.Where(u => u.Role == userType);
+            // }
 
             var user = await query.FirstOrDefaultAsync();
             if (user == null)

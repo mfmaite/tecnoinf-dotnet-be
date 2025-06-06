@@ -32,5 +32,16 @@ namespace ServiPuntosUy.DataServices.Services
         /// <param name="expiricyPolicyDays">Días de expiración de los puntos</param>
         /// <returns>Configuración de lealtad</returns>
         LoyaltyConfigDTO CreateLoyaltyProgram(int tenantId, string pointsName, int pointsValue, decimal accumulationRule, int expiricyPolicyDays);
+
+        /// <summary>
+        /// Actualiza un programa de fidelidad para un tenant
+        /// </summary>
+        /// <param name="tenantId">ID del tenant</param>
+        /// <param name="pointsName">Nombre de los puntos</param>
+        /// <param name="pointsValue">Valor de los puntos</param>
+        /// <param name="accumulationRule">Regla de acumulación de puntos</param>
+        /// <param name="expiricyPolicyDays">Días de expiración de los puntos</param>
+        /// <returns>Configuración de lealtad actualizada</returns>
+        LoyaltyConfigDTO UpdateLoyaltyProgram(int tenantId, string? pointsName, int? pointsValue, decimal? accumulationRule, int? expiricyPolicyDays);
     }
 }

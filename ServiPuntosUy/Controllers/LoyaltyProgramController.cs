@@ -122,24 +122,24 @@ namespace ServiPuntosUy.Controllers
         [HttpPut("")]
         [ProducesResponseType(typeof(LoyaltyConfigDTO), 200)]
         [ProducesResponseType(typeof(ApiResponse<object>), 400)]
-        public IActionResult UpdateLoyaltyProgram([FromBody] CreateLoyaltyProgramRequest request)
+        public IActionResult UpdateLoyaltyProgram([FromBody] UpdateLoyaltyProgramRequest request)
         {
             try {
                 var loggedUser = ObtainUserFromToken();
 
-                // var program = LoyaltyService.UpdateLoyaltyProgram(
-                //     int.Parse(loggedUser.TenantId),
-                //     request.PointsName,
-                //     request.PointsValue,
-                //     request.AccumulationRule,
-                //     request.ExpiricyPolicyDays
-                // );
+                var program = LoyaltyService.UpdateLoyaltyProgram(
+                    int.Parse(loggedUser.TenantId),
+                    request.PointsName,
+                    request.PointsValue,
+                    request.AccumulationRule,
+                    request.ExpiricyPolicyDays
+                );
 
                 return Ok(new ApiResponse<LoyaltyConfigDTO>
                 {
                     Error = false,
                     Message = "Programa de fidelidad actualizado correctamente",
-                    Data = null
+                    Data = program
                 });
             } catch (Exception ex) {
                 return BadRequest(new ApiResponse<object>
