@@ -65,7 +65,6 @@ namespace ServiPuntosUy.Controllers
         {
             try {
                 var loggedUser = ObtainUserFromToken();
-                Console.WriteLine(loggedUser.UserType);
 
                 if (loggedUser.UserType != ServiPuntosUy.Enums.UserType.Central && tenantId != int.Parse(ObtainUserFromToken().TenantId)) {
                     throw new Exception("No tienes permisos para obtener el programa de fidelidad de este tenant");

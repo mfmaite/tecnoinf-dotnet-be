@@ -152,7 +152,7 @@ namespace ServiPuntosUy.DataServices.Services.Branch
                 var product = await VerifyProductById(productId);
                 if (!product)
                     return null;
-                
+
                 var productStockDTO = await GetProductStockById(productId, branchId);
                 if (productStockDTO == null) // todavia no se le ha cargado stock
                 {
@@ -165,17 +165,17 @@ namespace ServiPuntosUy.DataServices.Services.Branch
                     var stockDTO = MapToProductStock(productStockDTO);
                     await _productStockRepository.AddAsync(stockDTO);
                     await _productStockRepository.SaveChangesAsync();
-                    return GetProductStockDTO(stockDTO);  
+                    return GetProductStockDTO(stockDTO);
                 }else{
                     // Si ya existe, actualizamos el stock
-                    var stockDTO = MapToProductStock(productStockDTO); //Update no espera DTO 
+                    var stockDTO = MapToProductStock(productStockDTO); //Update no espera DTO
                     stockDTO.Id = productId;
                     stockDTO.Stock = stock;
-                    stockDTO.BranchId = branchId; 
-                    stockDTO.ProductId = productId; 
+                    stockDTO.BranchId = branchId;
+                    stockDTO.ProductId = productId;
                     await _productStockRepository.UpdateAsync(stockDTO);
                     await _productStockRepository.SaveChangesAsync();
-                    return GetProductStockDTO(stockDTO);  
+                    return GetProductStockDTO(stockDTO);
                 }
 
             }
@@ -183,7 +183,7 @@ namespace ServiPuntosUy.DataServices.Services.Branch
             {
                 Console.WriteLine($"Error al actualizar el stock: {ex.Message}");
                 return null;
-            }   
+            }
         }
     }
 
@@ -193,17 +193,11 @@ namespace ServiPuntosUy.DataServices.Services.Branch
     public class LoyaltyService : ILoyaltyService
     {
         private readonly DbContext _dbContext;
-        private readonly IConfiguration _configuration;
-        private readonly string _tenantId;
-        private readonly int _branchId;
         private readonly IGenericRepository<LoyaltyConfig> _loyaltyConfigRepository;
 
-        public LoyaltyService(DbContext dbContext, IConfiguration configuration, string tenantId, int branchId, IGenericRepository<LoyaltyConfig> loyaltyConfigRepository)
+        public LoyaltyService(DbContext dbContext, IGenericRepository<LoyaltyConfig> loyaltyConfigRepository)
         {
             _dbContext = dbContext;
-            _configuration = configuration;
-            _tenantId = tenantId;
-            _branchId = branchId;
             _loyaltyConfigRepository = loyaltyConfigRepository;
         }
 
@@ -402,8 +396,8 @@ namespace ServiPuntosUy.DataServices.Services.Branch
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         public StatisticsService(
-            DbContext dbContext, 
-            IConfiguration configuration, 
+            DbContext dbContext,
+            IConfiguration configuration,
             ITenantAccessor tenantAccessor,
             IHttpContextAccessor httpContextAccessor)
         {
@@ -411,7 +405,7 @@ namespace ServiPuntosUy.DataServices.Services.Branch
             _configuration = configuration;
             _tenantId = tenantAccessor.GetCurrentTenantId();
             _httpContextAccessor = httpContextAccessor;
-            
+
             // Obtener el branchId del contexto HTTP
             if (httpContextAccessor.HttpContext?.Items["BranchId"] is int branchId)
             {

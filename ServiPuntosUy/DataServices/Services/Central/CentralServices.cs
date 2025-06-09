@@ -81,7 +81,7 @@ namespace ServiPuntosUy.DataServices.Services.Central
 
             // Crear un usuario administrador para el tenant
             CreateTenantAdminUser(createdTenant);
-            
+
             // Crear la entrada en la tabla TenantUI con valores por defecto
             var tenantUI = new TenantUI {
                 TenantId = createdTenant.Id,
@@ -89,7 +89,7 @@ namespace ServiPuntosUy.DataServices.Services.Central
                 PrimaryColor = Constants.UIConstants.DEFAULT_PRIMARY_COLOR,
                 SecondaryColor = Constants.UIConstants.DEFAULT_SECONDARY_COLOR
             };
-            
+
             _tenantUIRepository.AddAsync(tenantUI).GetAwaiter().GetResult();
             _tenantUIRepository.SaveChangesAsync().GetAwaiter().GetResult();
 
@@ -139,7 +139,7 @@ namespace ServiPuntosUy.DataServices.Services.Central
                 _userRepository.DeleteAsync(user.Id).GetAwaiter().GetResult();
             }
             _userRepository.SaveChangesAsync().GetAwaiter().GetResult();
-            
+
             // Eliminar la entrada de TenantUI
             var tenantUI = _tenantUIRepository.GetQueryable().FirstOrDefault(t => t.TenantId == id);
             if (tenantUI != null) {
@@ -184,13 +184,11 @@ namespace ServiPuntosUy.DataServices.Services.Central
     public class LoyaltyService : ILoyaltyService
     {
         private readonly DbContext _dbContext;
-        private readonly IConfiguration _configuration;
         private readonly IGenericRepository<DAO.Models.Central.LoyaltyConfig> _loyaltyConfigRepository;
 
-        public LoyaltyService(DbContext dbContext, IConfiguration configuration, IGenericRepository<DAO.Models.Central.LoyaltyConfig> loyaltyConfigRepository)
+        public LoyaltyService(DbContext dbContext, IGenericRepository<DAO.Models.Central.LoyaltyConfig> loyaltyConfigRepository)
         {
             _dbContext = dbContext;
-            _configuration = configuration;
             _loyaltyConfigRepository = loyaltyConfigRepository;
         }
 

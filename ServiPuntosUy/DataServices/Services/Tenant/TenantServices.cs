@@ -163,15 +163,11 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
     public class LoyaltyService : ILoyaltyService
     {
         private readonly DbContext _dbContext;
-        private readonly IConfiguration _configuration;
-        private readonly string _tenantId;
         private readonly IGenericRepository<LoyaltyConfig> _loyaltyConfigRepository;
 
-        public LoyaltyService(DbContext dbContext, IConfiguration configuration, string tenantId, IGenericRepository<LoyaltyConfig> loyaltyConfigRepository)
+        public LoyaltyService(DbContext dbContext, IGenericRepository<LoyaltyConfig> loyaltyConfigRepository)
         {
             _dbContext = dbContext;
-            _configuration = configuration;
-            _tenantId = tenantId;
             _loyaltyConfigRepository = loyaltyConfigRepository;
         }
 

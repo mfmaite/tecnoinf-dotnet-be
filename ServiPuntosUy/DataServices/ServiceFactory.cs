@@ -143,10 +143,10 @@ private void ConfigureCommonServices(string tenantId)
 
     // Registrar el GenericRepository que usa el DbContext
     _serviceCollection.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
-    
+
     // Registrar el servicio de TenantUI
     _serviceCollection.AddScoped<ITenantUIService, TenantUIService>();
-    
+
     // Registrar HttpContextAccessor si no está registrado
     _serviceCollection.AddHttpContextAccessor();
         }
@@ -193,8 +193,6 @@ private void ConfigureCommonServices(string tenantId)
             _serviceCollection.AddScoped<ILoyaltyService>(sp =>
                 new Services.Tenant.LoyaltyService(
                     sp.GetRequiredService<DbContext>(),
-                    _configuration,
-                    tenantId,
                     sp.GetRequiredService<IGenericRepository<LoyaltyConfig>>()));
 
             _serviceCollection.AddScoped<ITenantBranchService, Services.Tenant.TenantBranchService>();
@@ -273,8 +271,6 @@ _serviceCollection.AddScoped<IBranchService>(sp =>
             _serviceCollection.AddScoped<ILoyaltyService>(sp =>
                 new Services.EndUser.LoyaltyService(
                     sp.GetRequiredService<DbContext>(),
-                    _configuration,
-                    tenantId,
                     sp.GetRequiredService<IGenericRepository<LoyaltyConfig>>()));
 
             // Luego registramos el AuthService con la dependencia de LoyaltyService
