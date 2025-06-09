@@ -160,51 +160,6 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
     }
 
     /// <summary>
-    /// Implementación del servicio de promociones para el usuario final
-    /// </summary>
-    public class PromotionService : IPromotionService
-    {
-        private readonly DbContext _dbContext;
-        private readonly IConfiguration _configuration;
-        private readonly string _tenantId;
-
-        public PromotionService(DbContext dbContext, IConfiguration configuration, string tenantId)
-        {
-            _dbContext = dbContext;
-            _configuration = configuration;
-            _tenantId = tenantId;
-        }
-
-        // Implementar los métodos de la interfaz IPromotionService
-        // Esta es una implementación básica para el scaffold
-    }
-
-    /// <summary>
-    /// Implementación del servicio de productos para el usuario final
-    /// </summary>
-
-    /// <summary>
-    /// Implementación del servicio de usuarios para el usuario final
-    /// </summary>
-    public class UserService : IUserService
-    {
-        private readonly DbContext _dbContext;
-        private readonly IConfiguration _configuration;
-        private readonly string _tenantId;
-
-        public UserService(DbContext dbContext, IConfiguration configuration, string tenantId)
-        {
-            _dbContext = dbContext;
-            _configuration = configuration;
-            _tenantId = tenantId;
-        }
-
-        // Implementar los métodos de la interfaz IUserService
-        // Esta es una implementación básica para el scaffold
-    }
-
-
-    /// <summary>
     /// Implementación del servicio de notificaciones para el usuario final
     /// </summary>
     public class NotificationService : INotificationService
@@ -221,49 +176,6 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
         }
 
         // Implementar los métodos de la interfaz INotificationService
-        // Esta es una implementación básica para el scaffold
-    }
-
-
-
-    /// <summary>
-    /// Implementación del servicio de verificacion para el usuario final
-    /// </summary>
-    public class VerificationService : IVerificationService
-    {
-        private readonly DbContext _dbContext;
-        private readonly IConfiguration _configuration;
-        private readonly string _tenantId;
-
-        public VerificationService(DbContext dbContext, IConfiguration configuration, string tenantId)
-        {
-            _dbContext = dbContext;
-            _configuration = configuration;
-            _tenantId = tenantId;
-        }
-
-        // Implementar los métodos de la interfaz IVerificationService
-        // Esta es una implementación básica para el scaffold
-    }
-
-
-    /// <summary>
-    /// Implementación del servicio de pagos para el usuario final
-    /// </summary>
-    public class PaymentService : IPaymentService
-    {
-        private readonly DbContext _dbContext;
-        private readonly IConfiguration _configuration;
-        private readonly string _tenantId;
-
-        public PaymentService(DbContext dbContext, IConfiguration configuration, string tenantId)
-        {
-            _dbContext = dbContext;
-            _configuration = configuration;
-            _tenantId = tenantId;
-        }
-
-        // Implementar los métodos de la interfaz IPaymentService
         // Esta es una implementación básica para el scaffold
     }
 
@@ -383,15 +295,18 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
             var product = await _productRepository.GetByIdAsync(productId);
             return product is not null ? GetProductDTO(product) : null;
         }
+
         public ProductDTO[] GetProductList(int tenantId)
         {
             var products = _productRepository.GetQueryable().Where(product => product.TenantId == tenantId).ToList();
             return [.. products.Select(GetProductDTO)];
         }
+
         public async Task<bool> DeleteProduct(int productId)
         {
             throw new Exception("El usuario final no puede eliminar productos");
         }
+
         public async Task<ProductDTO?> UpdateProduct(int productId, string? name, string? description, string? imageUrl, decimal? price, bool? ageRestricted)
         {
             throw new Exception("El usuario final no puede actualizar productos");
@@ -445,6 +360,113 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
         public void DeleteBranch(int branchId)
         {
             throw new UnauthorizedAccessException("El usuario final no puede eliminar sucursales");
+        }
+    }
+
+    public class TransactionService : ITransactionService {
+
+        private readonly IGenericRepository<DAO.Models.Central.Transaction> _transactionRepository;
+        private readonly IGenericRepository<DAO.Models.Central.LoyaltyConfig> _loyaltyConfigRepository;
+        private readonly IGenericRepository<DAO.Models.Central.Product> _productRepository;
+        private readonly IGenericRepository<DAO.Models.Central.TransactionItem> _transactionItemRepository;
+
+        public TransactionService(
+            IGenericRepository<DAO.Models.Central.Transaction> transactionRepository,
+            IGenericRepository<DAO.Models.Central.LoyaltyConfig> loyaltyConfigRepository,
+            IGenericRepository<DAO.Models.Central.Product> productRepository,
+            IGenericRepository<DAO.Models.Central.TransactionItem> transactionItemRepository
+        )
+        {
+            _transactionRepository = transactionRepository;
+            _loyaltyConfigRepository = loyaltyConfigRepository;
+            _productRepository = productRepository;
+            _transactionItemRepository = transactionItemRepository;
+        }
+
+        public TransactionDTO GetTransactionDTO(Transaction transaction)
+        {
+            return new TransactionDTO {
+                Id = transaction.Id,
+                UserId = transaction.UserId,
+                BranchId = transaction.BranchId,
+                TenantId = transaction.TenantId,
+                Amount = transaction.Amount,
+                PointsEarned = transaction.PointsEarned,
+                CreatedAt = transaction.CreatedAt
+            };
+        }
+
+        public async Task<TransactionDTO> CreateTransaction(int userId, int branchId, int tenantId, int[] productIds)
+        {
+            // Buscar los productos
+            var products = await _productRepository.GetQueryable()
+                .Where(p => productIds.Contains(p.Id))
+                .ToListAsync();
+
+            if (!products.Any())
+            {
+                throw new Exception("No se encontraron los productos especificados");
+            }
+
+            // Buscar la configuración de lealtad del tenant
+            var loyaltyConfig = await _loyaltyConfigRepository.GetByIdAsync(tenantId);
+            if (loyaltyConfig == null) {
+                throw new Exception("La configuración de lealtad no existe");
+            }
+
+            // Calcular el monto total
+            decimal totalAmount = products.Sum(p => p.Price);
+
+            // Crear la transacción
+            var transaction = new Transaction {
+                UserId = userId,
+                BranchId = branchId,
+                TenantId = tenantId,
+                Amount = totalAmount,
+                PointsEarned = (int)(totalAmount * loyaltyConfig.AccumulationRule),
+                CreatedAt = DateTime.UtcNow
+            };
+
+            // Guardar la transacción
+            await _transactionRepository.AddAsync(transaction);
+
+            // // Crear las relaciones con productos
+            // foreach (var product in products)
+            // {
+            //     var transactionProduct = new TransactionItem
+            //     {
+            //         TransactionId = transaction.Id,
+            //         ProductId = product.Id,
+            //         Quantity = 1,
+            //         UnitPrice = product.Price
+            //     };
+            //     await _transactionItemRepository.AddAsync(transactionProduct);
+            // }
+
+            // // Devolver la transacción con sus productos
+            // return await GetTransactionDTO(transaction);
+
+            // Devolver la transacción
+            return GetTransactionDTO(transaction);
+        }
+
+        public async Task<TransactionDTO> GetTransactionById(int id)
+        {
+            var transaction = await _transactionRepository.GetByIdAsync(id);
+
+            if (transaction == null) {
+                throw new Exception("La transacción no existe");
+            }
+
+            return GetTransactionDTO(transaction);
+        }
+
+        public async Task<TransactionDTO[]> GetTransactionsByUserId(int userId)
+        {
+            var transactions = await _transactionRepository.GetQueryable()
+                .Where(t => t.UserId == userId)
+                .ToListAsync();
+            return transactions.Select(GetTransactionDTO).ToArray();
         }
     }
 }

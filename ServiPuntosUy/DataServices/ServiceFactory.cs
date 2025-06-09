@@ -298,12 +298,8 @@ namespace ServiPuntosUy.DataServices
                     tenantId));
 
             // Registrar los demás servicios
-            _serviceCollection.AddScoped<IPromotionService, Services.EndUser.PromotionService>();
             _serviceCollection.AddScoped<IProductService, Services.EndUser.ProductService>();
-            _serviceCollection.AddScoped<IUserService, Services.EndUser.UserService>();
             _serviceCollection.AddScoped<INotificationService, Services.EndUser.NotificationService>();
-            _serviceCollection.AddScoped<IVerificationService, Services.EndUser.VerificationService>();
-            _serviceCollection.AddScoped<IPaymentService, Services.EndUser.PaymentService>();
             _serviceCollection.AddScoped<IVEAIService, Services.EndUser.VEAIService>();
             _serviceCollection.AddScoped<IFuelService, Services.EndUser.FuelService>();
             _serviceCollection.AddScoped<ITenantBranchService, Services.EndUser.TenantBranchService>();
