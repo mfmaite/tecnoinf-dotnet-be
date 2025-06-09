@@ -1,3 +1,5 @@
+using ServiPuntosUy.DTO;
+using ServiPuntosUy.DataServices.Services.Tenant;
 
 namespace ServiPuntosUy.DataServices.Services
 {
@@ -6,6 +8,6 @@ namespace ServiPuntosUy.DataServices.Services
     /// </summary>
     public interface IPromotionService
     {
-        // Métodos para gestionar promociones
+        Task<PromotionDTO?> AddPromotion(int tenantId, int branchId, string description, DateTime startDate, DateTime endDate, IEnumerable<int> branch, IEnumerable<int> product);
     }
 }

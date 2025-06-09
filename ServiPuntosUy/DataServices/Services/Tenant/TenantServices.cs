@@ -364,19 +364,137 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
     /// </summary>
     public class PromotionService : IPromotionService
     {
-        private readonly DbContext _dbContext;
-        private readonly IConfiguration _configuration;
-        private readonly string _tenantId;
+        private readonly IGenericRepository<DAO.Models.Central.Promotion> _promotionRepository;
 
-        public PromotionService(DbContext dbContext, IConfiguration configuration, string tenantId)
+        public PromotionService(IGenericRepository<DAO.Models.Central.Promotion> promotionRepository)
         {
-            _dbContext = dbContext;
-            _configuration = configuration;
-            _tenantId = tenantId;
+            _promotionRepository = promotionRepository;
         }
 
         // Implementar los métodos de la interfaz IPromotionService
         // Esta es una implementación básica para el scaffold
+
+        public PromotionDTO GetPromotionDTO(DAO.Models.Central.Promotion promotion)
+        {
+            return new PromotionDTO
+            {
+                Id = promotion.Id,
+                TenantId = promotion.TenantId,
+                BranchId = promotion.BranchId,
+                Description = promotion.Description,
+                StartDate = promotion.StartDate,
+                EndDate = promotion.EndDate
+            };
+        }
+
+
+        // public Task<PromotionDTO> AddPromotion(int tenantId, int branchId, string description, DateTime startDate, DateTime endDate, List<int> branch, List<int> product)
+        // {
+        //     var promotion = new DAO.Models.Central.Promotion
+        //     {
+        //         Id = promotionId,
+        //         TenantId = tenantId,
+        //         BranchId = branchId,
+        //         Description = description,
+        //         StartDate = startDate,
+        //         EndDate = endDate
+        //     };
+
+        //     // Guardar la promoción en la base de datos usando el repositorio de la clase
+        //     var createdPromotion = _promotionRepository.AddAsync(promotion).GetAwaiter().GetResult();
+        //     _promotionRepository.SaveChangesAsync().GetAwaiter().GetResult();
+
+        //     var promotionDTO = GetPromotionDTO(createdPromotion);
+        //     // Asociar los productos a la promoción
+        //     foreach (var productId in product)
+        //     {
+        //         var promotionProduct = new DAO.Models.Central.PromotionProduct
+        //         {
+        //             PromotionId = promotion.Id,
+        //             ProductId = productId
+        //         };
+        //         _promotionProductRepository.AddAsync(promotionProduct).GetAwaiter().GetResult();
+        //     }
+        //     _promotionProductRepository.SaveChangesAsync().GetAwaiter().GetResult();
+
+        //     // Asociar los branches a la promoción
+        //     foreach (var branchId in branch)
+        //     {
+        //         var promotionBranch = new DAO.Models.Central.PromotionBranch
+        //         {
+        //             PromotionId = promotion.Id,
+        //             BranchId = branchId
+        //         };
+        //         _promotionBranchRepository.AddAsync(promotionBranch).GetAwaiter().GetResult();
+        //     }
+        //     _promotionBranchRepository.SaveChangesAsync().GetAwaiter().GetResult();
+
+        //     // Devolver el DTO de la promoción creada
+        //     return Task.FromResult(promotionDTO);
+        // }
+
+    public Task<PromotionDTO?> AddPromotion(int tenantId, int branchId, string description, DateTime startDate, DateTime endDate, IEnumerable<int> branch, IEnumerable<int> product)
+
+    {
+        // Crear la promoción (simulación)
+        var promotion = new DAO.Models.Central.Promotion
+        {
+                    TenantId = tenantId,
+                    Description = description,
+                    StartDate = startDate,
+                    EndDate = endDate
+        };
+
+        // Simular guardar la promoción en la base de datos
+        Console.WriteLine("Promotion Created:");
+        Console.WriteLine($"Description: {promotion.Description}, StartDate: {promotion.StartDate}, EndDate: {promotion.EndDate}");
+
+        // Listas temporales para simular la base de datos
+        var promotionProducts = new List<DAO.Models.Central.PromotionProduct>();
+        var promotionBranches = new List<DAO.Models.Central.PromotionBranch>();
+
+        // Asociar los productos a la promoción
+        foreach (var productId in product)
+        {
+            var promotionProduct = new DAO.Models.Central.PromotionProduct
+            {
+                PromotionId = promotion.Id,
+                ProductId = productId
+            };
+            promotionProducts.Add(promotionProduct); // Agregar a la lista temporal
+        }
+
+        // Imprimir los resultados de promotionProducts
+        Console.WriteLine("Promotion Products:");
+        foreach (var promotionProduct in promotionProducts)
+        {
+            Console.WriteLine($"PromotionId: {promotionProduct.PromotionId}, ProductId: {promotionProduct.ProductId}");
+        }
+
+        // Asociar los branches a la promoción
+        foreach (var estacionId in branch)
+        {
+            var promotionBranch = new DAO.Models.Central.PromotionBranch
+            {
+                PromotionId = promotion.Id,
+                BranchId = estacionId
+            };
+            promotionBranches.Add(promotionBranch); // Agregar a la lista temporal
+        }
+
+        // Imprimir los resultados de promotionBranches
+        Console.WriteLine("Promotion Branches:");
+        foreach (var promotionBranch in promotionBranches)
+        {
+            Console.WriteLine($"PromotionId: {promotionBranch.PromotionId}, BranchId: {promotionBranch.BranchId}");
+        }
+
+        // Devolver el DTO de la promoción creada
+        // return Task.FromResult(promotionDTO);
+        var promotionDTO = GetPromotionDTO(promotion);
+        return Task.FromResult<PromotionDTO?>(promotionDTO);
+    }
+    
     }
 
     /// <summary>

@@ -343,6 +343,11 @@ namespace ServiPuntosUy.DataServices.Services.Central
             _dbContext = dbContext;
             _configuration = configuration;
         }
+        public Task<PromotionDTO> AddPromotion(int tenantId, int branchId, string description, DateTime startDate, DateTime endDate, IEnumerable<int> branch, IEnumerable<int> product)
+        {
+            // Implementación básica para el scaffold
+            throw new NotImplementedException();
+        }
 
         // Implementar los métodos de la interfaz IPromotionService
         // Esta es una implementación básica para el scaffold
