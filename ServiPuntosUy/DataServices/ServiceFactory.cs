@@ -109,6 +109,12 @@ namespace ServiPuntosUy.DataServices
             // Registrar el GenericRepository que usa el DbContext
             _serviceCollection.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
+            // Registrar el servicio público de TenantUI (disponible sin autenticación)
+            _serviceCollection.AddScoped<IPublicTenantUIService>(sp => 
+                new PublicTenantUIService(
+                    sp.GetRequiredService<IGenericRepository<TenantUI>>(),
+                    sp.GetRequiredService<ITenantResolver>()));
+
             // Registrar un servicio de autenticación básico
             _serviceCollection.AddScoped<IAuthService>(sp =>
                 new CommonAuthService(

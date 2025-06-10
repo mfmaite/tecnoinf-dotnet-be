@@ -14,7 +14,6 @@ namespace ServiPuntosUy.Controllers
     /// </summary>
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
     public class TenantUIController : BaseController
     {
         private readonly ITenantUIService _tenantUIService;
@@ -25,7 +24,7 @@ namespace ServiPuntosUy.Controllers
         }
 
         /// <summary>
-        /// Obtiene la UI de un tenant por su ID
+        /// Obtiene la UI de un tenant por su ID (requiere autenticación)
         /// </summary>
         /// <param name="tenantId">ID del tenant</param>
         /// <returns>La UI del tenant solicitado</returns>
@@ -33,6 +32,7 @@ namespace ServiPuntosUy.Controllers
         /// <response code="404">Si la UI del tenant no existe</response>
         /// <response code="400">Si hay un error en la búsqueda</response>
         [HttpGet("{tenantId}")]
+        [Authorize]
         [ProducesResponseType(typeof(TenantUIDTO), 200)]
         [ProducesResponseType(404)]
         [ProducesResponseType(400)]
@@ -41,6 +41,41 @@ namespace ServiPuntosUy.Controllers
             try
             {
                 var tenantUI = await _tenantUIService.GetTenantUIAsync(tenantId);
+
+                return Ok(new ApiResponse<TenantUIDTO>
+                {
+                    Error = false,
+                    Message = "UI del tenant obtenida correctamente",
+                    Data = tenantUI
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new ApiResponse<object>
+                {
+                    Error = true,
+                    Message = ex.Message
+                });
+            }
+        }
+
+        /// <summary>
+        /// Obtiene la UI del tenant actual (acceso público, no requiere autenticación)
+        /// </summary>
+        /// <returns>La UI del tenant solicitado</returns>
+        /// <response code="200">Retorna la UI del tenant solicitado</response>
+        /// <response code="404">Si la UI del tenant no existe</response>
+        /// <response code="400">Si hay un error en la búsqueda</response>
+        [HttpGet("public")]
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(TenantUIDTO), 200)]
+        [ProducesResponseType(404)]
+        [ProducesResponseType(400)]
+        public async Task<IActionResult> GetPublicTenantUI()
+        {
+            try
+            {
+                var tenantUI = await PublicTenantUIService.GetTenantUIAsync(HttpContext);
 
                 return Ok(new ApiResponse<TenantUIDTO>
                 {
@@ -70,6 +105,7 @@ namespace ServiPuntosUy.Controllers
         /// <response code="404">Si la UI del tenant no existe</response>
         /// <response code="400">Si hay un error en la actualización</response>
         [HttpPut("{tenantId}")]
+        [Authorize]
         [ProducesResponseType(typeof(TenantUIDTO), 200)]
         [ProducesResponseType(403)]
         [ProducesResponseType(404)]
