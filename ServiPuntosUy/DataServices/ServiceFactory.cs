@@ -168,10 +168,10 @@ namespace ServiPuntosUy.DataServices
                     null)); // null para Central
 
             // Registrar los demás servicios para el administrador central
-            // _serviceCollection.AddScoped<IPromotionService, Services.Central.PromotionService>();
-            // _serviceCollection.AddScoped<IProductService, Services.Central.ProductService>();
-                        _serviceCollection.AddScoped<IPromotionService>(sp => new Services.Tenant.PromotionService(
-                sp.GetRequiredService<IGenericRepository<DAO.Models.Central.Promotion>>()
+            _serviceCollection.AddScoped<IPromotionService>(sp => new Services.Tenant.PromotionService(
+                sp.GetRequiredService<IGenericRepository<DAO.Models.Central.Promotion>>(),
+                sp.GetRequiredService<IGenericRepository<DAO.Models.Central.PromotionProduct>>(),
+                sp.GetRequiredService<IGenericRepository<DAO.Models.Central.PromotionBranch>>()
             ));
             _serviceCollection.AddScoped<IUserService, Services.Central.UserService>();
             _serviceCollection.AddScoped<INotificationService, Services.Central.NotificationService>();
@@ -200,9 +200,10 @@ namespace ServiPuntosUy.DataServices
 
             _serviceCollection.AddScoped<ITenantBranchService, Services.Tenant.TenantBranchService>();
             _serviceCollection.AddScoped<IBranchService, BranchService>();
-            // _serviceCollection.AddScoped<IPromotionService, Services.Tenant.PromotionService>();
             _serviceCollection.AddScoped<IPromotionService>(sp => new Services.Tenant.PromotionService(
-                sp.GetRequiredService<IGenericRepository<DAO.Models.Central.Promotion>>()
+                sp.GetRequiredService<IGenericRepository<DAO.Models.Central.Promotion>>(),
+                sp.GetRequiredService<IGenericRepository<DAO.Models.Central.PromotionProduct>>(),
+                sp.GetRequiredService<IGenericRepository<DAO.Models.Central.PromotionBranch>>()
             ));
             _serviceCollection.AddScoped<IProductService, Services.Tenant.ProductService>();
             _serviceCollection.AddScoped<IUserService, Services.Tenant.UserService>();
@@ -241,7 +242,9 @@ namespace ServiPuntosUy.DataServices
 
 
             _serviceCollection.AddScoped<IPromotionService>(sp => new Services.Tenant.PromotionService(
-                sp.GetRequiredService<IGenericRepository<DAO.Models.Central.Promotion>>()
+                sp.GetRequiredService<IGenericRepository<DAO.Models.Central.Promotion>>(),
+                sp.GetRequiredService<IGenericRepository<DAO.Models.Central.PromotionProduct>>(),
+                sp.GetRequiredService<IGenericRepository<DAO.Models.Central.PromotionBranch>>()
             ));
             // _serviceCollection.AddScoped<IProductService, Services.Branch.ProductService>();
             _serviceCollection.AddScoped<IUserService>(sp =>
@@ -298,9 +301,10 @@ namespace ServiPuntosUy.DataServices
                     tenantId));
 
             // Registrar los demás servicios
-            // _serviceCollection.AddScoped<IPromotionService, Services.EndUser.PromotionService>();
                         _serviceCollection.AddScoped<IPromotionService>(sp => new Services.Tenant.PromotionService(
-                sp.GetRequiredService<IGenericRepository<DAO.Models.Central.Promotion>>()
+                sp.GetRequiredService<IGenericRepository<DAO.Models.Central.Promotion>>(),
+                sp.GetRequiredService<IGenericRepository<DAO.Models.Central.PromotionProduct>>(),
+                sp.GetRequiredService<IGenericRepository<DAO.Models.Central.PromotionBranch>>()
             ));
             _serviceCollection.AddScoped<IProductService, Services.EndUser.ProductService>();
             _serviceCollection.AddScoped<IUserService, Services.EndUser.UserService>();

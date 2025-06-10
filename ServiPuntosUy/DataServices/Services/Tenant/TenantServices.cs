@@ -365,9 +365,16 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
     public class PromotionService : IPromotionService
     {
         private readonly IGenericRepository<DAO.Models.Central.Promotion> _promotionRepository;
+        private readonly IGenericRepository<DAO.Models.Central.PromotionBranch> _promotionBranchRepository;
+        private readonly IGenericRepository<DAO.Models.Central.PromotionProduct> _promotionProductRepository;
 
-        public PromotionService(IGenericRepository<DAO.Models.Central.Promotion> promotionRepository)
+        public PromotionService(IGenericRepository<DAO.Models.Central.Promotion> promotionRepository,
+                                IGenericRepository<DAO.Models.Central.PromotionProduct> promotionProductRepository,
+                                IGenericRepository<DAO.Models.Central.PromotionBranch> promotionBranchRepository)
+        
         {
+            _promotionBranchRepository = promotionBranchRepository;
+            _promotionProductRepository = promotionProductRepository;
             _promotionRepository = promotionRepository;
         }
 
@@ -388,112 +395,109 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
         }
 
 
-        // public Task<PromotionDTO> AddPromotion(int tenantId, int branchId, string description, DateTime startDate, DateTime endDate, List<int> branch, List<int> product)
-        // {
-        //     var promotion = new DAO.Models.Central.Promotion
-        //     {
-        //         Id = promotionId,
-        //         TenantId = tenantId,
-        //         BranchId = branchId,
-        //         Description = description,
-        //         StartDate = startDate,
-        //         EndDate = endDate
-        //     };
-
-        //     // Guardar la promoción en la base de datos usando el repositorio de la clase
-        //     var createdPromotion = _promotionRepository.AddAsync(promotion).GetAwaiter().GetResult();
-        //     _promotionRepository.SaveChangesAsync().GetAwaiter().GetResult();
-
-        //     var promotionDTO = GetPromotionDTO(createdPromotion);
-        //     // Asociar los productos a la promoción
-        //     foreach (var productId in product)
-        //     {
-        //         var promotionProduct = new DAO.Models.Central.PromotionProduct
-        //         {
-        //             PromotionId = promotion.Id,
-        //             ProductId = productId
-        //         };
-        //         _promotionProductRepository.AddAsync(promotionProduct).GetAwaiter().GetResult();
-        //     }
-        //     _promotionProductRepository.SaveChangesAsync().GetAwaiter().GetResult();
-
-        //     // Asociar los branches a la promoción
-        //     foreach (var branchId in branch)
-        //     {
-        //         var promotionBranch = new DAO.Models.Central.PromotionBranch
-        //         {
-        //             PromotionId = promotion.Id,
-        //             BranchId = branchId
-        //         };
-        //         _promotionBranchRepository.AddAsync(promotionBranch).GetAwaiter().GetResult();
-        //     }
-        //     _promotionBranchRepository.SaveChangesAsync().GetAwaiter().GetResult();
-
-        //     // Devolver el DTO de la promoción creada
-        //     return Task.FromResult(promotionDTO);
-        // }
-
-    public Task<PromotionDTO?> AddPromotion(int tenantId, int branchId, string description, DateTime startDate, DateTime endDate, IEnumerable<int> branch, IEnumerable<int> product)
-
-    {
-        // Crear la promoción (simulación)
-        var promotion = new DAO.Models.Central.Promotion
+        public Task<PromotionDTO?> AddPromotion(int tenantId, int branchId, string description, DateTime startDate, DateTime endDate, IEnumerable<int> branch, IEnumerable<int> product)        
         {
-                    TenantId = tenantId,
-                    Description = description,
-                    StartDate = startDate,
-                    EndDate = endDate
-        };
-
-        // Simular guardar la promoción en la base de datos
-        Console.WriteLine("Promotion Created:");
-        Console.WriteLine($"Description: {promotion.Description}, StartDate: {promotion.StartDate}, EndDate: {promotion.EndDate}");
-
-        // Listas temporales para simular la base de datos
-        var promotionProducts = new List<DAO.Models.Central.PromotionProduct>();
-        var promotionBranches = new List<DAO.Models.Central.PromotionBranch>();
-
-        // Asociar los productos a la promoción
-        foreach (var productId in product)
-        {
-            var promotionProduct = new DAO.Models.Central.PromotionProduct
+            var promotion = new DAO.Models.Central.Promotion
             {
-                PromotionId = promotion.Id,
-                ProductId = productId
+                TenantId = tenantId,
+                Description = description,
+                StartDate = startDate,
+                EndDate = endDate
             };
-            promotionProducts.Add(promotionProduct); // Agregar a la lista temporal
-        }
 
-        // Imprimir los resultados de promotionProducts
-        Console.WriteLine("Promotion Products:");
-        foreach (var promotionProduct in promotionProducts)
-        {
-            Console.WriteLine($"PromotionId: {promotionProduct.PromotionId}, ProductId: {promotionProduct.ProductId}");
-        }
+            // Guardar la promoción en la base de datos usando el repositorio de la clase
+            var createdPromotion = _promotionRepository.AddAsync(promotion).GetAwaiter().GetResult();
+            _promotionRepository.SaveChangesAsync().GetAwaiter().GetResult();
 
-        // Asociar los branches a la promoción
-        foreach (var estacionId in branch)
-        {
-            var promotionBranch = new DAO.Models.Central.PromotionBranch
+            var promotionDTO = GetPromotionDTO(createdPromotion);
+            // Asociar los productos a la promoción
+            foreach (var productId in product)
             {
-                PromotionId = promotion.Id,
-                BranchId = estacionId
-            };
-            promotionBranches.Add(promotionBranch); // Agregar a la lista temporal
-        }
+                var promotionProduct = new DAO.Models.Central.PromotionProduct
+                {
+                    PromotionId = promotion.Id,
+                    ProductId = productId
+                };
+                _promotionProductRepository.AddAsync(promotionProduct).GetAwaiter().GetResult();
+            }
+            _promotionProductRepository.SaveChangesAsync().GetAwaiter().GetResult();
 
-        // Imprimir los resultados de promotionBranches
-        Console.WriteLine("Promotion Branches:");
-        foreach (var promotionBranch in promotionBranches)
-        {
-            Console.WriteLine($"PromotionId: {promotionBranch.PromotionId}, BranchId: {promotionBranch.BranchId}");
-        }
+            // Asociar los branches a la promoción
+            foreach (var bId in branch)
+            {
+                var promotionBranch = new DAO.Models.Central.PromotionBranch
+                {
+                    PromotionId = promotion.Id,
+                    BranchId = bId
+                };
+                _promotionBranchRepository.AddAsync(promotionBranch).GetAwaiter().GetResult();
+            }
+            _promotionBranchRepository.SaveChangesAsync().GetAwaiter().GetResult();
 
-        // Devolver el DTO de la promoción creada
-        // return Task.FromResult(promotionDTO);
-        var promotionDTO = GetPromotionDTO(promotion);
-        return Task.FromResult<PromotionDTO?>(promotionDTO);
-    }
+            // Devolver el DTO de la promoción creada
+            return Task.FromResult(promotionDTO);
+        }
+    //         public Task<PromotionDTO?> AddPromotion(int tenantId, int branchId, string description, DateTime startDate, DateTime endDate, IEnumerable<int> branch, IEnumerable<int> product)
+
+    // {
+    //     // Crear la promoción (simulación)
+    //     var promotion = new DAO.Models.Central.Promotion
+    //     {
+    //                 TenantId = tenantId,
+    //                 Description = description,
+    //                 StartDate = startDate,
+    //                 EndDate = endDate
+    //     };
+
+    //     // Simular guardar la promoción en la base de datos
+    //     Console.WriteLine("Promotion Created:");
+    //     Console.WriteLine($"Description: {promotion.Description}, StartDate: {promotion.StartDate}, EndDate: {promotion.EndDate}");
+
+    //     // Listas temporales para simular la base de datos
+    //     var promotionProducts = new List<DAO.Models.Central.PromotionProduct>();
+    //     var promotionBranches = new List<DAO.Models.Central.PromotionBranch>();
+
+    //     // Asociar los productos a la promoción
+    //     foreach (var productId in product)
+    //     {
+    //         var promotionProduct = new DAO.Models.Central.PromotionProduct
+    //         {
+    //             PromotionId = promotion.Id,
+    //             ProductId = productId
+    //         };
+    //         promotionProducts.Add(promotionProduct); // Agregar a la lista temporal
+    //     }
+
+    //     // Imprimir los resultados de promotionProducts
+    //     Console.WriteLine("Promotion Products:");
+    //     foreach (var promotionProduct in promotionProducts)
+    //     {
+    //         Console.WriteLine($"PromotionId: {promotionProduct.PromotionId}, ProductId: {promotionProduct.ProductId}");
+    //     }
+
+    //     // Asociar los branches a la promoción
+    //     foreach (var estacionId in branch)
+    //     {
+    //         var promotionBranch = new DAO.Models.Central.PromotionBranch
+    //         {
+    //             PromotionId = promotion.Id,
+    //             BranchId = estacionId
+    //         };
+    //         promotionBranches.Add(promotionBranch); // Agregar a la lista temporal
+    //     }
+
+    //     // Imprimir los resultados de promotionBranches
+    //     Console.WriteLine("Promotion Branches:");
+    //     foreach (var promotionBranch in promotionBranches)
+    //     {
+    //         Console.WriteLine($"PromotionId: {promotionBranch.PromotionId}, BranchId: {promotionBranch.BranchId}");
+    //     }
+
+    //     // Devolver el DTO de la promoción creada
+    //     // return Task.FromResult(promotionDTO);
+    //     var promotionDTO = GetPromotionDTO(promotion);
+    //     return Task.FromResult<PromotionDTO?>(promotionDTO);
+    // }
     
     }
 
