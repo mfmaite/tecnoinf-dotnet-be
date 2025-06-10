@@ -1,5 +1,6 @@
 using ServiPuntosUy.DTO;
 using System.Threading.Tasks;
+using ServiPuntosUy.Requests;
 
 namespace ServiPuntosUy.DataServices.Services
 {
@@ -9,7 +10,7 @@ namespace ServiPuntosUy.DataServices.Services
     public interface ITransactionService
     {
         // Métodos para gestionar transacciones
-        Task<TransactionDTO> CreateTransaction(int userId, int branchId, int tenantId, int[] productIds);
+        Task<TransactionDTO> CreateTransaction(int userId, int branchId, int tenantId, ProductQuantity[] products);
         Task<TransactionDTO> GetTransactionById(int id);
         Task<TransactionDTO[]> GetTransactionsByUserId(int userId);
     }

@@ -31,11 +31,13 @@ public class TransactionController : BaseController
         {
             var loggedUser = ObtainUserFromToken();
 
+            Console.WriteLine("akikikikiki");
+
             var transaction = await TransactionService.CreateTransaction(
                 loggedUser.Id,
                 request.BranchId,
                 int.Parse(loggedUser.TenantId),
-                request.ProductIds
+                request.Products
             );
 
             return Ok(transaction);

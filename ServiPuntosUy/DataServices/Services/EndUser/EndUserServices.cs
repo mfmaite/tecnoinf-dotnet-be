@@ -9,6 +9,7 @@ using ServiPuntosUy.DAO.Models.Central;
 using ServiPuntosUy.Enums;
 using ServiPuntosUy.DataServices.Services.Tenant;
 using ServiPuntosUy.DAO.Models.Central;
+using ServiPuntosUy.Requests;
 
 namespace ServiPuntosUy.DataServices.Services.EndUser
 {
@@ -394,25 +395,31 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
             };
         }
 
-        public async Task<TransactionDTO> CreateTransaction(int userId, int branchId, int tenantId, int[] productIds)
+        public async Task<TransactionDTO> CreateTransaction(int userId, int branchId, int tenantId, ProductQuantity[] products)
         {
+            // Obtener los IDs de productos
+            var productIds = products.Select(p => p.ProductId).ToArray();
+
             // Buscar los productos
-            var products = await _productRepository.GetQueryable()
+            var productsList = await _productRepository.GetQueryable()
                 .Where(p => productIds.Contains(p.Id))
                 .ToListAsync();
 
-            products.ForEach(p => {
-                Console.WriteLine($"Producto: {p.Id} - {p.Name} - {p.Price}");
-            });
-
             // Buscar la configuración de lealtad del tenant
-            var loyaltyConfig = await _loyaltyConfigRepository.GetByIdAsync(tenantId);
+            var loyaltyConfig = await _loyaltyConfigRepository.GetQueryable()
+                .FirstOrDefaultAsync(lc => lc.TenantId == tenantId);
+
             if (loyaltyConfig == null) {
-                throw new Exception("La configuración de lealtad no existe");
+                throw new Exception("La configuración de lealtad no existe para este tenant");
             }
 
-            // Calcular el monto total
-            decimal totalAmount = products.Sum(p => p.Price);
+            // Calcular el monto total considerando las cantidades
+            decimal totalAmount = 0;
+            foreach (var product in products)
+            {
+                var productInfo = productsList.First(p => p.Id == product.ProductId);
+                totalAmount += productInfo.Price * product.Quantity;
+            }
 
             // Crear la transacción
             var transaction = new Transaction {
@@ -420,7 +427,7 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
                 BranchId = branchId,
                 TenantId = tenantId,
                 Amount = totalAmount,
-                PointsEarned = (int)(totalAmount * loyaltyConfig.AccumulationRule),
+                PointsEarned = (int)(totalAmount / loyaltyConfig.AccumulationRule),
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -442,6 +449,21 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
 
             // // Devolver la transacción con sus productos
             // return await GetTransactionDTO(transaction);
+
+            // // Crear las relaciones con productos
+            // foreach (var product in products)
+            // {
+            //     var productInfo = productsList.First(p => p.Id == product.ProductId);
+            //     var transactionItem = new TransactionItem
+            //     {
+            //         TransactionId = createdTransaction.Id,
+            //         ProductId = product.ProductId,
+            //         Quantity = product.Quantity,
+            //         UnitPrice = productInfo.Price
+            //     };
+            //     await _transactionItemRepository.AddAsync(transactionItem);
+            // }
+            // await _transactionItemRepository.SaveChangesAsync();
 
             // Devolver la transacción
             return GetTransactionDTO(transaction);
