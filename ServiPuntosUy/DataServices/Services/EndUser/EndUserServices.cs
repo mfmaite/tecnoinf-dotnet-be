@@ -10,8 +10,6 @@ using ServiPuntosUy.Enums;
 using ServiPuntosUy.DataServices.Services.Tenant;
 using ServiPuntosUy.DAO.Models.Central;
 
-
-
 namespace ServiPuntosUy.DataServices.Services.EndUser
 {
     /// <summary>

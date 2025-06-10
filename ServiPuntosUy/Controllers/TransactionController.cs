@@ -23,16 +23,18 @@ public class TransactionController : BaseController
     /// <returns>La transacción creada con sus items</returns>
     /// <response code="200">Retorna la transacción creada con sus items</response>
     /// <response code="400">Si hay un error en la creación</response>
-    [HttpPost("Create")]
+    [HttpPost("")]
     [ProducesResponseType(typeof(TransactionResponseDTO), 200)]
     public async Task<ActionResult<TransactionResponseDTO>> CreateTransaction([FromBody] CreateTransactionRequest request)
     {
         try
         {
+            var loggedUser = ObtainUserFromToken();
+
             var transaction = await TransactionService.CreateTransaction(
-                request.UserId,
+                loggedUser.Id,
                 request.BranchId,
-                request.TenantId,
+                int.Parse(loggedUser.TenantId),
                 request.ProductIds
             );
 
@@ -43,12 +45,4 @@ public class TransactionController : BaseController
             return BadRequest(ex.Message);
         }
     }
-}
-
-public class CreateTransactionRequest
-{
-    public int UserId { get; set; }
-    public int BranchId { get; set; }
-    public int TenantId { get; set; }
-    public int[] ProductIds { get; set; }
 }

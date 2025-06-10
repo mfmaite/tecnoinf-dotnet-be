@@ -297,6 +297,13 @@ namespace ServiPuntosUy.DataServices
                     sp.GetRequiredService<ILoyaltyService>(), // Inyectamos el servicio de lealtad
                     tenantId));
 
+            _serviceCollection.AddScoped<ITransactionService>(sp =>
+                new Services.EndUser.TransactionService(
+                    sp.GetRequiredService<IGenericRepository<DAO.Models.Central.Transaction>>(),
+                    sp.GetRequiredService<IGenericRepository<DAO.Models.Central.LoyaltyConfig>>(),
+                    sp.GetRequiredService<IGenericRepository<DAO.Models.Central.Product>>(),
+                    sp.GetRequiredService<IGenericRepository<DAO.Models.Central.TransactionItem>>()));
+
             // Registrar los demás servicios
             _serviceCollection.AddScoped<IProductService, Services.EndUser.ProductService>();
             _serviceCollection.AddScoped<INotificationService, Services.EndUser.NotificationService>();
