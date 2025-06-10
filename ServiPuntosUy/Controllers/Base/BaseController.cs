@@ -265,6 +265,11 @@ namespace ServiPuntosUy.Controllers.Base
         /// </summary>
         protected IStatisticsService StatisticsService => _serviceFactory.GetService<IStatisticsService>();
 
+        /// <summary>
+        /// Obtiene el servicio de transacciones
+        /// </summary>
+        protected ITransactionService TransactionService => _serviceFactory.GetService<ITransactionService>();
+
         #endregion
     }
 }

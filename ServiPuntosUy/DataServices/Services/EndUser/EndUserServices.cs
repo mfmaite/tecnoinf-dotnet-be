@@ -467,5 +467,19 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
                 .ToListAsync();
             return transactions.Select(GetTransactionDTO).ToArray();
         }
+
+        // public async Task<TransactionItemDTO[]> GetTransactionItems(int transactionId)
+        // {
+        //     var items = await _transactionItemRepository.GetQueryable()
+        //         .Where(ti => ti.TransactionId == transactionId)
+        //         .ToListAsync();
+
+        //     return items.Select(item => new TransactionItemDTO
+        //     {
+        //         ProductId = item.ProductId,
+        //         Quantity = item.Quantity,
+        //         UnitPrice = item.UnitPrice
+        //     }).ToArray();
+        // }
     }
 }
