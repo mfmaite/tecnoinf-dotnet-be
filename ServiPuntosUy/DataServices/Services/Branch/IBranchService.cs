@@ -9,9 +9,9 @@ namespace ServiPuntosUy.DataServices.Services.Branch
     public interface IBranchService
     {
         BranchDTO GetBranchDTO(ServiPuntosUy.DAO.Models.Central.Branch branch);
-        BranchDTO GetBranchById(int id);
+        Task<BranchDTO?> GetBranchById(int id);
         Task<ProductStockDTO?> manageStock(int productId, int branchId, int stock);
-
+        Task<BranchDTO?> setBranchHours(int id,  TimeOnly openTime, TimeOnly closingTime);
     }
 
 }

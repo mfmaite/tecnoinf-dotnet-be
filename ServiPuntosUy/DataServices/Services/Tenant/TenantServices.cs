@@ -27,6 +27,7 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             _branchRepository = branchRepository;
             _fuelPricesRepository = fuelPricesRepository;
         }
+    
 
         // Métodos de Branch
 
@@ -146,6 +147,26 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             _branchRepository.SaveChangesAsync().GetAwaiter().GetResult();
         }
 
+        public BranchDTO setBranchHours(int id,  TimeOnly openTime, TimeOnly closingTime)
+        {
+            // Obtener la estación por ID
+            var branch = _branchRepository.GetByIdAsync(id).GetAwaiter().GetResult();
+            if (branch == null)
+            {
+                throw new Exception($"No existe una estación con el ID {id}");
+            }
+
+            // Actualizar las horas de apertura y cierre
+            branch.OpenTime = openTime;
+            branch.ClosingTime = closingTime;
+
+            // Guardar los cambios en la base de datos
+            _branchRepository.UpdateAsync(branch).GetAwaiter().GetResult();
+            _branchRepository.SaveChangesAsync().GetAwaiter().GetResult();
+
+            return GetBranchDTO(branch);
+        }
+        
         public BranchDTO[] GetBranchList(int tenantId)
         {
             // Obtener la lista de branches del repositorio filtrando por TenantId

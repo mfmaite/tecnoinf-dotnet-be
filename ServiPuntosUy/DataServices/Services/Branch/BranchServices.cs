@@ -93,10 +93,12 @@ namespace ServiPuntosUy.DataServices.Services.Branch
             };
         }
 
-        public BranchDTO GetBranchById(int id)
+        public async Task<BranchDTO?> GetBranchById(int id)
         {
             // Buscar el branch por ID usando el repositorio de la clase
-            var branch = _branchRepository.GetQueryable().FirstOrDefault(e => e.Id == id);
+            var branch = await _branchRepository.GetQueryable()
+            .AsNoTracking()
+            .FirstOrDefaultAsync(e => e.Id == id);
 
             // Devolver el DTO si se encontró el branch
             return branch != null ? GetBranchDTO(branch) : null;
@@ -184,6 +186,42 @@ namespace ServiPuntosUy.DataServices.Services.Branch
                 Console.WriteLine($"Error al actualizar el stock: {ex.Message}");
                 return null;
             }   
+        }
+
+        public DAO.Models.Central.Branch MapToBranch(BranchDTO branchDTO)
+        {
+            return new DAO.Models.Central.Branch
+            {
+                Id = branchDTO.Id,
+                Address = branchDTO.Address,
+                Latitud = branchDTO.Latitud,
+                Longitud = branchDTO.Longitud,
+                Phone = branchDTO.Phone,
+                OpenTime = branchDTO.OpenTime,
+                ClosingTime = branchDTO.ClosingTime,
+                TenantId = branchDTO.TenantId
+            };
+        }
+
+        public async Task<BranchDTO?> setBranchHours(int id,  TimeOnly openTime, TimeOnly closingTime)
+        {
+            // Obtener la estación por ID
+            var branch = await GetBranchById(id);
+            if (branch == null)
+            {
+                throw new Exception($"No existe una estación con el ID {id}");
+            }
+
+            // Actualizar las horas de apertura y cierre
+            var branchDTO = MapToBranch(branch);
+            branchDTO.OpenTime = openTime;
+            branchDTO.ClosingTime = closingTime;
+
+            // Guardar los cambios en la base de datos
+            await _branchRepository.UpdateAsync(branchDTO);
+            await _branchRepository.SaveChangesAsync();
+
+            return GetBranchDTO(branchDTO);
         }
     }
 
