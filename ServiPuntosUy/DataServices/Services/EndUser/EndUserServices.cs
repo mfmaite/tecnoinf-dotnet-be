@@ -403,10 +403,9 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
                 .Where(p => productIds.Contains(p.Id))
                 .ToListAsync();
 
-            if (!products.Any())
-            {
-                throw new Exception("No se encontraron los productos especificados");
-            }
+            products.ForEach(p => {
+                Console.WriteLine($"Producto: {p.Id} - {p.Name} - {p.Price}");
+            });
 
             // Buscar la configuración de lealtad del tenant
             var loyaltyConfig = await _loyaltyConfigRepository.GetByIdAsync(tenantId);
