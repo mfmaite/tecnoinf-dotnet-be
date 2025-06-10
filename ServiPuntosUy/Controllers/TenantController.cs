@@ -31,10 +31,10 @@ public class TenantController : BaseController
     [HttpPost("Create")]
     [ProducesResponseType(typeof(TenantDTO), 200)]
     [ProducesResponseType(400)]
-    public IActionResult CreateTenant([FromBody] Tenant tenant) {
+    public IActionResult CreateTenant([FromBody] CreateTenantRequest request) {
         try {
             var newTenant = TenantService.CreateTenant(
-                tenant.Name
+                request.Name
             );
 
             return Ok(new ApiResponse<TenantDTO>{
