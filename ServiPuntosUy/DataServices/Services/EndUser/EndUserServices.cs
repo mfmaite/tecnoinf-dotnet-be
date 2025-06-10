@@ -8,6 +8,7 @@ using ServiPuntosUy.DTO;
 using ServiPuntosUy.DAO.Models.Central;
 using ServiPuntosUy.Enums;
 using ServiPuntosUy.DataServices.Services.Tenant;
+using ServiPuntosUy.DAO.Models.Central;
 
 
 
@@ -45,14 +46,16 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
     public class LoyaltyService : ILoyaltyService
     {
         private readonly DbContext _dbContext;
-        private readonly IConfiguration _configuration;
-        private readonly string _tenantId;
+        private readonly IGenericRepository<LoyaltyConfig> _loyaltyConfigRepository;
 
-        public LoyaltyService(DbContext dbContext, IConfiguration configuration, string tenantId)
+        public LoyaltyService(DbContext dbContext, IGenericRepository<LoyaltyConfig> loyaltyConfigRepository)
         {
             _dbContext = dbContext;
-            _configuration = configuration;
-            _tenantId = tenantId;
+            _loyaltyConfigRepository = loyaltyConfigRepository;
+        }
+
+         public LoyaltyConfigDTO CreateLoyaltyProgram(int tenantId, string pointsName, int pointsValue, decimal accumulationRule, int expiricyPolicyDays) {
+            throw new UnauthorizedAccessException("El usuario final no puede crear un programa de fidelidad");
         }
 
         /// <summary>
@@ -117,6 +120,42 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
                 Console.WriteLine($"Error checking point expiration: {ex.Message}");
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Convierte un modelo de configuración de lealtad a DTO
+        /// </summary>
+        /// <param name="loyaltyConfig">Modelo de configuración de lealtad</param>
+        /// <returns>DTO de configuración de lealtad</returns>
+        public LoyaltyConfigDTO GetLoyaltyConfigDTO(DAO.Models.Central.LoyaltyConfig loyaltyConfig) {
+            return new LoyaltyConfigDTO {
+                Id = loyaltyConfig.Id,
+                TenantId = loyaltyConfig.TenantId,
+                PointsName = loyaltyConfig.PointsName,
+                PointsValue = loyaltyConfig.PointsValue,
+                AccumulationRule = loyaltyConfig.AccumulationRule,
+                ExpiricyPolicyDays = loyaltyConfig.ExpiricyPolicyDays
+            };
+        }
+
+        /// <summary>
+        /// Obtiene la configuración de lealtad de un tenant
+        /// </summary>
+        /// <param name="tenantId">ID del tenant</param>
+        /// <returns>Configuración de lealtad</returns>
+        public LoyaltyConfigDTO GetLoyaltyProgram(int tenantId)
+        {
+            var loyaltyConfig = _loyaltyConfigRepository.GetQueryable().FirstOrDefault(lc => lc.TenantId == tenantId);
+
+            if (loyaltyConfig == null) {
+                throw new ArgumentException($"No existe una configuración de lealtad para el tenant con el ID {tenantId}");
+            }
+
+            return GetLoyaltyConfigDTO(loyaltyConfig);
+        }
+
+        public LoyaltyConfigDTO UpdateLoyaltyProgram(int tenantId, string? pointsName, int? pointsValue, decimal? accumulationRule, int? expiricyPolicyDays) {
+            throw new UnauthorizedAccessException("El usuario final no puede actualizar un programa de fidelidad");
         }
     }
 

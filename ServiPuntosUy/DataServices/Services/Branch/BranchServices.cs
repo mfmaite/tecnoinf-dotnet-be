@@ -154,7 +154,7 @@ namespace ServiPuntosUy.DataServices.Services.Branch
                 var product = await VerifyProductById(productId);
                 if (!product)
                     return null;
-                
+
                 var productStockDTO = await GetProductStockById(productId, branchId);
                 if (productStockDTO == null) // todavia no se le ha cargado stock
                 {
@@ -167,17 +167,17 @@ namespace ServiPuntosUy.DataServices.Services.Branch
                     var stockDTO = MapToProductStock(productStockDTO);
                     await _productStockRepository.AddAsync(stockDTO);
                     await _productStockRepository.SaveChangesAsync();
-                    return GetProductStockDTO(stockDTO);  
+                    return GetProductStockDTO(stockDTO);
                 }else{
                     // Si ya existe, actualizamos el stock
-                    var stockDTO = MapToProductStock(productStockDTO); //Update no espera DTO 
+                    var stockDTO = MapToProductStock(productStockDTO); //Update no espera DTO
                     stockDTO.Id = productId;
                     stockDTO.Stock = stock;
-                    stockDTO.BranchId = branchId; 
-                    stockDTO.ProductId = productId; 
+                    stockDTO.BranchId = branchId;
+                    stockDTO.ProductId = productId;
                     await _productStockRepository.UpdateAsync(stockDTO);
                     await _productStockRepository.SaveChangesAsync();
-                    return GetProductStockDTO(stockDTO);  
+                    return GetProductStockDTO(stockDTO);
                 }
 
             }
@@ -185,7 +185,7 @@ namespace ServiPuntosUy.DataServices.Services.Branch
             {
                 Console.WriteLine($"Error al actualizar el stock: {ex.Message}");
                 return null;
-            }   
+            }
         }
 
         public DAO.Models.Central.Branch MapToBranch(BranchDTO branchDTO)
@@ -231,141 +231,16 @@ namespace ServiPuntosUy.DataServices.Services.Branch
     public class LoyaltyService : ILoyaltyService
     {
         private readonly DbContext _dbContext;
-        private readonly IConfiguration _configuration;
-        private readonly string _tenantId;
-        private readonly int _branchId;
+        private readonly IGenericRepository<LoyaltyConfig> _loyaltyConfigRepository;
 
-        public LoyaltyService(DbContext dbContext, IConfiguration configuration, string tenantId, int branchId)
+        public LoyaltyService(DbContext dbContext, IGenericRepository<LoyaltyConfig> loyaltyConfigRepository)
         {
             _dbContext = dbContext;
-            _configuration = configuration;
-            _tenantId = tenantId;
-            _branchId = branchId;
+            _loyaltyConfigRepository = loyaltyConfigRepository;
         }
 
-        /// <summary>
-        /// Obtiene la configuración de lealtad de un tenant
-        /// </summary>
-        /// <param name="tenantId">ID del tenant</param>
-        /// <returns>Configuración de lealtad</returns>
-        public Task<LoyaltyConfigDTO> GetLoyaltyConfigAsync(string tenantId)
-        {
-            // Implementación básica para el scaffold
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Actualiza la configuración de lealtad de un tenant
-        /// </summary>
-        /// <param name="config">Configuración de lealtad</param>
-        /// <returns>Configuración de lealtad actualizada</returns>
-        public Task<LoyaltyConfigDTO> UpdateLoyaltyConfigAsync(LoyaltyConfigDTO config)
-        {
-            // Implementación básica para el scaffold
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Obtiene el saldo de puntos de un usuario
-        /// </summary>
-        /// <param name="userId">ID del usuario</param>
-        /// <param name="tenantId">ID del tenant</param>
-        /// <returns>Saldo de puntos</returns>
-        public Task<int> GetPointsBalanceAsync(int userId, string tenantId)
-        {
-            // Implementación básica para el scaffold
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Registra una transacción de lealtad
-        /// </summary>
-        /// <param name="transaction">Datos de la transacción</param>
-        /// <returns>Transacción registrada</returns>
-        public Task<LoyaltyTransactionDTO> RegisterTransactionAsync(LoyaltyTransactionDTO transaction)
-        {
-            // Implementación básica para el scaffold
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Obtiene el historial de transacciones de un usuario
-        /// </summary>
-        /// <param name="userId">ID del usuario</param>
-        /// <param name="tenantId">ID del tenant</param>
-        /// <param name="startDate">Fecha de inicio</param>
-        /// <param name="endDate">Fecha de fin</param>
-        /// <param name="page">Número de página</param>
-        /// <param name="pageSize">Tamaño de página</param>
-        /// <returns>Historial de transacciones</returns>
-        public Task<IEnumerable<LoyaltyTransactionDTO>> GetTransactionHistoryAsync(int userId, string tenantId, DateTime? startDate = null, DateTime? endDate = null, int page = 1, int pageSize = 10)
-        {
-            // Implementación básica para el scaffold
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Canjea puntos por un producto o servicio
-        /// </summary>
-        /// <param name="userId">ID del usuario</param>
-        /// <param name="tenantId">ID del tenant</param>
-        /// <param name="points">Puntos a canjear</param>
-        /// <param name="productId">ID del producto (opcional)</param>
-        /// <returns>ID de la redención</returns>
-        public Task<int> RedeemPointsAsync(int userId, string tenantId, int points, int? productId = null)
-        {
-            // Implementación básica para el scaffold
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Verifica un código QR de redención
-        /// </summary>
-        /// <param name="qrCode">Código QR</param>
-        /// <param name="branchId">ID del branch</param>
-        /// <returns>ID de la redención</returns>
-        public Task<int> VerifyRedemptionQrAsync(string qrCode, int branchId)
-        {
-            // Implementación básica para el scaffold
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Confirma una redención
-        /// </summary>
-        /// <param name="redemptionId">ID de la redención</param>
-        /// <param name="branchId">ID del branch</param>
-        /// <returns>True si la confirmación es exitosa, false en caso contrario</returns>
-        public Task<bool> ConfirmRedemptionAsync(int redemptionId, int branchId)
-        {
-            // Implementación básica para el scaffold
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Calcula los puntos a otorgar por una compra
-        /// </summary>
-        /// <param name="tenantId">ID del tenant</param>
-        /// <param name="amount">Monto de la compra</param>
-        /// <param name="productCategory">Categoría del producto</param>
-        /// <returns>Puntos a otorgar</returns>
-        public Task<int> CalculatePointsAsync(string tenantId, decimal amount, string productCategory)
-        {
-            // Implementación básica para el scaffold
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Obtiene estadísticas de lealtad de un tenant
-        /// </summary>
-        /// <param name="tenantId">ID del tenant</param>
-        /// <param name="startDate">Fecha de inicio</param>
-        /// <param name="endDate">Fecha de fin</param>
-        /// <returns>Estadísticas de lealtad</returns>
-        public Task<object> GetLoyaltyStatsAsync(string tenantId, DateTime startDate, DateTime endDate)
-        {
-            // Implementación básica para el scaffold
-            throw new NotImplementedException();
+        public LoyaltyConfigDTO CreateLoyaltyProgram(int tenantId, string pointsName, int pointsValue, decimal accumulationRule, int expiricyPolicyDays) {
+            throw new UnauthorizedAccessException("El administrador de branch no puede crear un programa de fidelidad");
         }
 
         /// <summary>
@@ -379,6 +254,35 @@ namespace ServiPuntosUy.DataServices.Services.Branch
             // Para administradores de branch, no aplicamos la lógica de expiración de puntos
             return Task.FromResult(false);
         }
+
+        /// <summary>
+        /// Obtiene la configuración de lealtad de un tenant
+        /// </summary>
+        /// <param name="tenantId">ID del tenant</param>
+        /// <returns>Configuración de lealtad</returns>
+        public LoyaltyConfigDTO GetLoyaltyProgram(int tenantId)
+        {
+            var loyaltyConfig = _loyaltyConfigRepository.GetQueryable().FirstOrDefault(lc => lc.TenantId == tenantId);
+
+            if (loyaltyConfig == null) {
+                throw new ArgumentException($"No existe una configuración de lealtad para el tenant con el ID {tenantId}");
+            }
+
+            return new LoyaltyConfigDTO {
+                Id = loyaltyConfig.Id,
+                TenantId = loyaltyConfig.TenantId,
+                PointsName = loyaltyConfig.PointsName,
+                PointsValue = loyaltyConfig.PointsValue,
+                AccumulationRule = loyaltyConfig.AccumulationRule,
+                ExpiricyPolicyDays = loyaltyConfig.ExpiricyPolicyDays
+            };
+        }
+
+
+        public LoyaltyConfigDTO UpdateLoyaltyProgram(int tenantId, string? pointsName, int? pointsValue, decimal? accumulationRule, int? expiricyPolicyDays) {
+            throw new UnauthorizedAccessException("El admin branch no puede actualizar un programa de fidelidad");
+        }
+
     }
 
     /// <summary>
@@ -530,8 +434,8 @@ namespace ServiPuntosUy.DataServices.Services.Branch
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         public StatisticsService(
-            DbContext dbContext, 
-            IConfiguration configuration, 
+            DbContext dbContext,
+            IConfiguration configuration,
             ITenantAccessor tenantAccessor,
             IHttpContextAccessor httpContextAccessor)
         {
@@ -539,7 +443,7 @@ namespace ServiPuntosUy.DataServices.Services.Branch
             _configuration = configuration;
             _tenantId = tenantAccessor.GetCurrentTenantId();
             _httpContextAccessor = httpContextAccessor;
-            
+
             // Obtener el branchId del contexto HTTP
             if (httpContextAccessor.HttpContext?.Items["BranchId"] is int branchId)
             {
