@@ -8,6 +8,7 @@ using ServiPuntosUy.Enums;
 using ServiPuntosUy.DataServices.Services.Central;
 using ServiPuntosUy.DataServices.Services.Branch;
 using ServiPuntosUy.DataServices.Services.Tenant;
+using ServiPuntosUy.DataServices.Services.CommonLogic;
 
 namespace ServiPuntosUy.Controllers.Base
 {
@@ -264,6 +265,11 @@ namespace ServiPuntosUy.Controllers.Base
         /// Obtiene el servicio de estadísticas
         /// </summary>
         protected IStatisticsService StatisticsService => _serviceFactory.GetService<IStatisticsService>();
+
+        /// <summary>
+        /// Obtiene el servicio público de UI de tenants (sin autenticación)
+        /// </summary>
+        protected IPublicTenantUIService PublicTenantUIService => _serviceFactory.GetService<IPublicTenantUIService>();
 
         #endregion
     }
