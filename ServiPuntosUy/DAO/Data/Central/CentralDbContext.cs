@@ -91,7 +91,7 @@ public class CentralDbContext : DbContext
                 Name = "ancap"
             }
         );
-        
+
         // Crear TenantUI para el tenant por defecto
         modelBuilder.Entity<TenantUI>().HasData(
             new TenantUI
@@ -173,5 +173,4 @@ public class CentralDbContext : DbContext
             }
         );
     }
-    
 }

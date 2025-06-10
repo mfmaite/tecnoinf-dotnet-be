@@ -175,16 +175,11 @@ namespace ServiPuntosUy.DAO.Migrations.Central
                     b.Property<int>("Stock")
                         .HasColumnType("int");
 
-                    b.Property<int>("TenantId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.HasIndex("BranchId");
 
                     b.HasIndex("ProductId");
-
-                    b.HasIndex("TenantId");
 
                     b.ToTable("ProductStocks");
                 });
@@ -522,11 +517,11 @@ namespace ServiPuntosUy.DAO.Migrations.Central
                             Id = -1,
                             Email = "admin@servipuntos.uy",
                             IsVerified = false,
-                            LastLoginDate = new DateTime(2025, 6, 5, 0, 59, 43, 91, DateTimeKind.Utc).AddTicks(4244),
+                            LastLoginDate = new DateTime(2025, 6, 10, 0, 25, 43, 830, DateTimeKind.Utc).AddTicks(1720),
                             Name = "Admin Central",
                             NotificationsEnabled = true,
-                            Password = "74lI/359Ugnlj9bBElG6b9ggs9qdkIm6S1lsMt4IqYM=",
-                            PasswordSalt = "yGzQElt+vx7mngS52PM05A==",
+                            Password = "F2arxYh7A7tiZWrCa+Q6aBA4f9DoBxLw4ShVSrVSLRI=",
+                            PasswordSalt = "PxdBuujGhYL6cBpgNUo81A==",
                             PointBalance = 0,
                             Role = 1
                         },
@@ -535,14 +530,29 @@ namespace ServiPuntosUy.DAO.Migrations.Central
                             Id = -2,
                             Email = "admintenant@servipuntos.uy",
                             IsVerified = false,
-                            LastLoginDate = new DateTime(2025, 6, 5, 0, 59, 43, 91, DateTimeKind.Utc).AddTicks(4268),
+                            LastLoginDate = new DateTime(2025, 6, 10, 0, 25, 43, 830, DateTimeKind.Utc).AddTicks(1750),
                             Name = "Admin Tenant",
                             NotificationsEnabled = true,
-                            Password = "74lI/359Ugnlj9bBElG6b9ggs9qdkIm6S1lsMt4IqYM=",
-                            PasswordSalt = "yGzQElt+vx7mngS52PM05A==",
+                            Password = "F2arxYh7A7tiZWrCa+Q6aBA4f9DoBxLw4ShVSrVSLRI=",
+                            PasswordSalt = "PxdBuujGhYL6cBpgNUo81A==",
                             PointBalance = 0,
                             Role = 2,
                             TenantId = -1
+                        },
+                        new
+                        {
+                            Id = -3,
+                            BranchId = 1,
+                            Email = "adminAncap1@servipuntos.uy",
+                            IsVerified = false,
+                            LastLoginDate = new DateTime(2025, 6, 10, 0, 25, 43, 830, DateTimeKind.Utc).AddTicks(1770),
+                            Name = "Admin branch",
+                            NotificationsEnabled = true,
+                            Password = "F2arxYh7A7tiZWrCa+Q6aBA4f9DoBxLw4ShVSrVSLRI=",
+                            PasswordSalt = "PxdBuujGhYL6cBpgNUo81A==",
+                            PointBalance = 0,
+                            Role = 3,
+                            TenantId = 1
                         });
                 });
 
@@ -612,17 +622,9 @@ namespace ServiPuntosUy.DAO.Migrations.Central
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("ServiPuntosUy.DAO.Models.Central.Tenant", "Tenant")
-                        .WithMany()
-                        .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Branch");
 
                     b.Navigation("Product");
-
-                    b.Navigation("Tenant");
                 });
 
             modelBuilder.Entity("ServiPuntosUy.DAO.Models.Central.Promotion", b =>
