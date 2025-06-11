@@ -110,7 +110,7 @@ namespace ServiPuntosUy.DataServices
             _serviceCollection.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
             // Registrar el servicio público de TenantUI (disponible sin autenticación)
-            _serviceCollection.AddScoped<IPublicTenantUIService>(sp => 
+            _serviceCollection.AddScoped<IPublicTenantUIService>(sp =>
                 new PublicTenantUIService(
                     sp.GetRequiredService<IGenericRepository<TenantUI>>(),
                     sp.GetRequiredService<ITenantResolver>()));
@@ -302,6 +302,14 @@ namespace ServiPuntosUy.DataServices
                     sp.GetRequiredService<IGenericRepository<DAO.Models.Central.Tenant>>(),
                     sp.GetRequiredService<ILoyaltyService>(), // Inyectamos el servicio de lealtad
                     tenantId));
+
+            _serviceCollection.AddScoped<ITransactionService>(sp =>
+                new Services.EndUser.TransactionService(
+                    sp.GetRequiredService<IGenericRepository<DAO.Models.Central.Transaction>>(),
+                    sp.GetRequiredService<IGenericRepository<DAO.Models.Central.LoyaltyConfig>>(),
+                    sp.GetRequiredService<IGenericRepository<DAO.Models.Central.Product>>(),
+                    sp.GetRequiredService<IGenericRepository<DAO.Models.Central.TransactionItem>>(),
+                    sp.GetRequiredService<IGenericRepository<DAO.Models.Central.Branch>>()));
 
             // Registrar los demás servicios
             _serviceCollection.AddScoped<IPromotionService, Services.EndUser.PromotionService>();

@@ -18,11 +18,11 @@ public class ProductController : BaseController
     }
 
     /// <summary>
-    /// Crear un nuevo branch
+    /// Crear un nuevo producto
     /// </summary>
-    /// <param name="product">Datos del branch a crear</param>
-    /// <returns>El branch creado</returns>
-    /// <response code="200">Retorna el branch creado</response>
+    /// <param name="product">Datos del producto a crear</param>
+    /// <returns>El producto creado</returns>
+    /// <response code="200">Retorna el producto creado</response>
     /// <response code="400">Si hay un error en la creación</response>
     [HttpPost("Create")]
     [ProducesResponseType(typeof(ProductDTO), 200)]

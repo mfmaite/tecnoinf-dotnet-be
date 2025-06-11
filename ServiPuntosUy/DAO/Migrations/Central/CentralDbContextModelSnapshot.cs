@@ -175,16 +175,11 @@ namespace ServiPuntosUy.DAO.Migrations.Central
                     b.Property<int>("Stock")
                         .HasColumnType("int");
 
-                    b.Property<int>("TenantId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.HasIndex("BranchId");
 
                     b.HasIndex("ProductId");
-
-                    b.HasIndex("TenantId");
 
                     b.ToTable("ProductStocks");
                 });
@@ -443,17 +438,12 @@ namespace ServiPuntosUy.DAO.Migrations.Central
                     b.Property<int>("PointsEarned")
                         .HasColumnType("int");
 
-                    b.Property<int>("TenantId")
-                        .HasColumnType("int");
-
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("BranchId");
-
-                    b.HasIndex("TenantId");
 
                     b.HasIndex("UserId");
 
@@ -522,11 +512,11 @@ namespace ServiPuntosUy.DAO.Migrations.Central
                             Id = -1,
                             Email = "admin@servipuntos.uy",
                             IsVerified = false,
-                            LastLoginDate = new DateTime(2025, 6, 5, 0, 59, 43, 91, DateTimeKind.Utc).AddTicks(4244),
+                            LastLoginDate = new DateTime(2025, 6, 11, 1, 24, 13, 730, DateTimeKind.Utc).AddTicks(7230),
                             Name = "Admin Central",
                             NotificationsEnabled = true,
-                            Password = "74lI/359Ugnlj9bBElG6b9ggs9qdkIm6S1lsMt4IqYM=",
-                            PasswordSalt = "yGzQElt+vx7mngS52PM05A==",
+                            Password = "L632D3r3mrtdniiprj//8pU4ZTmHB+UqxX18BvEYhNI=",
+                            PasswordSalt = "u4q07UGIRLTEFm8WJe6gXw==",
                             PointBalance = 0,
                             Role = 1
                         },
@@ -535,11 +525,11 @@ namespace ServiPuntosUy.DAO.Migrations.Central
                             Id = -2,
                             Email = "admintenant@servipuntos.uy",
                             IsVerified = false,
-                            LastLoginDate = new DateTime(2025, 6, 5, 0, 59, 43, 91, DateTimeKind.Utc).AddTicks(4268),
+                            LastLoginDate = new DateTime(2025, 6, 11, 1, 24, 13, 730, DateTimeKind.Utc).AddTicks(7350),
                             Name = "Admin Tenant",
                             NotificationsEnabled = true,
-                            Password = "74lI/359Ugnlj9bBElG6b9ggs9qdkIm6S1lsMt4IqYM=",
-                            PasswordSalt = "yGzQElt+vx7mngS52PM05A==",
+                            Password = "L632D3r3mrtdniiprj//8pU4ZTmHB+UqxX18BvEYhNI=",
+                            PasswordSalt = "u4q07UGIRLTEFm8WJe6gXw==",
                             PointBalance = 0,
                             Role = 2,
                             TenantId = -1
@@ -612,17 +602,9 @@ namespace ServiPuntosUy.DAO.Migrations.Central
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("ServiPuntosUy.DAO.Models.Central.Tenant", "Tenant")
-                        .WithMany()
-                        .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Branch");
 
                     b.Navigation("Product");
-
-                    b.Navigation("Tenant");
                 });
 
             modelBuilder.Entity("ServiPuntosUy.DAO.Models.Central.Promotion", b =>
@@ -743,12 +725,6 @@ namespace ServiPuntosUy.DAO.Migrations.Central
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ServiPuntosUy.DAO.Models.Central.Tenant", "Tenant")
-                        .WithMany()
-                        .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("ServiPuntosUy.DAO.Models.Central.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
@@ -756,8 +732,6 @@ namespace ServiPuntosUy.DAO.Migrations.Central
                         .IsRequired();
 
                     b.Navigation("Branch");
-
-                    b.Navigation("Tenant");
 
                     b.Navigation("User");
                 });
