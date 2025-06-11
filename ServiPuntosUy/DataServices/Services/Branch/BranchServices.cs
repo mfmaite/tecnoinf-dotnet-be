@@ -468,7 +468,8 @@ namespace ServiPuntosUy.DataServices.Services.Branch
         {
             // Contar promociones para este branch
             int branchPromotions = await _dbContext.Set<DAO.Models.Central.Promotion>()
-                .Where(p => p.BranchId == _branchId)
+                .Where(p => p.TenantId == int.Parse(_tenantId) && 
+                            p.PromotionBranch.Any(pb => pb.BranchId == _branchId))
                 .CountAsync();
 
             // Construir el objeto de respuesta

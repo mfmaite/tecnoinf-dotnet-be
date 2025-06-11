@@ -333,7 +333,6 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             {
                 Id = promotion.Id,
                 TenantId = promotion.TenantId,
-                BranchId = promotion.BranchId,
                 Description = promotion.Description,
                 StartDate = promotion.StartDate,
                 EndDate = promotion.EndDate
@@ -374,7 +373,8 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
                 var promotionBranch = new DAO.Models.Central.PromotionBranch
                 {
                     PromotionId = promotion.Id,
-                    BranchId = bId
+                    BranchId = bId,
+                    TenantId = tenantId
                 };
                 _promotionBranchRepository.AddAsync(promotionBranch).GetAwaiter().GetResult();
             }
@@ -383,67 +383,6 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             // Devolver el DTO de la promoción creada
             return Task.FromResult(promotionDTO);
         }
-    //         public Task<PromotionDTO?> AddPromotion(int tenantId, int branchId, string description, DateTime startDate, DateTime endDate, IEnumerable<int> branch, IEnumerable<int> product)
-
-    // {
-    //     // Crear la promoción (simulación)
-    //     var promotion = new DAO.Models.Central.Promotion
-    //     {
-    //                 TenantId = tenantId,
-    //                 Description = description,
-    //                 StartDate = startDate,
-    //                 EndDate = endDate
-    //     };
-
-    //     // Simular guardar la promoción en la base de datos
-    //     Console.WriteLine("Promotion Created:");
-    //     Console.WriteLine($"Description: {promotion.Description}, StartDate: {promotion.StartDate}, EndDate: {promotion.EndDate}");
-
-    //     // Listas temporales para simular la base de datos
-    //     var promotionProducts = new List<DAO.Models.Central.PromotionProduct>();
-    //     var promotionBranches = new List<DAO.Models.Central.PromotionBranch>();
-
-    //     // Asociar los productos a la promoción
-    //     foreach (var productId in product)
-    //     {
-    //         var promotionProduct = new DAO.Models.Central.PromotionProduct
-    //         {
-    //             PromotionId = promotion.Id,
-    //             ProductId = productId
-    //         };
-    //         promotionProducts.Add(promotionProduct); // Agregar a la lista temporal
-    //     }
-
-    //     // Imprimir los resultados de promotionProducts
-    //     Console.WriteLine("Promotion Products:");
-    //     foreach (var promotionProduct in promotionProducts)
-    //     {
-    //         Console.WriteLine($"PromotionId: {promotionProduct.PromotionId}, ProductId: {promotionProduct.ProductId}");
-    //     }
-
-    //     // Asociar los branches a la promoción
-    //     foreach (var estacionId in branch)
-    //     {
-    //         var promotionBranch = new DAO.Models.Central.PromotionBranch
-    //         {
-    //             PromotionId = promotion.Id,
-    //             BranchId = estacionId
-    //         };
-    //         promotionBranches.Add(promotionBranch); // Agregar a la lista temporal
-    //     }
-
-    //     // Imprimir los resultados de promotionBranches
-    //     Console.WriteLine("Promotion Branches:");
-    //     foreach (var promotionBranch in promotionBranches)
-    //     {
-    //         Console.WriteLine($"PromotionId: {promotionBranch.PromotionId}, BranchId: {promotionBranch.BranchId}");
-    //     }
-
-    //     // Devolver el DTO de la promoción creada
-    //     // return Task.FromResult(promotionDTO);
-    //     var promotionDTO = GetPromotionDTO(promotion);
-    //     return Task.FromResult<PromotionDTO?>(promotionDTO);
-    // }
     
     }
 
@@ -707,11 +646,11 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
 
             // Contar promociones por tipo (tenant o branch) para este tenant
             var tenantPromotions = await _dbContext.Set<DAO.Models.Central.Promotion>()
-                .Where(p => p.TenantId == tenantIdInt && p.BranchId == null)
+                .Where(p => p.TenantId == tenantIdInt)
                 .CountAsync();
 
             var branchPromotions = await _dbContext.Set<DAO.Models.Central.Promotion>()
-                .Where(p => p.TenantId == tenantIdInt && p.BranchId != null)
+                .Where(p => p.TenantId == tenantIdInt)
                 .CountAsync();
 
             int totalPromotions = tenantPromotions + branchPromotions;
