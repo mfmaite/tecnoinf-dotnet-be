@@ -161,15 +161,21 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
         {
             var user = await _dbContext.Set<User>().FindAsync(userId);
             if (user == null)
-                return null;
+            {
+                throw new ArgumentException($"No existe un usuario con ID {userId}");
+            }
 
             return new UserDTO
             {
                 Id = user.Id,
-                Name = user.Name,
-                Email = user.Email,
                 TenantId = _tenantId,
-                UserType = user.Role
+                Email = user.Email,
+                Name = user.Name,
+                UserType = user.Role,
+                BranchId = user.BranchId,
+                IsVerified = user.IsVerified,
+                PointBalance = user.PointBalance,
+                NotificationsEnabled = user.NotificationsEnabled
             };
         }
 
