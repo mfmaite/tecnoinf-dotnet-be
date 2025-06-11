@@ -526,41 +526,24 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
                 _transactionRepository.AddAsync(transaction).GetAwaiter().GetResult();
                 _transactionRepository.SaveChangesAsync().GetAwaiter().GetResult();
 
-                // // Crear las relaciones con productos
-                // foreach (var product in products)
-                // {
-                //     var transactionProduct = new TransactionItem
-                //     {
-                //         TransactionId = transaction.Id,
-                //         ProductId = product.Id,
-                //         Quantity = 1,
-                //         UnitPrice = product.Price
-                //     };
-                //     await _transactionItemRepository.AddAsync(transactionProduct);
-                // }
+                // Crear las relaciones entre la transacción y los productos
+                foreach (var item in productsList)
+                {
+                    var transactionProduct = new TransactionItem
+                    {
+                        TransactionId = transaction.Id,
+                        ProductId = item.Id,
+                        Quantity = products.First(p => p.ProductId == item.Id).Quantity,
+                        UnitPrice = item.Price
+                    };
 
-                // // Devolver la transacción con sus productos
-                // return await GetTransactionDTO(transaction);
-
-                // // Crear las relaciones con productos
-                // foreach (var product in products)
-                // {
-                //     var productInfo = productsList.First(p => p.Id == product.ProductId);
-                //     var transactionItem = new TransactionItem
-                //     {
-                //         TransactionId = createdTransaction.Id,
-                //         ProductId = product.ProductId,
-                //         Quantity = product.Quantity,
-                //         UnitPrice = productInfo.Price
-                //     };
-                //     await _transactionItemRepository.AddAsync(transactionItem);
-                // }
-                // await _transactionItemRepository.SaveChangesAsync();
+                    _transactionItemRepository.AddAsync(transactionProduct).GetAwaiter().GetResult();
+                    _transactionItemRepository.SaveChangesAsync().GetAwaiter().GetResult();
+                }
 
                 // Devolver la transacción
                 return GetTransactionDTO(transaction);
             } catch (Exception ex) {
-                Console.WriteLine($"AQUIQUIQ {ex.Message}");
                 throw new Exception("Error al crear la transacción", ex);
             }
         }

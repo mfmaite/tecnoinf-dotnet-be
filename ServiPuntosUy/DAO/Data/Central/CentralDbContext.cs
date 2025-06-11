@@ -28,6 +28,7 @@ public class CentralDbContext : DbContext
     public DbSet<Transaction> Transactions { get; set; }
     public DbSet<User> Users { get; set; }
     public DbSet<Tenant> Tenants { get; set; }
+    public DbSet<TransactionItem> TransactionItems { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -91,7 +92,7 @@ public class CentralDbContext : DbContext
                 Name = "ancap"
             }
         );
-        
+
         // Crear TenantUI para el tenant por defecto
         modelBuilder.Entity<TenantUI>().HasData(
             new TenantUI
@@ -173,5 +174,5 @@ public class CentralDbContext : DbContext
             }
         );
     }
-    
+
 }
