@@ -397,76 +397,81 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
 
         public async Task<TransactionDTO> CreateTransaction(int userId, int branchId, int tenantId, ProductQuantity[] products)
         {
-            // Obtener los IDs de productos
-            var productIds = products.Select(p => p.ProductId).ToArray();
+            try {
+                // Obtener los IDs de productos
+                var productIds = products.Select(p => p.ProductId).ToArray();
 
-            // Buscar los productos
-            var productsList = await _productRepository.GetQueryable()
-                .Where(p => productIds.Contains(p.Id))
-                .ToListAsync();
+                // Buscar los productos
+                var productsList = await _productRepository.GetQueryable()
+                    .Where(p => productIds.Contains(p.Id))
+                    .ToListAsync();
 
-            // Buscar la configuración de lealtad del tenant
-            var loyaltyConfig = await _loyaltyConfigRepository.GetQueryable()
-                .FirstOrDefaultAsync(lc => lc.TenantId == tenantId);
+                // Buscar la configuración de lealtad del tenant
+                var loyaltyConfig = await _loyaltyConfigRepository.GetQueryable()
+                    .FirstOrDefaultAsync(lc => lc.TenantId == tenantId);
 
-            if (loyaltyConfig == null) {
-                throw new Exception("La configuración de lealtad no existe para este tenant");
+                if (loyaltyConfig == null) {
+                    throw new Exception("La configuración de lealtad no existe para este tenant");
+                }
+
+                // Calcular el monto total considerando las cantidades
+                decimal totalAmount = 0;
+                foreach (var product in products)
+                {
+                    var productInfo = productsList.First(p => p.Id == product.ProductId);
+                    totalAmount += productInfo.Price * product.Quantity;
+                }
+
+                // Crear la transacción
+                var transaction = new Transaction {
+                    UserId = userId,
+                    BranchId = branchId,
+                    Amount = totalAmount,
+                    PointsEarned = (int)(totalAmount / loyaltyConfig.AccumulationRule),
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                // Guardar la transacción
+                _transactionRepository.AddAsync(transaction).GetAwaiter().GetResult();
+                _transactionRepository.SaveChangesAsync().GetAwaiter().GetResult();
+
+                // // Crear las relaciones con productos
+                // foreach (var product in products)
+                // {
+                //     var transactionProduct = new TransactionItem
+                //     {
+                //         TransactionId = transaction.Id,
+                //         ProductId = product.Id,
+                //         Quantity = 1,
+                //         UnitPrice = product.Price
+                //     };
+                //     await _transactionItemRepository.AddAsync(transactionProduct);
+                // }
+
+                // // Devolver la transacción con sus productos
+                // return await GetTransactionDTO(transaction);
+
+                // // Crear las relaciones con productos
+                // foreach (var product in products)
+                // {
+                //     var productInfo = productsList.First(p => p.Id == product.ProductId);
+                //     var transactionItem = new TransactionItem
+                //     {
+                //         TransactionId = createdTransaction.Id,
+                //         ProductId = product.ProductId,
+                //         Quantity = product.Quantity,
+                //         UnitPrice = productInfo.Price
+                //     };
+                //     await _transactionItemRepository.AddAsync(transactionItem);
+                // }
+                // await _transactionItemRepository.SaveChangesAsync();
+
+                // Devolver la transacción
+                return GetTransactionDTO(transaction);
+            } catch (Exception ex) {
+                Console.WriteLine($"AQUIQUIQ {ex.Message}");
+                throw new Exception("Error al crear la transacción", ex);
             }
-
-            // Calcular el monto total considerando las cantidades
-            decimal totalAmount = 0;
-            foreach (var product in products)
-            {
-                var productInfo = productsList.First(p => p.Id == product.ProductId);
-                totalAmount += productInfo.Price * product.Quantity;
-            }
-
-            // Crear la transacción
-            var transaction = new Transaction {
-                UserId = userId,
-                BranchId = branchId,
-                TenantId = tenantId,
-                Amount = totalAmount,
-                PointsEarned = (int)(totalAmount / loyaltyConfig.AccumulationRule),
-                CreatedAt = DateTime.UtcNow
-            };
-
-            // Guardar la transacción
-            await _transactionRepository.AddAsync(transaction);
-
-            // // Crear las relaciones con productos
-            // foreach (var product in products)
-            // {
-            //     var transactionProduct = new TransactionItem
-            //     {
-            //         TransactionId = transaction.Id,
-            //         ProductId = product.Id,
-            //         Quantity = 1,
-            //         UnitPrice = product.Price
-            //     };
-            //     await _transactionItemRepository.AddAsync(transactionProduct);
-            // }
-
-            // // Devolver la transacción con sus productos
-            // return await GetTransactionDTO(transaction);
-
-            // // Crear las relaciones con productos
-            // foreach (var product in products)
-            // {
-            //     var productInfo = productsList.First(p => p.Id == product.ProductId);
-            //     var transactionItem = new TransactionItem
-            //     {
-            //         TransactionId = createdTransaction.Id,
-            //         ProductId = product.ProductId,
-            //         Quantity = product.Quantity,
-            //         UnitPrice = productInfo.Price
-            //     };
-            //     await _transactionItemRepository.AddAsync(transactionItem);
-            // }
-            // await _transactionItemRepository.SaveChangesAsync();
-
-            // Devolver la transacción
-            return GetTransactionDTO(transaction);
         }
 
         public async Task<TransactionDTO> GetTransactionById(int id)

@@ -44,7 +44,10 @@ public class TransactionController : BaseController
         }
         catch (Exception ex)
         {
-            return BadRequest(ex.Message);
+            return BadRequest(new ApiResponse<TransactionResponseDTO> {
+                Error = true,
+                Message = ex.Message
+            });
         }
     }
 }
