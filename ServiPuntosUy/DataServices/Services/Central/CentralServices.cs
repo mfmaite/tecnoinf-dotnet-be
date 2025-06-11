@@ -398,11 +398,9 @@ namespace ServiPuntosUy.DataServices.Services.Central
 
             // Contar promociones por tipo (tenant o branch)
             var tenantPromotions = await _dbContext.Set<DAO.Models.Central.Promotion>()
-                .Where(p => p.BranchId == null)
                 .CountAsync();
 
             var branchPromotions = await _dbContext.Set<DAO.Models.Central.Promotion>()
-                .Where(p => p.BranchId != null)
                 .CountAsync();
 
             int totalPromotions = tenantPromotions + branchPromotions;
