@@ -456,6 +456,7 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
         private readonly IGenericRepository<DAO.Models.Central.TransactionItem> _transactionItemRepository;
         private readonly IGenericRepository<DAO.Models.Central.Branch> _branchRepository;
         private readonly IGenericRepository<DAO.Models.Central.ProductStock> _productStockRepository;
+        private readonly IGenericRepository<DAO.Models.Central.User> _userRepository;
 
         public TransactionService(
             DbContext dbContext,
@@ -464,7 +465,8 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
             IGenericRepository<DAO.Models.Central.Product> productRepository,
             IGenericRepository<DAO.Models.Central.TransactionItem> transactionItemRepository,
             IGenericRepository<DAO.Models.Central.Branch> branchRepository,
-            IGenericRepository<DAO.Models.Central.ProductStock> productStockRepository
+            IGenericRepository<DAO.Models.Central.ProductStock> productStockRepository,
+            IGenericRepository<DAO.Models.Central.User> userRepository
         )
         {
             _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
@@ -474,6 +476,7 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
             _transactionItemRepository = transactionItemRepository ?? throw new ArgumentNullException(nameof(transactionItemRepository));
             _branchRepository = branchRepository ?? throw new ArgumentNullException(nameof(branchRepository));
             _productStockRepository = productStockRepository ?? throw new ArgumentNullException(nameof(productStockRepository));
+            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
         }
 
         public TransactionDTO GetTransactionDTO(Transaction transaction)
@@ -548,6 +551,15 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
                     PointsEarned = (int)(totalAmount / loyaltyConfig.AccumulationRule),
                     CreatedAt = DateTime.UtcNow
                 };
+
+                // Actualizar usuario y agregar puntos
+                var user = await _userRepository.GetQueryable()
+                    .FirstOrDefaultAsync(u => u.Id == userId);
+                if (user == null)
+                {
+                    throw new Exception($"No se encontró el usuario con ID {userId}");
+                }
+                user.PointBalance += transaction.PointsEarned;
 
                 // Iniciar una transacción de base de datos
                 using var dbTransaction = await _dbContext.Database.BeginTransactionAsync();
