@@ -581,4 +581,131 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
         //     }).ToArray();
         // }
     }
+
+    /// <summary>
+    /// Implementación del servicio de gestión de servicios para el usuario final
+    /// </summary>
+    public class ServiceManager : IServiceManager
+    {
+        private readonly IGenericRepository<Service> _serviceRepository;
+        private readonly IGenericRepository<ServiceAvailability> _serviceAvailabilityRepository;
+        private readonly IGenericRepository<DAO.Models.Central.Branch> _branchRepository;
+
+        public ServiceManager(
+            IGenericRepository<Service> serviceRepository,
+            IGenericRepository<ServiceAvailability> serviceAvailabilityRepository,
+            IGenericRepository<DAO.Models.Central.Branch> branchRepository)
+        {
+            _serviceRepository = serviceRepository;
+            _serviceAvailabilityRepository = serviceAvailabilityRepository;
+            _branchRepository = branchRepository;
+        }
+
+        private ServiceDTO MapToServiceDTO(Service service)
+        {
+            return new ServiceDTO
+            {
+                Id = service.Id,
+                TenantId = service.TenantId,
+                Name = service.Name,
+                Description = service.Description,
+                Price = service.Price,
+                AgeRestricted = service.AgeRestricted
+            };
+        }
+
+        private ServiceAvailabilityDTO MapToServiceAvailabilityDTO(ServiceAvailability availability)
+        {
+            return new ServiceAvailabilityDTO
+            {
+                Id = availability.Id,
+                BranchId = availability.BranchId,
+                ServiceId = availability.ServiceId,
+                TenantId = availability.TenantId,
+                StartTime = availability.StartTime,
+                EndTime = availability.EndTime
+            };
+        }
+
+        // Implementación de los métodos de solo lectura
+        public async Task<ServiceDTO> GetServiceByIdAsync(int serviceId)
+        {
+            // Obtener el servicio
+            var service = await _serviceRepository.GetByIdAsync(serviceId);
+            if (service == null)
+                throw new Exception($"No existe un servicio con el ID {serviceId}");
+
+            // Obtener las disponibilidades para este servicio
+            var availabilities = await _serviceAvailabilityRepository.GetQueryable()
+                .Where(sa => sa.ServiceId == serviceId)
+                .ToListAsync();
+
+            // Mapear el servicio a DTO
+            var serviceDTO = MapToServiceDTO(service);
+
+            // Agregar las disponibilidades al DTO
+            serviceDTO.Availabilities = availabilities.Select(a => {
+                var dto = MapToServiceAvailabilityDTO(a);
+                dto.ServiceName = service.Name;
+                return dto;
+            }).ToArray();
+
+            return serviceDTO;
+        }
+
+        public async Task<ServiceDTO[]> GetBranchServicesAsync(int branchId)
+        {
+            // Obtener las disponibilidades para esta branch
+            var availabilities = await _serviceAvailabilityRepository.GetQueryable()
+                .Where(sa => sa.BranchId == branchId)
+                .ToListAsync();
+
+            // Agrupar las disponibilidades por servicio
+            var serviceAvailabilities = availabilities
+                .GroupBy(a => a.ServiceId)
+                .ToDictionary(g => g.Key, g => g.ToList());
+
+            // Obtener los IDs de los servicios disponibles en esta branch
+            var serviceIds = serviceAvailabilities.Keys.ToArray();
+
+            // Obtener los servicios correspondientes
+            var services = await _serviceRepository.GetQueryable()
+                .Where(s => serviceIds.Contains(s.Id))
+                .ToListAsync();
+
+            // Mapear los servicios a DTOs incluyendo sus disponibilidades
+            return services.Select(s => {
+                var serviceDTO = MapToServiceDTO(s);
+
+                // Agregar las disponibilidades al DTO
+                if (serviceAvailabilities.ContainsKey(s.Id))
+                {
+                    serviceDTO.Availabilities = serviceAvailabilities[s.Id].Select(a => {
+                        var dto = MapToServiceAvailabilityDTO(a);
+                        dto.ServiceName = s.Name;
+                        return dto;
+                    }).ToArray();
+                }
+
+                return serviceDTO;
+            }).ToArray();
+        }
+
+        // Métodos no implementados para el usuario final (lanzarán excepciones)
+        public Task<ServiceDTO> CreateServiceAsync(int branchId, string name, string description, decimal price, bool ageRestricted, TimeOnly startTime, TimeOnly endTime)
+        {
+            throw new UnauthorizedAccessException("Los usuarios finales no pueden crear servicios");
+        }
+
+        public Task<ServiceDTO> UpdateServiceAsync(int serviceId, string name, string description, decimal price, bool ageRestricted, TimeOnly? startTime = null, TimeOnly? endTime = null)
+        {
+            throw new UnauthorizedAccessException("Los usuarios finales no pueden actualizar servicios");
+        }
+
+        public Task<bool> DeleteServiceAsync(int serviceId)
+        {
+            throw new UnauthorizedAccessException("Los usuarios finales no pueden eliminar servicios");
+        }
+
+    }
 }
