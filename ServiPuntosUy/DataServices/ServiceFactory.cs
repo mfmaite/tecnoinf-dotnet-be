@@ -318,7 +318,8 @@ namespace ServiPuntosUy.DataServices
                     sp.GetRequiredService<IGenericRepository<DAO.Models.Central.LoyaltyConfig>>(),
                     sp.GetRequiredService<IGenericRepository<DAO.Models.Central.Product>>(),
                     sp.GetRequiredService<IGenericRepository<DAO.Models.Central.TransactionItem>>(),
-                    sp.GetRequiredService<IGenericRepository<DAO.Models.Central.Branch>>()));
+                    sp.GetRequiredService<IGenericRepository<DAO.Models.Central.Branch>>(),
+                    sp.GetRequiredService<IGenericRepository<DAO.Models.Central.ProductStock>>()));
 
             // Registrar los demás servicios
             _serviceCollection.AddScoped<IPromotionService, Services.EndUser.PromotionService>();

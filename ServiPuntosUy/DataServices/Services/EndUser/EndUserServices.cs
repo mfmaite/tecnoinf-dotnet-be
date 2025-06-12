@@ -455,6 +455,7 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
         private readonly IGenericRepository<DAO.Models.Central.Product> _productRepository;
         private readonly IGenericRepository<DAO.Models.Central.TransactionItem> _transactionItemRepository;
         private readonly IGenericRepository<DAO.Models.Central.Branch> _branchRepository;
+        private readonly IGenericRepository<DAO.Models.Central.ProductStock> _productStockRepository;
 
         public TransactionService(
             DbContext dbContext,
@@ -462,7 +463,8 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
             IGenericRepository<DAO.Models.Central.LoyaltyConfig> loyaltyConfigRepository,
             IGenericRepository<DAO.Models.Central.Product> productRepository,
             IGenericRepository<DAO.Models.Central.TransactionItem> transactionItemRepository,
-            IGenericRepository<DAO.Models.Central.Branch> branchRepository
+            IGenericRepository<DAO.Models.Central.Branch> branchRepository,
+            IGenericRepository<DAO.Models.Central.ProductStock> productStockRepository
         )
         {
             _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
@@ -471,6 +473,7 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
             _productRepository = productRepository ?? throw new ArgumentNullException(nameof(productRepository));
             _transactionItemRepository = transactionItemRepository ?? throw new ArgumentNullException(nameof(transactionItemRepository));
             _branchRepository = branchRepository ?? throw new ArgumentNullException(nameof(branchRepository));
+            _productStockRepository = productStockRepository ?? throw new ArgumentNullException(nameof(productStockRepository));
         }
 
         public TransactionDTO GetTransactionDTO(Transaction transaction)
@@ -502,6 +505,23 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
                 if (branch == null)
                 {
                     throw new Exception($"No se encontró la sucursal con ID {branchId}");
+                }
+
+                // Verificar el stock de cada producto
+                foreach (var product in products)
+                {
+                    var productStock = await _productStockRepository.GetQueryable()
+                        .FirstOrDefaultAsync(ps => ps.ProductId == product.ProductId && ps.BranchId == branchId);
+
+                    if (productStock == null)
+                    {
+                        throw new Exception($"No hay stock registrado para el producto {product.ProductId} en la sucursal {branchId}");
+                    }
+
+                    if (productStock.Stock < product.Quantity)
+                    {
+                        throw new Exception($"Stock insuficiente para el producto {product.ProductId}. Stock disponible: {productStock.Stock}, Cantidad solicitada: {product.Quantity}");
+                    }
                 }
 
                 // Buscar la configuración de lealtad del tenant
@@ -552,8 +572,19 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
                         await _transactionItemRepository.AddAsync(transactionProduct);
                     }
 
+                    // Actualizar el stock de los productos
+                    foreach (var product in products)
+                    {
+                        var productStock = await _productStockRepository.GetQueryable()
+                            .FirstOrDefaultAsync(ps => ps.ProductId == product.ProductId && ps.BranchId == branchId);
+
+                        productStock.Stock -= product.Quantity;
+                        await _productStockRepository.UpdateAsync(productStock);
+                    }
+
                     // Guardar todos los cambios de una vez
                     await _transactionItemRepository.SaveChangesAsync();
+                    await _productStockRepository.SaveChangesAsync();
 
                     // Confirmar la transacción
                     await dbTransaction.CommitAsync();
@@ -565,10 +596,10 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
                 {
                     // Si algo falla, revertir la transacción
                     await dbTransaction.RollbackAsync();
-                    throw;
+                    throw new Exception(ex.Message);
                 }
             } catch (Exception ex) {
-                throw new Exception("Error al crear la transacción", ex);
+                throw new Exception(ex.Message);
             }
         }
 
