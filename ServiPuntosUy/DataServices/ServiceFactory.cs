@@ -313,6 +313,7 @@ namespace ServiPuntosUy.DataServices
 
             _serviceCollection.AddScoped<ITransactionService>(sp =>
                 new Services.EndUser.TransactionService(
+                    sp.GetRequiredService<DbContext>(),
                     sp.GetRequiredService<IGenericRepository<DAO.Models.Central.Transaction>>(),
                     sp.GetRequiredService<IGenericRepository<DAO.Models.Central.LoyaltyConfig>>(),
                     sp.GetRequiredService<IGenericRepository<DAO.Models.Central.Product>>(),
@@ -329,7 +330,7 @@ namespace ServiPuntosUy.DataServices
             _serviceCollection.AddScoped<IVEAIService, Services.EndUser.VEAIService>();
             _serviceCollection.AddScoped<IFuelService, Services.EndUser.FuelService>();
             _serviceCollection.AddScoped<ITenantBranchService, Services.EndUser.TenantBranchService>();
-            
+
             // Registrar el servicio de gestión de servicios para el usuario final (solo lectura)
             _serviceCollection.AddScoped<IServiceManager>(sp =>
                 new Services.EndUser.ServiceManager(

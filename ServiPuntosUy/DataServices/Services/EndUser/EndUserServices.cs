@@ -449,6 +449,7 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
 
     public class TransactionService : ITransactionService {
 
+        private readonly DbContext _dbContext;
         private readonly IGenericRepository<DAO.Models.Central.Transaction> _transactionRepository;
         private readonly IGenericRepository<DAO.Models.Central.LoyaltyConfig> _loyaltyConfigRepository;
         private readonly IGenericRepository<DAO.Models.Central.Product> _productRepository;
@@ -456,6 +457,7 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
         private readonly IGenericRepository<DAO.Models.Central.Branch> _branchRepository;
 
         public TransactionService(
+            DbContext dbContext,
             IGenericRepository<DAO.Models.Central.Transaction> transactionRepository,
             IGenericRepository<DAO.Models.Central.LoyaltyConfig> loyaltyConfigRepository,
             IGenericRepository<DAO.Models.Central.Product> productRepository,
@@ -463,11 +465,12 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
             IGenericRepository<DAO.Models.Central.Branch> branchRepository
         )
         {
-            _transactionRepository = transactionRepository;
-            _loyaltyConfigRepository = loyaltyConfigRepository;
-            _productRepository = productRepository;
-            _transactionItemRepository = transactionItemRepository;
-            _branchRepository = branchRepository;
+            _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+            _transactionRepository = transactionRepository ?? throw new ArgumentNullException(nameof(transactionRepository));
+            _loyaltyConfigRepository = loyaltyConfigRepository ?? throw new ArgumentNullException(nameof(loyaltyConfigRepository));
+            _productRepository = productRepository ?? throw new ArgumentNullException(nameof(productRepository));
+            _transactionItemRepository = transactionItemRepository ?? throw new ArgumentNullException(nameof(transactionItemRepository));
+            _branchRepository = branchRepository ?? throw new ArgumentNullException(nameof(branchRepository));
         }
 
         public TransactionDTO GetTransactionDTO(Transaction transaction)
@@ -485,10 +488,9 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
         public async Task<TransactionDTO> CreateTransaction(int userId, int branchId, ProductQuantity[] products)
         {
             try {
-                // Obtener los IDs de productos
+                // Obtener los productos
                 var productIds = products.Select(p => p.ProductId).ToArray();
 
-                // Buscar los productos
                 var productsList = await _productRepository.GetQueryable()
                     .Where(p => productIds.Contains(p.Id))
                     .ToListAsync();
@@ -496,6 +498,11 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
                 // Obtener la branch
                 var branch = await _branchRepository.GetQueryable()
                     .FirstOrDefaultAsync(b => b.Id == branchId);
+
+                if (branch == null)
+                {
+                    throw new Exception($"No se encontró la sucursal con ID {branchId}");
+                }
 
                 // Buscar la configuración de lealtad del tenant
                 var loyaltyConfig = await _loyaltyConfigRepository.GetQueryable()
@@ -522,27 +529,44 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
                     CreatedAt = DateTime.UtcNow
                 };
 
-                // Guardar la transacción
-                _transactionRepository.AddAsync(transaction).GetAwaiter().GetResult();
-                _transactionRepository.SaveChangesAsync().GetAwaiter().GetResult();
+                // Iniciar una transacción de base de datos
+                using var dbTransaction = await _dbContext.Database.BeginTransactionAsync();
 
-                // Crear las relaciones entre la transacción y los productos
-                foreach (var item in productsList)
+                try
                 {
-                    var transactionProduct = new TransactionItem
+                    // Guardar la transacción
+                    await _transactionRepository.AddAsync(transaction);
+                    await _transactionRepository.SaveChangesAsync();
+
+                    // Crear las relaciones entre la transacción y los productos
+                    foreach (var item in productsList)
                     {
-                        TransactionId = transaction.Id,
-                        ProductId = item.Id,
-                        Quantity = products.First(p => p.ProductId == item.Id).Quantity,
-                        UnitPrice = item.Price
-                    };
+                        var transactionProduct = new TransactionItem
+                        {
+                            TransactionId = transaction.Id,
+                            ProductId = item.Id,
+                            Quantity = products.First(p => p.ProductId == item.Id).Quantity,
+                            UnitPrice = item.Price
+                        };
 
-                    _transactionItemRepository.AddAsync(transactionProduct).GetAwaiter().GetResult();
-                    _transactionItemRepository.SaveChangesAsync().GetAwaiter().GetResult();
+                        await _transactionItemRepository.AddAsync(transactionProduct);
+                    }
+
+                    // Guardar todos los cambios de una vez
+                    await _transactionItemRepository.SaveChangesAsync();
+
+                    // Confirmar la transacción
+                    await dbTransaction.CommitAsync();
+
+                    // Devolver la transacción
+                    return GetTransactionDTO(transaction);
                 }
-
-                // Devolver la transacción
-                return GetTransactionDTO(transaction);
+                catch (Exception ex)
+                {
+                    // Si algo falla, revertir la transacción
+                    await dbTransaction.RollbackAsync();
+                    throw;
+                }
             } catch (Exception ex) {
                 throw new Exception("Error al crear la transacción", ex);
             }
