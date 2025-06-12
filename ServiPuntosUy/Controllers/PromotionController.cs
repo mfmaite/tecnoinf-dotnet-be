@@ -31,33 +31,21 @@ public class PromotionController : BaseController
     {
         try
         {
-            // if (request == null)
-            //     return BadRequest("Los datos de la promoción son requeridos.");
+            if (request == null)
+                return BadRequest("Los datos de la promoción son requeridos.");
             
             // // verificamos que la fecha de la promocion sea valida
-            // if (request.StartDate >= request.EndDate)
-            //     return BadRequest("La fecha de inicio debe ser anterior a la fecha de fin.");
+            if (request.StartDate >= request.EndDate)
+                return BadRequest("La fecha de inicio debe ser anterior a la fecha de fin.");
             
             var promocion = await PromotionService.AddPromotion(
                 request.tenantId,
-                request.branchId,
                 request.Description,
                 request.StartDate,
                 request.EndDate,
                 request.Branch,
                 request.Product
             );
-
-            // var promocion = await PromotionService.AddPromotion(
-            //     1,
-            //     1,
-            //     "Promoción de prueba",
-            //     DateTime.UtcNow.AddDays(-1), // Fecha de inicio
-            //     DateTime.UtcNow.AddDays(7), // Fecha de fin
-            //     new List<int> { 1 }, // Lista de sucursales (IDs)
-            //     new List<int> { 1 } // Lista de productos (IDs)
-            // );
-
 
 
             return Ok(new ApiResponse<PromotionDTO>
@@ -157,42 +145,41 @@ public class PromotionController : BaseController
     }
 
     [HttpPost("Update")]
-    [ProducesResponseType(typeof(ProductDTO), 200)]
+    [ProducesResponseType(typeof(PromotionDTO), 200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(500)]
-    public async Task<IActionResult> UpdateProduct([FromBody] AddNewProductRequest request) {
-        try {
-
-            if (request == null)
-                return BadRequest("Los datos del producto son requeridos.");
-
-            // if (ObtainUserTypeFromToken() != UserType.Tenant)
-            //     return BadRequest("No tiene permisos para editar productos.");
-
-            var product = await ProductService?.UpdateProduct(
-                request.productId,
-                request.Name,
+    public async Task<IActionResult> UpdatePromotion([FromBody] UpdatePromotionRequest request) {
+        try
+        {
+            // if (request == null)
+            //     return BadRequest("Los datos de la promoción son requeridos.");
+            
+            // // // verificamos que la fecha de la promocion sea valida
+            // if (request.StartDate >= request.EndDate)
+            //     return BadRequest("La fecha de inicio debe ser anterior a la fecha de fin.");
+            
+            var promocion = await PromotionService.UpdatePromotion(
+                request.PromotionId,
+                request.tenantId,
                 request.Description,
-                request.ImageUrl,
-                request.Price,
-                request.AgeRestricted
+                request.StartDate,
+                request.EndDate,
+                request.Branch,
+                request.Product
             );
 
-            if (product == null)
+
+            return Ok(new ApiResponse<PromotionDTO>
             {
-                return StatusCode(500, new ApiResponse<object>{
-                    Error = true,
-                    Message = "No se pudo editar el producto. El servicio no está disponible."
-                });
-            }
-            return Ok(new ApiResponse<ProductDTO>{
                 Error = false,
-                Message = "Producto editado correctamente",
-                Data = product
+                Message = "Promoción actualizada correctamente",
+                Data = promocion
             });
         }
-        catch (Exception ex) {
-            return BadRequest(new ApiResponse<object>{
+        catch (Exception ex)
+        {
+            return BadRequest(new ApiResponse<object>
+            {
                 Error = true,
                 Message = ex.Message
             });

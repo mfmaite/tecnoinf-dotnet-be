@@ -170,9 +170,13 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
         {
             _promotionRepository = promotionRepository;
         }
-        public Task<PromotionDTO?> AddPromotion(int tenantId, int branchId, string description, DateTime startDate, DateTime endDate, IEnumerable<int> branch, IEnumerable<int> product)
+        public Task<PromotionDTO?> AddPromotion(int tenantId, string description, DateTime startDate, DateTime endDate, IEnumerable<int> branch, IEnumerable<int> product)
         {
             throw new UnauthorizedAccessException("El usuario final no puede agregar promociones");
+        }
+        public Task<PromotionDTO?> UpdatePromotion(int promotionId, int tenantId, string description, DateTime startDate, DateTime endDate, IEnumerable<int> branch, IEnumerable<int> product)
+        {
+            throw new UnauthorizedAccessException("El usuario final no puede actualizar promociones");
         }
 
         // Implementar los métodos de la interfaz IPromotionService
