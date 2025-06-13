@@ -179,6 +179,27 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
             throw new UnauthorizedAccessException("El usuario final no puede actualizar promociones");
         }
 
+        public PromotionExtendedDTO[] GetPromotionList(int tenantId)
+        {
+
+            throw new UnauthorizedAccessException("El usuario final no puede obtener la lista de promociones");
+            // Obtener la lista de promociones del repositorio filtrando por TenantId
+            // var promotions = _promotionRepository.GetQueryable()
+            //     .Where(p => p.TenantId == tenantId)
+            //     .ToList();
+
+            // return promotions.Select(p => new PromotionExtendedDTO
+            // {
+            //     Id = p.Id,
+            //     TenantId = p.TenantId,
+            //     Description = p.Description,
+            //     StartDate = p.StartDate,
+            //     EndDate = p.EndDate,
+            //     Branches = p.PromotionBranch.Select(pb => pb.Branch).ToArray(),
+            //     Products = p.PromotionProduct.Select(pp => pp.Product).ToArray()
+            // }).ToArray();
+        }
+
         // Implementar los métodos de la interfaz IPromotionService
         // Esta es una implementación básica para el scaffold
     }

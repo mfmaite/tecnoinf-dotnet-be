@@ -313,24 +313,24 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
         private readonly IGenericRepository<DAO.Models.Central.Promotion> _promotionRepository;
         private readonly IGenericRepository<DAO.Models.Central.PromotionBranch> _promotionBranchRepository;
         private readonly IGenericRepository<DAO.Models.Central.PromotionProduct> _promotionProductRepository;
-        // private readonly IGenericRepository<DAO.Models.Central.Branch> _branchRepository;
-        // private readonly IGenericRepository<DAO.Models.Central.Product> _productRepository;
+        private readonly IGenericRepository<DAO.Models.Central.Branch> _branchRepository;
+        private readonly IGenericRepository<DAO.Models.Central.Product> _productRepository;
 
 
 
         public PromotionService(IGenericRepository<DAO.Models.Central.Promotion> promotionRepository,
                                 IGenericRepository<DAO.Models.Central.PromotionProduct> promotionProductRepository,
-                                IGenericRepository<DAO.Models.Central.PromotionBranch> promotionBranchRepository
-                                // IGenericRepository<DAO.Models.Central.Branch> branchRepository,
-                                // IGenericRepository<DAO.Models.Central.Product> productRepository
+                                IGenericRepository<DAO.Models.Central.PromotionBranch> promotionBranchRepository,
+                                IGenericRepository<DAO.Models.Central.Branch> branchRepository,
+                                IGenericRepository<DAO.Models.Central.Product> productRepository
                                 )
         
         {
             _promotionBranchRepository = promotionBranchRepository;
             _promotionProductRepository = promotionProductRepository;
             _promotionRepository = promotionRepository;
-            // _branchRepository = branchRepository;
-            // _productRepository = productRepository;
+            _branchRepository = branchRepository;
+            _productRepository = productRepository;
         }
 
         public async Task<PromotionDTO?> GetPrmotionById(int promotionId)
@@ -377,9 +377,9 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             // Validaciones previas - verificar existencia de productos
             if (productIds.Any())
             {
-                var existingProductIds = _promotionProductRepository.GetQueryable()
-                    .Where(pp => productIds.Contains(pp.ProductId))
-                    .Select(pp => pp.ProductId)
+                var existingProductIds = _productRepository.GetQueryable()
+                    .Where(p => productIds.Contains(p.Id))
+                    .Select(p => p.Id)
                     .Distinct()
                     .ToList();
                     
@@ -394,14 +394,9 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             var branchIds = branch.ToList();
             if (branchIds.Any())
             {
-                // var existingBranchIds = _branchRepository.GetQueryable()
-                //     .Where(b => branchIds.Contains(b.Id) && b.TenantId == tenantId)
-                //     .Select(b => b.Id)
-                //     .Distinct()
-                //     .ToList();
-                var existingBranchIds = _promotionBranchRepository.GetQueryable()
-                    .Where(pb => branchIds.Contains(pb.BranchId) && pb.TenantId == tenantId)
-                    .Select(pb => pb.BranchId)
+                var existingBranchIds = _branchRepository.GetQueryable()
+                    .Where(b => branchIds.Contains(b.Id) && b.TenantId == tenantId)
+                    .Select(b => b.Id)
                     .Distinct()
                     .ToList();
                     
@@ -415,9 +410,9 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
         public Task<PromotionDTO?> AddPromotion(int tenantId, string description, DateTime startDate, DateTime endDate, IEnumerable<int> branch, IEnumerable<int> product)        
         {
             // Validaciones previas - verificar existencia de branches
-            // verifyBranchList(branch, tenantId);
+            verifyBranchList(branch, tenantId);
             // Validaciones previas - verificar existencia de productos
-            // verifyProductList(product);
+            verifyProductList(product);
             
             var promotion = new DAO.Models.Central.Promotion
             {
