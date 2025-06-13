@@ -361,9 +361,50 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             };
         }
 
+        // Creamos una funcion para verificar los productos 
+        private void verifyProductList(IEnumerable<int> product)
+        {
+            var productIds = product.ToList();
+            // Validaciones previas - verificar existencia de productos
+            if (productIds.Any())
+            {
+                var existingProductIds = _promotionProductRepository.GetQueryable()
+                    .Where(pp => productIds.Contains(pp.ProductId))
+                    .Select(pp => pp.ProductId)
+                    .Distinct()
+                    .ToList();
+                    
+                var missingProductIds = productIds.Except(existingProductIds).ToList();
+                if (missingProductIds.Any())
+                    throw new Exception($"No existen productos con los IDs: {string.Join(", ", missingProductIds)} para el tenant");
+            }
+        }
+
+        private void verifyBranchList(IEnumerable<int> branch, int tenantId)
+        {
+            var branchIds = branch.ToList();
+            if (branchIds.Any())
+            {
+                var existingBranchIds = _promotionBranchRepository.GetQueryable()
+                    .Where(pb => branchIds.Contains(pb.BranchId) && pb.TenantId == tenantId)
+                    .Select(pb => pb.BranchId)
+                    .Distinct()
+                    .ToList();
+                    
+                var missingBranchIds = branchIds.Except(existingBranchIds).ToList();
+                if (missingBranchIds.Any())
+                    throw new Exception($"No existen branches con los IDs: {string.Join(", ", missingBranchIds)} para el tenant");
+            }
+        }
+        
 
         public Task<PromotionDTO?> AddPromotion(int tenantId, string description, DateTime startDate, DateTime endDate, IEnumerable<int> branch, IEnumerable<int> product)        
         {
+            // Validaciones previas - verificar existencia de branches
+            verifyBranchList(branch, tenantId);
+            // Validaciones previas - verificar existencia de productos
+            verifyProductList(product);
+            
             var promotion = new DAO.Models.Central.Promotion
             {
                 TenantId = tenantId,
