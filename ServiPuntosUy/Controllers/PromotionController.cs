@@ -65,85 +65,6 @@ public class PromotionController : BaseController
         }
     }
 
-    /// <summary>
-    /// Obtiene la lista de productos
-    /// </summary>
-    /// <returns>La lista de productos</returns>
-    /// <response code="200">Retorna la lista de productos</response>
-    /// <response code="400">Si hay un error en la búsqueda</response>
-    [HttpGet("")]
-    [ProducesResponseType(typeof(ProductDTO[]), 200)]
-    [ProducesResponseType(404)]
-    [ProducesResponseType(400)]
-    public IActionResult GetProductList()
-    {
-        try
-        {
-            var user = ObtainUserFromToken();
-            if (!int.TryParse(user.TenantId, out int tenantId))
-            {
-                return BadRequest("No se pudo obtener el TenantId del usuario");
-            }
-            var products = ProductService.GetProductList(tenantId);
-
-            return Ok(new ApiResponse<ProductDTO[]>
-            {
-                Error = false,
-                Message = "Lista de productos obtenida correctamente",
-                Data = products
-            });
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new ApiResponse<object>
-            {
-                Error = true,
-                Message = ex.Message
-            });
-        }
-    }
-
-    /// <summary>
-    /// Obtiene un producto por su ID
-    /// </summary>
-    /// <param name="id">ID del producto</param>
-    /// <returns>El producto solicitado</returns>
-    /// <response code="200">Retorna el producto solicitado</response>
-    /// <response code="404">Si el producto no existe</response>
-    /// <response code="400">Si hay un error en la búsqueda</response>
-    [HttpGet("{id}")]
-    [ProducesResponseType(typeof(ProductDTO), 200)]
-    [ProducesResponseType(404)]
-    [ProducesResponseType(400)]
-    public async Task<IActionResult> GetProduct(int id)
-    {
-        try
-        {
-            var product = await ProductService.GetProductById(id);
-            if (product == null)
-                return NotFound(new ApiResponse<object>
-                {
-                    Error = true,
-                    Message = $"No existe un producto con el ID {id}"
-                });
-
-            return Ok(new ApiResponse<ProductDTO>
-            {
-                Error = false,
-                Message = "Producto encontrado correctamente",
-                Data = product
-            });
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new ApiResponse<object>
-            {
-                Error = true,
-                Message = ex.Message
-            });
-        }
-    }
-
     [HttpPost("Update")]
     [ProducesResponseType(typeof(PromotionDTO), 200)]
     [ProducesResponseType(400)]
@@ -174,6 +95,83 @@ public class PromotionController : BaseController
                 Error = false,
                 Message = "Promoción actualizada correctamente",
                 Data = promocion
+            });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new ApiResponse<object>
+            {
+                Error = true,
+                Message = ex.Message
+            });
+        }
+    }
+        /// <summary>
+    /// Obtiene la lista de promociones
+    /// </summary>
+    /// <returns>La lista de promociones</returns>
+    /// <response code="200">Retorna la lista de promociones</response>
+    /// <response code="400">Si hay un error en la búsqueda</response>
+    [HttpGet("tenant/{tenantId}")]
+    [ProducesResponseType(typeof(PromotionExtendedDTO[]), 200)]
+    [ProducesResponseType(404)]
+    [ProducesResponseType(400)]
+    public IActionResult GetPromotionList(int tenantId)
+    {
+        try
+        {
+            // var user = ObtainUserFromToken();
+            // if (!int.TryParse(user.TenantId, out int tenantId))
+            //     return BadRequest("No se pudo obtener el TenantId del usuario");
+
+            var promotionList = PromotionService.GetPromotionList(tenantId);
+
+            return Ok(new ApiResponse<PromotionExtendedDTO[]>
+            {
+                Error = false,
+                Message = "Lista de promociones obtenida correctamente",
+                Data = promotionList.ToArray()
+            });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new ApiResponse<object>
+            {
+                Error = true,
+                Message = ex.Message
+            });
+        }
+    }
+
+        /// <summary>
+    /// Obtiene un producto por su ID
+    /// </summary>
+    /// <param name="id">ID del producto</param>
+    /// <returns>El producto solicitado</returns>
+    /// <response code="200">Retorna el producto solicitado</response>
+    /// <response code="404">Si el producto no existe</response>
+    /// <response code="400">Si hay un error en la búsqueda</response>
+    [HttpGet("{id}")]
+    [ProducesResponseType(typeof(ProductDTO), 200)]
+    [ProducesResponseType(404)]
+    [ProducesResponseType(400)]
+    public async Task<IActionResult> GetProduct(int id)
+    {
+        try
+        {
+            var product = await ProductService.GetProductById(id);
+            if (product == null)
+                return NotFound(new ApiResponse<object>
+                {
+                    Error = true,
+                    Message = $"No existe un producto con el ID {id}"
+                });
+
+            return Ok(new ApiResponse<ProductDTO>
+            {
+                Error = false,
+                Message = "Producto encontrado correctamente",
+                Data = product
             });
         }
         catch (Exception ex)

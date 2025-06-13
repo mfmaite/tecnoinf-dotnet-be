@@ -313,15 +313,24 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
         private readonly IGenericRepository<DAO.Models.Central.Promotion> _promotionRepository;
         private readonly IGenericRepository<DAO.Models.Central.PromotionBranch> _promotionBranchRepository;
         private readonly IGenericRepository<DAO.Models.Central.PromotionProduct> _promotionProductRepository;
+        // private readonly IGenericRepository<DAO.Models.Central.Branch> _branchRepository;
+        // private readonly IGenericRepository<DAO.Models.Central.Product> _productRepository;
+
+
 
         public PromotionService(IGenericRepository<DAO.Models.Central.Promotion> promotionRepository,
                                 IGenericRepository<DAO.Models.Central.PromotionProduct> promotionProductRepository,
-                                IGenericRepository<DAO.Models.Central.PromotionBranch> promotionBranchRepository)
+                                IGenericRepository<DAO.Models.Central.PromotionBranch> promotionBranchRepository
+                                // IGenericRepository<DAO.Models.Central.Branch> branchRepository,
+                                // IGenericRepository<DAO.Models.Central.Product> productRepository
+                                )
         
         {
             _promotionBranchRepository = promotionBranchRepository;
             _promotionProductRepository = promotionProductRepository;
             _promotionRepository = promotionRepository;
+            // _branchRepository = branchRepository;
+            // _productRepository = productRepository;
         }
 
         public async Task<PromotionDTO?> GetPrmotionById(int promotionId)
@@ -385,6 +394,11 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             var branchIds = branch.ToList();
             if (branchIds.Any())
             {
+                // var existingBranchIds = _branchRepository.GetQueryable()
+                //     .Where(b => branchIds.Contains(b.Id) && b.TenantId == tenantId)
+                //     .Select(b => b.Id)
+                //     .Distinct()
+                //     .ToList();
                 var existingBranchIds = _promotionBranchRepository.GetQueryable()
                     .Where(pb => branchIds.Contains(pb.BranchId) && pb.TenantId == tenantId)
                     .Select(pb => pb.BranchId)
@@ -401,9 +415,9 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
         public Task<PromotionDTO?> AddPromotion(int tenantId, string description, DateTime startDate, DateTime endDate, IEnumerable<int> branch, IEnumerable<int> product)        
         {
             // Validaciones previas - verificar existencia de branches
-            verifyBranchList(branch, tenantId);
+            // verifyBranchList(branch, tenantId);
             // Validaciones previas - verificar existencia de productos
-            verifyProductList(product);
+            // verifyProductList(product);
             
             var promotion = new DAO.Models.Central.Promotion
             {
@@ -526,7 +540,25 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
 
             // Devolver el DTO de la promoción actualizada
             return GetPromotionDTO(promotion);
+        }
 
+        public PromotionExtendedDTO[] GetPromotionList(int tenantId)
+        {
+            // Obtener la lista de promociones del repositorio filtrando por TenantId
+            var promotions = _promotionRepository.GetQueryable().Where(p => p.TenantId == tenantId);
+
+            //Recorremos las promociones y las agregamos a una lista
+            var promotionList = promotions.Select(p => new PromotionExtendedDTO
+            {
+                PromotionId = p.Id,
+                TenantId = p.TenantId,
+                Description = p.Description,
+                StartDate = p.StartDate,
+                EndDate = p.EndDate,
+                Branches = _promotionBranchRepository.GetQueryable().Where(pb => pb.TenantId == tenantId && pb.PromotionId == p.Id).Select(pb => pb.BranchId).ToList(),
+                Products = _promotionProductRepository.GetQueryable().Where(pp => pp.PromotionId == p.Id).Select(pp => pp.ProductId).ToList()
+            }).ToArray();
+            return promotionList;
         }
     
     }
