@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using ServiPuntosUy.Enums;
 
 namespace ServiPuntosUy.DAO.Models.Central;
 
@@ -26,4 +27,10 @@ public class Transaction
 
     [Required]
     public int PointsEarned { get; set; } = 0;
+
+    [Required]
+    public TransactionType Type { get; set; } = TransactionType.Purchase;
+
+    [Required]
+    public int PointsSpent { get; set; } = 0;
 }

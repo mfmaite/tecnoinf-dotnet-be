@@ -10,6 +10,10 @@ using ServiPuntosUy.Enums;
 using ServiPuntosUy.DataServices.Services.Tenant;
 using ServiPuntosUy.DAO.Models.Central;
 using ServiPuntosUy.Requests;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using Microsoft.IdentityModel.Tokens;
 
 namespace ServiPuntosUy.DataServices.Services.EndUser
 {
@@ -487,6 +491,8 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
                 BranchId = transaction.BranchId,
                 Amount = transaction.Amount,
                 PointsEarned = transaction.PointsEarned,
+                PointsSpent = transaction.PointsSpent,
+                Type = transaction.Type,
                 CreatedAt = transaction.CreatedAt
             };
         }
@@ -549,6 +555,8 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
                     BranchId = branchId,
                     Amount = totalAmount,
                     PointsEarned = (int)(totalAmount / loyaltyConfig.AccumulationRule),
+                    PointsSpent = 0,
+                    Type = TransactionType.Purchase,
                     CreatedAt = DateTime.UtcNow
                 };
 
@@ -647,6 +655,257 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
         //         UnitPrice = item.UnitPrice
         //     }).ToArray();
         // }
+    }
+
+    /// <summary>
+    /// Implementación del servicio de canjes para el usuario final
+    /// </summary>
+    public class RedemptionService : IRedemptionService
+    {
+        private readonly DbContext _dbContext;
+        private readonly IGenericRepository<Transaction> _transactionRepository;
+        private readonly IGenericRepository<TransactionItem> _transactionItemRepository;
+        private readonly IGenericRepository<Product> _productRepository;
+        private readonly IGenericRepository<ProductStock> _productStockRepository;
+        private readonly IGenericRepository<User> _userRepository;
+        private readonly IGenericRepository<LoyaltyConfig> _loyaltyConfigRepository;
+        private readonly IGenericRepository<DAO.Models.Central.Branch> _branchRepository;
+        private readonly IConfiguration _configuration;
+
+        public RedemptionService(
+            DbContext dbContext,
+            IGenericRepository<Transaction> transactionRepository,
+            IGenericRepository<TransactionItem> transactionItemRepository,
+            IGenericRepository<Product> productRepository,
+            IGenericRepository<ProductStock> productStockRepository,
+            IGenericRepository<User> userRepository,
+            IGenericRepository<LoyaltyConfig> loyaltyConfigRepository,
+            IGenericRepository<DAO.Models.Central.Branch> branchRepository,
+            IConfiguration configuration)
+        {
+            _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+            _transactionRepository = transactionRepository ?? throw new ArgumentNullException(nameof(transactionRepository));
+            _transactionItemRepository = transactionItemRepository ?? throw new ArgumentNullException(nameof(transactionItemRepository));
+            _productRepository = productRepository ?? throw new ArgumentNullException(nameof(productRepository));
+            _productStockRepository = productStockRepository ?? throw new ArgumentNullException(nameof(productStockRepository));
+            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+            _loyaltyConfigRepository = loyaltyConfigRepository ?? throw new ArgumentNullException(nameof(loyaltyConfigRepository));
+            _branchRepository = branchRepository ?? throw new ArgumentNullException(nameof(branchRepository));
+            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+        }
+
+        /// <summary>
+        /// Genera un token JWT con la información del canje
+        /// </summary>
+        public async Task<string> GenerateRedemptionToken(int userId, int branchId, int productId)
+        {
+            // 1. Verificar que el usuario exista
+            var user = await _userRepository.GetByIdAsync(userId);
+            if (user == null)
+            {
+                throw new Exception("Usuario no encontrado");
+            }
+
+            // 2. Verificar que el producto exista y tenga stock
+            var product = await _productRepository.GetByIdAsync(productId);
+            if (product == null)
+            {
+                throw new Exception("Producto no encontrado");
+            }
+
+            var productStock = await _productStockRepository.GetQueryable()
+                .FirstOrDefaultAsync(ps => ps.ProductId == productId && ps.BranchId == branchId);
+
+            if (productStock == null || productStock.Stock < 1)
+            {
+                throw new Exception("Stock insuficiente para el producto");
+            }
+
+            // 3. Obtener la configuración de lealtad
+            var branch = await _branchRepository.GetByIdAsync(branchId);
+            if (branch == null)
+            {
+                throw new Exception("Sucursal no encontrada");
+            }
+
+            var loyaltyConfig = await _loyaltyConfigRepository.GetQueryable()
+                .FirstOrDefaultAsync(lc => lc.TenantId == branch.TenantId);
+
+            if (loyaltyConfig == null)
+            {
+                throw new Exception("Configuración de lealtad no encontrada");
+            }
+
+            // 4. Calcular el costo en puntos
+            int pointsCost = (int)(product.Price / loyaltyConfig.PointsValue);
+
+            if (user.PointBalance < pointsCost)
+            {
+                throw new Exception("Puntos insuficientes para realizar el canje");
+            }
+
+            // 5. Crear el payload del token
+            var expiresAt = DateTime.UtcNow.AddMinutes(15); // El token expira en 15 minutos
+
+            // 6. Generar el token JWT
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]);
+            
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new[]
+                {
+                    new Claim("userId", userId.ToString()),
+                    new Claim("branchId", branchId.ToString()),
+                    new Claim("productId", productId.ToString()),
+                    new Claim("pointsCost", pointsCost.ToString()),
+                    new Claim("expiresAt", expiresAt.ToString("o"))
+                }),
+                Expires = expiresAt,
+                SigningCredentials = new SigningCredentials(
+                    new SymmetricSecurityKey(key),
+                    SecurityAlgorithms.HmacSha256Signature)
+            };
+
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
+        }
+
+        /// <summary>
+        /// Procesa un canje a partir de un token
+        /// </summary>
+        public async Task<TransactionDTO> ProcessRedemption(string token)
+        {
+            try
+            {
+                // 1. Validar y decodificar el token
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]);
+                
+                var validationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    ClockSkew = TimeSpan.Zero
+                };
+
+                SecurityToken validatedToken;
+                var principal = tokenHandler.ValidateToken(token, validationParameters, out validatedToken);
+                
+                // 2. Extraer la información del token
+                var userId = int.Parse(principal.FindFirst("userId").Value);
+                var branchId = int.Parse(principal.FindFirst("branchId").Value);
+                var productId = int.Parse(principal.FindFirst("productId").Value);
+                var pointsCost = int.Parse(principal.FindFirst("pointsCost").Value);
+                var expiresAt = DateTime.Parse(principal.FindFirst("expiresAt").Value);
+
+                // 3. Verificar que el token no haya expirado
+                if (expiresAt < DateTime.UtcNow)
+                {
+                    throw new Exception("El token ha expirado");
+                }
+
+                // 4. Verificar que el usuario exista y tenga suficientes puntos
+                var user = await _userRepository.GetByIdAsync(userId);
+                if (user == null)
+                {
+                    throw new Exception("Usuario no encontrado");
+                }
+
+                if (user.PointBalance < pointsCost)
+                {
+                    throw new Exception("Puntos insuficientes para realizar el canje");
+                }
+
+                // 5. Verificar que el producto exista y tenga stock
+                var product = await _productRepository.GetByIdAsync(productId);
+                if (product == null)
+                {
+                    throw new Exception("Producto no encontrado");
+                }
+
+                var productStock = await _productStockRepository.GetQueryable()
+                    .FirstOrDefaultAsync(ps => ps.ProductId == productId && ps.BranchId == branchId);
+
+                if (productStock == null || productStock.Stock < 1)
+                {
+                    throw new Exception("Stock insuficiente para el producto");
+                }
+
+                // 6. Iniciar transacción de base de datos
+                using var dbTransaction = await _dbContext.Database.BeginTransactionAsync();
+
+                try
+                {
+                    // 7. Crear la transacción
+                    var transaction = new Transaction
+                    {
+                        UserId = userId,
+                        BranchId = branchId,
+                        Amount = 0, // No hay monto en dinero
+                        PointsEarned = 0, // No se ganan puntos
+                        PointsSpent = pointsCost, // Se gastan puntos
+                        Type = TransactionType.Redemption,
+                        CreatedAt = DateTime.UtcNow
+                    };
+
+                    await _transactionRepository.AddAsync(transaction);
+                    await _transactionRepository.SaveChangesAsync();
+
+                    // 8. Crear el item de transacción
+                    var transactionItem = new TransactionItem
+                    {
+                        TransactionId = transaction.Id,
+                        ProductId = productId,
+                        Quantity = 1,
+                        UnitPrice = product.Price
+                    };
+
+                    await _transactionItemRepository.AddAsync(transactionItem);
+
+                    // 9. Actualizar el stock
+                    productStock.Stock -= 1;
+                    await _productStockRepository.UpdateAsync(productStock);
+
+                    // 10. Restar puntos al usuario
+                    user.PointBalance -= pointsCost;
+                    await _userRepository.UpdateAsync(user);
+
+                    // 11. Guardar todos los cambios
+                    await _transactionItemRepository.SaveChangesAsync();
+                    await _productStockRepository.SaveChangesAsync();
+                    await _userRepository.SaveChangesAsync();
+
+                    // 12. Confirmar la transacción
+                    await dbTransaction.CommitAsync();
+
+                    // 13. Devolver la transacción
+                    return new TransactionDTO
+                    {
+                        Id = transaction.Id,
+                        UserId = transaction.UserId,
+                        BranchId = transaction.BranchId,
+                        Amount = transaction.Amount,
+                        PointsEarned = transaction.PointsEarned,
+                        PointsSpent = transaction.PointsSpent,
+                        Type = transaction.Type,
+                        CreatedAt = transaction.CreatedAt
+                    };
+                }
+                catch (Exception ex)
+                {
+                    // Si algo falla, revertir la transacción
+                    await dbTransaction.RollbackAsync();
+                    throw new Exception(ex.Message);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error al procesar el canje: {ex.Message}");
+            }
+        }
     }
 
     /// <summary>

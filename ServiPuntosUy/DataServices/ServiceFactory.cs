@@ -332,6 +332,7 @@ namespace ServiPuntosUy.DataServices
             _serviceCollection.AddScoped<IVEAIService, Services.EndUser.VEAIService>();
             _serviceCollection.AddScoped<IFuelService, Services.EndUser.FuelService>();
             _serviceCollection.AddScoped<ITenantBranchService, Services.EndUser.TenantBranchService>();
+            _serviceCollection.AddScoped<IRedemptionService, Services.EndUser.RedemptionService>();
 
             // Registrar el servicio de gestión de servicios para el usuario final (solo lectura)
             _serviceCollection.AddScoped<IServiceManager>(sp =>

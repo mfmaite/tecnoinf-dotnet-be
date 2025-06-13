@@ -47,4 +47,29 @@ public class TransactionController : BaseController
             });
         }
     }
+
+    /// <summary>
+    /// Obtiene el historial de transacciones del usuario actual
+    /// </summary>
+    /// <returns>Lista de transacciones del usuario</returns>
+    /// <response code="200">Retorna la lista de transacciones</response>
+    /// <response code="400">Si hay un error en la obtención</response>
+    [HttpGet("history")]
+    [ProducesResponseType(typeof(TransactionDTO[]), 200)]
+    public async Task<ActionResult<TransactionDTO[]>> GetTransactionHistory()
+    {
+        try
+        {
+            var loggedUser = ObtainUserFromToken();
+            var transactions = await TransactionService.GetTransactionsByUserId(loggedUser.Id);
+            return Ok(transactions);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new ApiResponse<TransactionDTO[]> {
+                Error = true,
+                Message = ex.Message
+            });
+        }
+    }
 }
