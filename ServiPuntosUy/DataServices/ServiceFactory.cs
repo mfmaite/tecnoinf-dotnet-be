@@ -109,6 +109,12 @@ namespace ServiPuntosUy.DataServices
             // Registrar el GenericRepository que usa el DbContext
             _serviceCollection.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
+            // Registrar el servicio público de TenantUI (disponible sin autenticación)
+            _serviceCollection.AddScoped<IPublicTenantUIService>(sp => 
+                new PublicTenantUIService(
+                    sp.GetRequiredService<IGenericRepository<TenantUI>>(),
+                    sp.GetRequiredService<ITenantResolver>()));
+
             // Registrar un servicio de autenticación básico
             _serviceCollection.AddScoped<IAuthService>(sp =>
                 new CommonAuthService(
@@ -280,6 +286,14 @@ namespace ServiPuntosUy.DataServices
                     sp.GetRequiredService<ITenantAccessor>(),
                     sp.GetRequiredService<IHttpContextAccessor>()));
 
+            // Registrar el servicio de gestión de servicios para el administrador de branch
+            _serviceCollection.AddScoped<IServiceManager>(sp =>
+                new Services.Branch.ServiceManager(
+                    sp.GetRequiredService<IGenericRepository<Service>>(),
+                    sp.GetRequiredService<IGenericRepository<ServiceAvailability>>(),
+                    sp.GetRequiredService<IGenericRepository<ServiPuntosUy.DAO.Models.Central.Branch>>(),
+                    branchId,
+                    int.Parse(tenantId)));
         }
 
         private void ConfigureEndUserServices(string tenantId)
@@ -317,6 +331,13 @@ namespace ServiPuntosUy.DataServices
             _serviceCollection.AddScoped<IVEAIService, Services.EndUser.VEAIService>();
             _serviceCollection.AddScoped<IFuelService, Services.EndUser.FuelService>();
             _serviceCollection.AddScoped<ITenantBranchService, Services.EndUser.TenantBranchService>();
+            
+            // Registrar el servicio de gestión de servicios para el usuario final (solo lectura)
+            _serviceCollection.AddScoped<IServiceManager>(sp =>
+                new Services.EndUser.ServiceManager(
+                    sp.GetRequiredService<IGenericRepository<Service>>(),
+                    sp.GetRequiredService<IGenericRepository<ServiceAvailability>>(),
+                    sp.GetRequiredService<IGenericRepository<ServiPuntosUy.DAO.Models.Central.Branch>>()));
         }
     }
 }

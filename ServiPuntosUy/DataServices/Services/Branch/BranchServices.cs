@@ -489,4 +489,254 @@ namespace ServiPuntosUy.DataServices.Services.Branch
             return statistics;
         }
     }
+
+    /// <summary>
+    /// Implementación del servicio de gestión de servicios para el administrador de branch
+    /// </summary>
+    public class ServiceManager : IServiceManager
+    {
+        private readonly IGenericRepository<Service> _serviceRepository;
+        private readonly IGenericRepository<ServiceAvailability> _serviceAvailabilityRepository;
+        private readonly IGenericRepository<DAO.Models.Central.Branch> _branchRepository;
+        private readonly int _branchId;
+        private readonly int _tenantId;
+
+        public ServiceManager(
+            IGenericRepository<Service> serviceRepository,
+            IGenericRepository<ServiceAvailability> serviceAvailabilityRepository,
+            IGenericRepository<DAO.Models.Central.Branch> branchRepository,
+            int branchId,
+            int tenantId)
+        {
+            _serviceRepository = serviceRepository;
+            _serviceAvailabilityRepository = serviceAvailabilityRepository;
+            _branchRepository = branchRepository;
+            _branchId = branchId;
+            _tenantId = tenantId;
+        }
+
+        private ServiceDTO MapToServiceDTO(Service service)
+        {
+            return new ServiceDTO
+            {
+                Id = service.Id,
+                TenantId = service.TenantId,
+                Name = service.Name,
+                Description = service.Description,
+                Price = service.Price,
+                AgeRestricted = service.AgeRestricted
+            };
+        }
+
+        private ServiceAvailabilityDTO MapToServiceAvailabilityDTO(ServiceAvailability availability)
+        {
+            return new ServiceAvailabilityDTO
+            {
+                Id = availability.Id,
+                BranchId = availability.BranchId,
+                ServiceId = availability.ServiceId,
+                TenantId = availability.TenantId,
+                StartTime = availability.StartTime,
+                EndTime = availability.EndTime
+            };
+        }
+
+        private async Task ValidateServiceHours(int branchId, TimeOnly startTime, TimeOnly endTime)
+        {
+            var branch = await _branchRepository.GetByIdAsync(branchId);
+            
+            if (branch == null)
+                throw new Exception($"No existe una branch con el ID {branchId}");
+                
+            if (startTime < branch.OpenTime)
+                throw new Exception($"La hora de inicio del servicio ({startTime}) debe ser posterior a la hora de apertura de la branch ({branch.OpenTime})");
+                
+            if (endTime > branch.ClosingTime)
+                throw new Exception($"La hora de fin del servicio ({endTime}) debe ser anterior a la hora de cierre de la branch ({branch.ClosingTime})");
+                
+            if (startTime >= endTime)
+                throw new Exception("La hora de inicio debe ser anterior a la hora de fin");
+        }
+
+        public async Task<ServiceDTO> CreateServiceAsync(int branchId, string name, string description, decimal price, bool ageRestricted, TimeOnly startTime, TimeOnly endTime)
+        {
+            // Verificar que el usuario solo pueda crear servicios para su propia branch
+            if (branchId != _branchId)
+                throw new UnauthorizedAccessException("Solo puede crear servicios para su propia branch");
+
+            // Validar que las horas estén dentro del horario de la branch
+            await ValidateServiceHours(branchId, startTime, endTime);
+
+            // Crear el servicio
+            var service = new Service
+            {
+                TenantId = _tenantId,
+                Name = name,
+                Description = description,
+                Price = price,
+                AgeRestricted = ageRestricted
+            };
+
+            var createdService = await _serviceRepository.AddAsync(service);
+            await _serviceRepository.SaveChangesAsync();
+
+            // Crear la disponibilidad para el servicio
+            var serviceAvailability = new ServiceAvailability
+            {
+                BranchId = branchId,
+                ServiceId = createdService.Id,
+                TenantId = _tenantId,
+                StartTime = startTime,
+                EndTime = endTime
+            };
+            
+            await _serviceAvailabilityRepository.AddAsync(serviceAvailability);
+            await _serviceAvailabilityRepository.SaveChangesAsync();
+            
+            // Devolver el servicio creado con su disponibilidad
+            return await GetServiceByIdAsync(createdService.Id);
+        }
+
+        public async Task<ServiceDTO> UpdateServiceAsync(int serviceId, string name, string description, decimal price, bool ageRestricted, TimeOnly? startTime = null, TimeOnly? endTime = null)
+        {
+            // Obtener el servicio existente
+            var service = await _serviceRepository.GetByIdAsync(serviceId);
+            if (service == null)
+                throw new Exception($"No existe un servicio con el ID {serviceId}");
+
+            // Verificar que el servicio pertenezca al tenant del usuario
+            if (service.TenantId != _tenantId)
+                throw new UnauthorizedAccessException("No tiene permiso para modificar este servicio");
+
+            // Verificar que el servicio esté asociado a la branch del usuario
+            var serviceAvailability = await _serviceAvailabilityRepository.GetQueryable()
+                .FirstOrDefaultAsync(sa => sa.ServiceId == serviceId && sa.BranchId == _branchId);
+            if (serviceAvailability == null)
+                throw new UnauthorizedAccessException("Este servicio no está asociado a su branch");
+
+            // Actualizar el servicio
+            service.Name = name;
+            service.Description = description;
+            service.Price = price;
+            service.AgeRestricted = ageRestricted;
+
+            await _serviceRepository.UpdateAsync(service);
+            await _serviceRepository.SaveChangesAsync();
+
+            // Si se proporcionaron horarios, actualizar la disponibilidad
+            if (startTime.HasValue && endTime.HasValue)
+            {
+                // Validar que las horas estén dentro del horario de la branch
+                await ValidateServiceHours(_branchId, startTime.Value, endTime.Value);
+
+                // Actualizar la disponibilidad
+                serviceAvailability.StartTime = startTime.Value;
+                serviceAvailability.EndTime = endTime.Value;
+                
+                await _serviceAvailabilityRepository.UpdateAsync(serviceAvailability);
+                await _serviceAvailabilityRepository.SaveChangesAsync();
+            }
+
+            // Devolver el servicio actualizado con su disponibilidad
+            return await GetServiceByIdAsync(serviceId);
+        }
+
+        public async Task<bool> DeleteServiceAsync(int serviceId)
+        {
+            // Obtener el servicio existente
+            var service = await _serviceRepository.GetByIdAsync(serviceId);
+            if (service == null)
+                return false;
+
+            // Verificar que el servicio pertenezca al tenant del usuario
+            if (service.TenantId != _tenantId)
+                throw new UnauthorizedAccessException("No tiene permiso para eliminar este servicio");
+
+            // Verificar que el servicio esté asociado a la branch del usuario
+            var serviceAvailability = await _serviceAvailabilityRepository.GetQueryable()
+                .FirstOrDefaultAsync(sa => sa.ServiceId == serviceId && sa.BranchId == _branchId);
+            if (serviceAvailability == null)
+                throw new UnauthorizedAccessException("Este servicio no está asociado a su branch");
+
+            // Eliminar primero las disponibilidades asociadas
+            var availabilities = await _serviceAvailabilityRepository.GetQueryable()
+                .Where(sa => sa.ServiceId == serviceId)
+                .ToListAsync();
+            
+            foreach (var availability in availabilities)
+            {
+                await _serviceAvailabilityRepository.DeleteAsync(availability.Id);
+            }
+
+            // Eliminar el servicio
+            await _serviceRepository.DeleteAsync(serviceId);
+            await _serviceRepository.SaveChangesAsync();
+
+            return true;
+        }
+
+
+        public async Task<ServiceDTO> GetServiceByIdAsync(int serviceId)
+        {
+            // Obtener el servicio
+            var service = await _serviceRepository.GetByIdAsync(serviceId);
+            if (service == null)
+                throw new Exception($"No existe un servicio con el ID {serviceId}");
+
+            // Obtener las disponibilidades para este servicio
+            var availabilities = await _serviceAvailabilityRepository.GetQueryable()
+                .Where(sa => sa.ServiceId == serviceId)
+                .ToListAsync();
+
+            // Mapear el servicio a DTO
+            var serviceDTO = MapToServiceDTO(service);
+            
+            // Agregar las disponibilidades al DTO
+            serviceDTO.Availabilities = availabilities.Select(a => {
+                var dto = MapToServiceAvailabilityDTO(a);
+                dto.ServiceName = service.Name;
+                return dto;
+            }).ToArray();
+
+            return serviceDTO;
+        }
+
+        public async Task<ServiceDTO[]> GetBranchServicesAsync(int branchId)
+        {
+            // Obtener las disponibilidades para esta branch
+            var availabilities = await _serviceAvailabilityRepository.GetQueryable()
+                .Where(sa => sa.BranchId == branchId)
+                .ToListAsync();
+
+            // Agrupar las disponibilidades por servicio
+            var serviceAvailabilities = availabilities
+                .GroupBy(a => a.ServiceId)
+                .ToDictionary(g => g.Key, g => g.ToList());
+
+            // Obtener los IDs de los servicios disponibles en esta branch
+            var serviceIds = serviceAvailabilities.Keys.ToArray();
+
+            // Obtener los servicios correspondientes
+            var services = await _serviceRepository.GetQueryable()
+                .Where(s => serviceIds.Contains(s.Id))
+                .ToListAsync();
+
+            // Mapear los servicios a DTOs incluyendo sus disponibilidades
+            return services.Select(s => {
+                var serviceDTO = MapToServiceDTO(s);
+                
+                // Agregar las disponibilidades al DTO
+                if (serviceAvailabilities.ContainsKey(s.Id))
+                {
+                    serviceDTO.Availabilities = serviceAvailabilities[s.Id].Select(a => {
+                        var dto = MapToServiceAvailabilityDTO(a);
+                        dto.ServiceName = s.Name;
+                        return dto;
+                    }).ToArray();
+                }
+                
+                return serviceDTO;
+            }).ToArray();
+        }
+    }
 }
