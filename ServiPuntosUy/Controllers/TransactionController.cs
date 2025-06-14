@@ -37,11 +37,12 @@ public class TransactionController : BaseController
                 request.Products
             );
 
-            return Ok(transaction);
+            return Ok(new ApiResponse<TransactionDTO> { Error = false, Data = transaction, Message = "Transacción creada con exito" });
         }
         catch (Exception ex)
         {
-            return BadRequest(new ApiResponse<TransactionResponseDTO> {
+            return BadRequest(new ApiResponse<TransactionResponseDTO>
+            {
                 Error = true,
                 Message = ex.Message
             });
@@ -66,7 +67,8 @@ public class TransactionController : BaseController
         }
         catch (Exception ex)
         {
-            return BadRequest(new ApiResponse<TransactionDTO[]> {
+            return BadRequest(new ApiResponse<TransactionDTO[]>
+            {
                 Error = true,
                 Message = ex.Message
             });
