@@ -29,6 +29,7 @@ public class CentralDbContext : DbContext
     public DbSet<User> Users { get; set; }
     public DbSet<Tenant> Tenants { get; set; }
     public DbSet<TransactionItem> TransactionItems { get; set; }
+    public DbSet<GeneralParameter> GeneralParameters { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -115,6 +116,17 @@ public class CentralDbContext : DbContext
                 PointsValue = 1,
                 AccumulationRule = 100, // 100 pesos = 1 punto
                 ExpiricyPolicyDays = 180
+            }
+        );
+
+        // Crear parámetro general para Currency
+        modelBuilder.Entity<GeneralParameter>().HasData(
+            new GeneralParameter
+            {
+                Id = -1,
+                Key = "Currency",
+                Value = "USD",
+                Description = "Moneda por defecto para la aplicación"
             }
         );
 

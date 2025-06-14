@@ -1,14 +1,12 @@
 using System;
 using ServiceReference;
 using System.ServiceModel;
-using System.Threading.Tasks;
 using ServiPuntosUy.Models.DAO;
 using Microsoft.EntityFrameworkCore;
 using ServiPuntosUy.DTO;
 using ServiPuntosUy.DAO.Models.Central;
 using ServiPuntosUy.Enums;
 using ServiPuntosUy.DataServices.Services.Tenant;
-using ServiPuntosUy.DAO.Models.Central;
 using ServiPuntosUy.Requests;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -892,6 +890,87 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
             {
                 throw new Exception($"Error al procesar el canje: {ex.Message}");
             }
+        }
+    }
+
+    /// <summary>
+    /// Implementación del servicio de parámetros generales para el usuario final
+    /// </summary>
+    public class GeneralParameterService : IGeneralParameterService
+    {
+        private readonly IGenericRepository<GeneralParameter> _generalParameterRepository;
+
+        public GeneralParameterService(IGenericRepository<GeneralParameter> generalParameterRepository)
+        {
+            _generalParameterRepository = generalParameterRepository;
+        }
+
+        /// <summary>
+        /// Convierte un modelo de parámetro general a DTO
+        /// </summary>
+        /// <param name="parameter">Modelo de parámetro general</param>
+        /// <returns>DTO de parámetro general</returns>
+        private GeneralParameterDTO GetGeneralParameterDTO(GeneralParameter parameter)
+        {
+            return new GeneralParameterDTO
+            {
+                Id = parameter.Id,
+                Key = parameter.Key,
+                Value = parameter.Value,
+                Description = parameter.Description
+            };
+        }
+
+        /// <summary>
+        /// Obtiene un parámetro general por su clave
+        /// </summary>
+        /// <param name="key">Clave del parámetro</param>
+        /// <returns>DTO del parámetro general</returns>
+        public GeneralParameterDTO GetParameter(string key)
+        {
+            var parameter = _generalParameterRepository.GetQueryable()
+                .FirstOrDefault(p => p.Key == key);
+
+            if (parameter == null)
+            {
+                throw new ArgumentException($"No existe un parámetro con la clave '{key}'");
+            }
+
+            return GetGeneralParameterDTO(parameter);
+        }
+
+        /// <summary>
+        /// Obtiene todos los parámetros generales
+        /// </summary>
+        /// <returns>Array de DTOs de parámetros generales</returns>
+        public GeneralParameterDTO[] GetAllParameters()
+        {
+            var parameters = _generalParameterRepository.GetQueryable().ToList();
+            return parameters.Select(GetGeneralParameterDTO).ToArray();
+        }
+
+        /// <summary>
+        /// Actualiza un parámetro general existente (no permitido para usuarios finales)
+        /// </summary>
+        /// <param name="key">Clave del parámetro</param>
+        /// <param name="value">Nuevo valor</param>
+        /// <param name="description">Nueva descripción (opcional)</param>
+        /// <returns>DTO del parámetro actualizado</returns>
+        public GeneralParameterDTO UpdateParameter(string key, string value, string description = null)
+        {
+            throw new UnauthorizedAccessException("El usuario final no puede modificar parámetros generales");
+        }
+
+        /// <summary>
+        /// Crea un nuevo parámetro general (no permitido para usuarios finales)
+        /// </summary>
+        /// <param name="key">Clave del parámetro</param>
+        /// <param name="value">Valor del parámetro</param>
+        /// <param name="description">Descripción del parámetro</param>
+        /// <returns>DTO del parámetro creado</returns>
+        public GeneralParameterDTO CreateParameter(string key, string value, string description)
+        {
+            throw new UnauthorizedAccessException("El usuario final no puede crear parámetros generales");
         }
     }
 

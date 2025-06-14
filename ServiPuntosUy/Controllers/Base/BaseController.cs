@@ -281,6 +281,11 @@ namespace ServiPuntosUy.Controllers.Base
         /// </summary>
         protected IRedemptionService RedemptionService => _serviceFactory.GetService<IRedemptionService>();
 
+        /// <summary>
+        /// Obtiene el servicio de parámetros generales
+        /// </summary>
+        protected IGeneralParameterService GeneralParameterService => _serviceFactory.GetService<IGeneralParameterService>();
+
         #endregion
     }
 }
