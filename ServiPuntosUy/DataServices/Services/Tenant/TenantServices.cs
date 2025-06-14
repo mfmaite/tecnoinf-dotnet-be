@@ -589,6 +589,51 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             return promotionExtended;
 
         }
+
+        public Task<PromotionDTO?> AddPromotionForBranch(int tenantId, int branchId, string description, DateTime startDate, DateTime endDate, IEnumerable<int> product)        
+        {
+            // Validaciones previas - verificar existencia de productos
+            verifyProductList(product);
+            
+            var promotion = new DAO.Models.Central.Promotion
+            {
+                TenantId = tenantId,
+                Description = description,
+                StartDate = startDate,
+                EndDate = endDate
+            };
+
+            // Guardar la promoción en la base de datos usando el repositorio de la clase
+            var createdPromotion = _promotionRepository.AddAsync(promotion).GetAwaiter().GetResult();
+            _promotionRepository.SaveChangesAsync().GetAwaiter().GetResult();
+
+            var promotionDTO = GetPromotionDTO(createdPromotion);
+            // Asociar los productos a la promoción
+            foreach (var productId in product)
+            {
+                var promotionProduct = new DAO.Models.Central.PromotionProduct
+                {
+                    PromotionId = promotion.Id,
+                    ProductId = productId
+                };
+                _promotionProductRepository.AddAsync(promotionProduct).GetAwaiter().GetResult();
+            }
+            _promotionProductRepository.SaveChangesAsync().GetAwaiter().GetResult();
+
+            // Asociar los branches a la promoción
+            var promotionBranch = new DAO.Models.Central.PromotionBranch
+            {
+                PromotionId = promotion.Id,
+                BranchId = branchId,
+                TenantId = tenantId
+            };
+            _promotionBranchRepository.AddAsync(promotionBranch).GetAwaiter().GetResult();
+
+            _promotionBranchRepository.SaveChangesAsync().GetAwaiter().GetResult();
+
+            // Devolver el DTO de la promoción creada
+            return Task.FromResult(promotionDTO);
+        }
     
     }
 

@@ -177,4 +177,53 @@ public class PromotionController : BaseController
             });
         }
     }
+
+    /// <summary>
+    /// Crear una nueva promocion para un branch
+    /// </summary>
+    /// <param name="promotion"></param>
+    /// <returns>Promocion creada</returns>
+    /// <response code="200">Retorna la promocion creada</response>
+    /// <response code="400">Si hay un error en la creación</response>
+    [HttpPost("Branch/Create")]
+    [ProducesResponseType(typeof(PromotionDTO), 200)]
+    [ProducesResponseType(400)]
+    public async Task<IActionResult> AddNewPromotionForBranch([FromBody] AddNewPromotionRequest request)
+    {
+        try
+        {
+            // // verificamos que la fecha de la promocion sea valida
+            if (request.StartDate >= request.EndDate)
+                return BadRequest("La fecha de inicio debe ser anterior a la fecha de fin.");
+
+            // Obtenemos branch id del usuario loguead
+            var branchId = ObtainBranchIdFromToken();
+            var tenantId = ObtainTenantFromToken();
+            
+            var promocion = await PromotionService.AddPromotionForBranch(
+                int.Parse(tenantId),
+                branchId ?? 0,
+                request.Description,
+                request.StartDate,
+                request.EndDate,
+                request.Product
+            );
+
+
+            return Ok(new ApiResponse<PromotionDTO>
+            {
+                Error = false,
+                Message = "Promoción creada correctamente",
+                Data = promocion
+            });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new ApiResponse<object>
+            {
+                Error = true,
+                Message = ex.Message
+            });
+        }
+    }
 }
