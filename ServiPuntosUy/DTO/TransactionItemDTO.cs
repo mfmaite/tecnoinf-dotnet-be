@@ -6,6 +6,11 @@ namespace ServiPuntosUy.DTO
     public class TransactionItemDTO
     {
         /// <summary>
+        /// ID del item
+        /// </summary>
+        public int Id { get; set; }
+        
+        /// <summary>
         /// ID de la transacción
         /// </summary>
         public int TransactionId { get; set; }
@@ -24,5 +29,15 @@ namespace ServiPuntosUy.DTO
         /// Precio unitario del producto
         /// </summary>
         public decimal UnitPrice { get; set; }
+        
+        /// <summary>
+        /// Nombre del producto
+        /// </summary>
+        public string ProductName { get; set; }
+        
+        /// <summary>
+        /// URL de la imagen del producto
+        /// </summary>
+        public string ProductImageUrl { get; set; }
     }
 }
