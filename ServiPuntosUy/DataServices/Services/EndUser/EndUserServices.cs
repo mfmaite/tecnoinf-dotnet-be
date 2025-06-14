@@ -482,6 +482,44 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
             _productStockRepository = productStockRepository ?? throw new ArgumentNullException(nameof(productStockRepository));
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
         }
+        
+        /// <summary>
+        /// Obtiene los items (productos) de una transacción específica
+        /// </summary>
+        /// <param name="transactionId">ID de la transacción</param>
+        /// <returns>Array de items de la transacción</returns>
+        public async Task<TransactionItemDTO[]> GetTransactionItems(int transactionId)
+        {
+            // Verificar que la transacción existe
+            var transaction = await _transactionRepository.GetByIdAsync(transactionId);
+            if (transaction == null)
+            {
+                throw new Exception($"No existe una transacción con el ID {transactionId}");
+            }
+
+            // Obtener los items de la transacción
+            var items = await _transactionItemRepository.GetQueryable()
+                .Where(ti => ti.TransactionId == transactionId)
+                .ToListAsync();
+
+            // Obtener los productos asociados a los items
+            var productIds = items.Select(i => i.ProductId).ToArray();
+            var products = await _productRepository.GetQueryable()
+                .Where(p => productIds.Contains(p.Id))
+                .ToDictionaryAsync(p => p.Id, p => p);
+
+            // Mapear a DTOs
+            return items.Select(item => new TransactionItemDTO
+            {
+                Id = item.Id,
+                TransactionId = item.TransactionId,
+                ProductId = item.ProductId,
+                Quantity = item.Quantity,
+                UnitPrice = item.UnitPrice,
+                ProductName = products.TryGetValue(item.ProductId, out var product) ? product.Name : "Producto no encontrado",
+                ProductImageUrl = products.TryGetValue(item.ProductId, out var productForImage) ? productForImage.ImageUrl : null
+            }).ToArray();
+        }
 
         public TransactionDTO GetTransactionDTO(Transaction transaction)
         {

@@ -13,5 +13,12 @@ namespace ServiPuntosUy.DataServices.Services
         Task<TransactionDTO> CreateTransaction(int userId, int branchId, ProductQuantity[] products);
         Task<TransactionDTO> GetTransactionById(int id);
         Task<TransactionDTO[]> GetTransactionsByUserId(int userId);
+        
+        /// <summary>
+        /// Obtiene los items (productos) de una transacción específica
+        /// </summary>
+        /// <param name="transactionId">ID de la transacción</param>
+        /// <returns>Array de items de la transacción</returns>
+        Task<TransactionItemDTO[]> GetTransactionItems(int transactionId);
     }
 }
