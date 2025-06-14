@@ -324,8 +324,6 @@ namespace ServiPuntosUy.DataServices.Services.Branch
             // Implementación básica para el scaffold
             throw new NotImplementedException();
         }
-        // Implementar los métodos de la interfaz IPromotionService
-        // Esta es una implementación básica para el scaffold
     }
 
     /// <summary>

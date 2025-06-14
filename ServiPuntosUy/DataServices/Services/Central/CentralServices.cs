@@ -280,9 +280,6 @@ namespace ServiPuntosUy.DataServices.Services.Central
             // Implementación básica para el scaffold
             return new PromotionExtendedDTO();
         }
-
-        // Implementar los métodos de la interfaz IPromotionService
-        // Esta es una implementación básica para el scaffold
     }
 
     /// <summary>
