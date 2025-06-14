@@ -105,6 +105,19 @@ public class CentralDbContext : DbContext
             }
         );
 
+        // Crear LoyaltyConfig para el tenant por defecto
+        modelBuilder.Entity<LoyaltyConfig>().HasData(
+            new LoyaltyConfig
+            {
+                Id = -1,
+                TenantId = -1,
+                PointsName = "Puntos",
+                PointsValue = 1,
+                AccumulationRule = 100, // 100 pesos = 1 punto
+                ExpiricyPolicyDays = 180
+            }
+        );
+
         // Si estamos en tiempo de diseño (migraciones), usamos valores por defecto
         if (_configuration == null)
         {
