@@ -13,7 +13,7 @@ namespace ServiPuntosUy.Controllers;
 [Authorize]
 public class RedemptionController : BaseController
 {
-    public RedemptionController(IServiceFactory serviceFactory) 
+    public RedemptionController(IServiceFactory serviceFactory)
         : base(serviceFactory)
     {
     }
@@ -32,24 +32,30 @@ public class RedemptionController : BaseController
         try
         {
             var loggedUser = ObtainUserFromToken();
-            
+
             var token = await RedemptionService.GenerateRedemptionToken(
                 loggedUser.Id,
                 request.BranchId,
                 request.ProductId
             );
-            
-            return Ok(new RedemptionTokenResponse { Token = token });
+
+            return Ok(new ApiResponse<RedemptionTokenResponse>
+            {
+                Error = false,
+                Data = new RedemptionTokenResponse { Token = token },
+                Message = "QR generado satisfactoriamente"
+            });
         }
         catch (Exception ex)
         {
-            return BadRequest(new ApiResponse<RedemptionTokenResponse> {
+            return BadRequest(new ApiResponse<RedemptionTokenResponse>
+            {
                 Error = true,
                 Message = ex.Message
             });
         }
     }
-    
+
     /// <summary>
     /// Procesa un canje a partir de un token
     /// </summary>
@@ -63,7 +69,7 @@ public class RedemptionController : BaseController
         try
         {
             var transaction = await RedemptionService.ProcessRedemption(token);
-            
+
             // Devolver una página HTML simple con el resultado
             var html = $@"
             <!DOCTYPE html>
@@ -87,7 +93,7 @@ public class RedemptionController : BaseController
                 </div>
             </body>
             </html>";
-            
+
             return Content(html, "text/html");
         }
         catch (Exception ex)
@@ -112,7 +118,7 @@ public class RedemptionController : BaseController
                 </div>
             </body>
             </html>";
-            
+
             return Content(errorHtml, "text/html");
         }
     }
