@@ -12,8 +12,8 @@ using ServiPuntosUy.DAO.Data.Central;
 namespace ServiPuntosUy.DAO.Migrations.Central
 {
     [DbContext(typeof(CentralDbContext))]
-    [Migration("20250604015911_AddAdminBranchSeed")]
-    partial class AddAdminBranchSeed
+    [Migration("20250610230930_AddPromotionProductTable")]
+    partial class AddPromotionProductTable
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -178,16 +178,11 @@ namespace ServiPuntosUy.DAO.Migrations.Central
                     b.Property<int>("Stock")
                         .HasColumnType("int");
 
-                    b.Property<int>("TenantId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.HasIndex("BranchId");
 
                     b.HasIndex("ProductId");
-
-                    b.HasIndex("TenantId");
 
                     b.ToTable("ProductStocks");
                 });
@@ -223,6 +218,41 @@ namespace ServiPuntosUy.DAO.Migrations.Central
                     b.HasIndex("TenantId");
 
                     b.ToTable("Promotions");
+                });
+
+            modelBuilder.Entity("ServiPuntosUy.DAO.Models.Central.PromotionBranch", b =>
+                {
+                    b.Property<int>("PromotionId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("BranchId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TenantId")
+                        .HasColumnType("int");
+
+                    b.HasKey("PromotionId", "BranchId", "TenantId");
+
+                    b.HasIndex("BranchId");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("PromotionBranches");
+                });
+
+            modelBuilder.Entity("ServiPuntosUy.DAO.Models.Central.PromotionProduct", b =>
+                {
+                    b.Property<int>("PromotionId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.HasKey("PromotionId", "ProductId");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("PromotionProducts");
                 });
 
             modelBuilder.Entity("ServiPuntosUy.DAO.Models.Central.Redemption", b =>
@@ -381,7 +411,7 @@ namespace ServiPuntosUy.DAO.Migrations.Central
                     b.HasData(
                         new
                         {
-                            Id = 1,
+                            Id = -1,
                             Name = "ancap"
                         });
                 });
@@ -414,6 +444,16 @@ namespace ServiPuntosUy.DAO.Migrations.Central
                     b.HasIndex("TenantId");
 
                     b.ToTable("TenantUIs");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = -1,
+                            LogoUrl = "https://example.com/logo-ancap.png",
+                            PrimaryColor = "#0000FF",
+                            SecondaryColor = "#FFFF00",
+                            TenantId = -1
+                        });
                 });
 
             modelBuilder.Entity("ServiPuntosUy.DAO.Models.Central.Transaction", b =>
@@ -512,45 +552,30 @@ namespace ServiPuntosUy.DAO.Migrations.Central
                     b.HasData(
                         new
                         {
-                            Id = 1,
+                            Id = -1,
                             Email = "admin@servipuntos.uy",
                             IsVerified = false,
-                            LastLoginDate = new DateTime(2025, 6, 4, 1, 59, 11, 368, DateTimeKind.Utc).AddTicks(9600),
+                            LastLoginDate = new DateTime(2025, 6, 10, 23, 9, 29, 993, DateTimeKind.Utc).AddTicks(5260),
                             Name = "Admin Central",
                             NotificationsEnabled = true,
-                            Password = "3bmFvIrUxrqWXIYBbxE835ZffLJC0c4qJeZdHJMe250=",
-                            PasswordSalt = "8GpMFyuC9qfwBbrQvmiK1Q==",
+                            Password = "qq/R9RjIoeDqHnR8V6/hEX69GoymiJ+6oIM4MqhkCi8=",
+                            PasswordSalt = "m6dWUsemHMxzHOIp3E78qQ==",
                             PointBalance = 0,
                             Role = 1
                         },
                         new
                         {
-                            Id = 2,
+                            Id = -2,
                             Email = "admintenant@servipuntos.uy",
                             IsVerified = false,
-                            LastLoginDate = new DateTime(2025, 6, 4, 1, 59, 11, 368, DateTimeKind.Utc).AddTicks(9630),
+                            LastLoginDate = new DateTime(2025, 6, 10, 23, 9, 29, 993, DateTimeKind.Utc).AddTicks(5340),
                             Name = "Admin Tenant",
                             NotificationsEnabled = true,
-                            Password = "3bmFvIrUxrqWXIYBbxE835ZffLJC0c4qJeZdHJMe250=",
-                            PasswordSalt = "8GpMFyuC9qfwBbrQvmiK1Q==",
+                            Password = "qq/R9RjIoeDqHnR8V6/hEX69GoymiJ+6oIM4MqhkCi8=",
+                            PasswordSalt = "m6dWUsemHMxzHOIp3E78qQ==",
                             PointBalance = 0,
                             Role = 2,
-                            TenantId = 1
-                        },
-                        new
-                        {
-                            Id = 3,
-                            BranchId = 1,
-                            Email = "adminAncap1@servipuntos.uy",
-                            IsVerified = false,
-                            LastLoginDate = new DateTime(2025, 6, 4, 1, 59, 11, 368, DateTimeKind.Utc).AddTicks(9650),
-                            Name = "Admin branch",
-                            NotificationsEnabled = true,
-                            Password = "3bmFvIrUxrqWXIYBbxE835ZffLJC0c4qJeZdHJMe250=",
-                            PasswordSalt = "8GpMFyuC9qfwBbrQvmiK1Q==",
-                            PointBalance = 0,
-                            Role = 3,
-                            TenantId = 1
+                            TenantId = -1
                         });
                 });
 
@@ -620,17 +645,9 @@ namespace ServiPuntosUy.DAO.Migrations.Central
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("ServiPuntosUy.DAO.Models.Central.Tenant", "Tenant")
-                        .WithMany()
-                        .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Branch");
 
                     b.Navigation("Product");
-
-                    b.Navigation("Tenant");
                 });
 
             modelBuilder.Entity("ServiPuntosUy.DAO.Models.Central.Promotion", b =>
@@ -648,6 +665,52 @@ namespace ServiPuntosUy.DAO.Migrations.Central
                     b.Navigation("Branch");
 
                     b.Navigation("Tenant");
+                });
+
+            modelBuilder.Entity("ServiPuntosUy.DAO.Models.Central.PromotionBranch", b =>
+                {
+                    b.HasOne("ServiPuntosUy.DAO.Models.Central.Branch", "Branch")
+                        .WithMany("PromotionBranch")
+                        .HasForeignKey("BranchId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("ServiPuntosUy.DAO.Models.Central.Promotion", "Promotion")
+                        .WithMany("PromotionBranch")
+                        .HasForeignKey("PromotionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ServiPuntosUy.DAO.Models.Central.Tenant", "Tenant")
+                        .WithMany("PromotionBranch")
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Branch");
+
+                    b.Navigation("Promotion");
+
+                    b.Navigation("Tenant");
+                });
+
+            modelBuilder.Entity("ServiPuntosUy.DAO.Models.Central.PromotionProduct", b =>
+                {
+                    b.HasOne("ServiPuntosUy.DAO.Models.Central.Product", "Product")
+                        .WithMany("PromotionProduct")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ServiPuntosUy.DAO.Models.Central.Promotion", "Promotion")
+                        .WithMany("PromotionProduct")
+                        .HasForeignKey("PromotionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+
+                    b.Navigation("Promotion");
                 });
 
             modelBuilder.Entity("ServiPuntosUy.DAO.Models.Central.Redemption", b =>
@@ -784,6 +847,28 @@ namespace ServiPuntosUy.DAO.Migrations.Central
                     b.Navigation("Branch");
 
                     b.Navigation("Tenant");
+                });
+
+            modelBuilder.Entity("ServiPuntosUy.DAO.Models.Central.Branch", b =>
+                {
+                    b.Navigation("PromotionBranch");
+                });
+
+            modelBuilder.Entity("ServiPuntosUy.DAO.Models.Central.Product", b =>
+                {
+                    b.Navigation("PromotionProduct");
+                });
+
+            modelBuilder.Entity("ServiPuntosUy.DAO.Models.Central.Promotion", b =>
+                {
+                    b.Navigation("PromotionBranch");
+
+                    b.Navigation("PromotionProduct");
+                });
+
+            modelBuilder.Entity("ServiPuntosUy.DAO.Models.Central.Tenant", b =>
+                {
+                    b.Navigation("PromotionBranch");
                 });
 #pragma warning restore 612, 618
         }

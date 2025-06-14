@@ -30,5 +30,8 @@ namespace ServiPuntosUy.DAO.Models.Central
 
         [Required]
         public TimeOnly ClosingTime { get; set; } = new TimeOnly(22, 0);
+
+        // Propiedad de navegación inversa
+        public ICollection<PromotionBranch> PromotionBranch { get; set; }
     }
 }

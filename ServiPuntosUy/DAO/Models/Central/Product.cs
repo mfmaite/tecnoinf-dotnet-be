@@ -25,4 +25,7 @@ public class Product
 
     [Required]
     public bool AgeRestricted { get; set; } = false;
+
+    public ICollection<PromotionProduct> PromotionProduct { get; set; }
+
 }

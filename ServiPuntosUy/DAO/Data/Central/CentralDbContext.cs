@@ -20,6 +20,8 @@ public class CentralDbContext : DbContext
     public DbSet<Product> Products { get; set; }
     public DbSet<ProductStock> ProductStocks { get; set; }
     public DbSet<Promotion> Promotions { get; set; }
+    public DbSet<PromotionBranch> PromotionBranches { get; set; }
+    public DbSet<PromotionProduct> PromotionProducts { get; set; }
     public DbSet<Redemption> Redemptions { get; set; }
     public DbSet<SatisfactionSurvey> SatisfactionSurveys { get; set; }
     public DbSet<Service> Services { get; set; }
@@ -75,6 +77,45 @@ public class CentralDbContext : DbContext
             .WithMany()
             .HasForeignKey(f => f.TenantId)
             .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<PromotionBranch>()
+        .HasKey(pb => new { pb.PromotionId, pb.BranchId, pb.TenantId });
+
+            modelBuilder.Entity<PromotionBranch>()
+        .HasOne(pb => pb.Promotion)
+        .WithMany(p => p.PromotionBranch)
+        .HasForeignKey(pb => pb.PromotionId)
+        .OnDelete(DeleteBehavior.Cascade); // Eliminación en cascada para PromotionId
+
+    modelBuilder.Entity<PromotionBranch>()
+        .HasOne(pb => pb.Branch)
+        .WithMany(b => b.PromotionBranch)
+        .HasForeignKey(pb => pb.BranchId)
+        .OnDelete(DeleteBehavior.NoAction); // Sin eliminación en cascada para BranchId
+
+    modelBuilder.Entity<PromotionBranch>()
+        .HasOne(pb => pb.Tenant)
+        .WithMany(t => t.PromotionBranch)
+        .HasForeignKey(pb => pb.TenantId)
+        .OnDelete(DeleteBehavior.NoAction); // Sin eliminación en cascada para TenantId
+
+
+    // Configuración para PromotionProduct
+    modelBuilder.Entity<PromotionProduct>()
+        .HasKey(pp => new { pp.PromotionId, pp.ProductId }); // Clave compuesta
+
+    modelBuilder.Entity<PromotionProduct>()
+        .HasOne(pp => pp.Promotion)
+        .WithMany(p => p.PromotionProduct)
+        .HasForeignKey(pp => pp.PromotionId)
+        .OnDelete(DeleteBehavior.Cascade); // Eliminación en cascada para PromotionId
+
+    modelBuilder.Entity<PromotionProduct>()
+        .HasOne(pp => pp.Product)
+        .WithMany(p => p.PromotionProduct)
+        .HasForeignKey(pp => pp.ProductId)
+        .OnDelete(DeleteBehavior.Restrict); // Sin eliminación en cascada para ProductId
+
 
         // Seed para el primer usuario administrador
         SeedAdminUser(modelBuilder);

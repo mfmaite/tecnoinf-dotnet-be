@@ -164,19 +164,30 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
     /// </summary>
     public class PromotionService : IPromotionService
     {
-        private readonly DbContext _dbContext;
-        private readonly IConfiguration _configuration;
-        private readonly string _tenantId;
+        private readonly IGenericRepository<DAO.Models.Central.Promotion> _promotionRepository;
 
-        public PromotionService(DbContext dbContext, IConfiguration configuration, string tenantId)
+        public PromotionService(IGenericRepository<DAO.Models.Central.Promotion> promotionRepository)
         {
-            _dbContext = dbContext;
-            _configuration = configuration;
-            _tenantId = tenantId;
+            _promotionRepository = promotionRepository;
+        }
+        public Task<PromotionDTO?> AddPromotion(int tenantId, string description, DateTime startDate, DateTime endDate, IEnumerable<int> branch, IEnumerable<int> product)
+        {
+            throw new UnauthorizedAccessException("El usuario final no puede agregar promociones");
+        }
+        public Task<PromotionDTO?> UpdatePromotion(int promotionId, int tenantId, string description, DateTime startDate, DateTime endDate, IEnumerable<int> branch, IEnumerable<int> product)
+        {
+            throw new UnauthorizedAccessException("El usuario final no puede actualizar promociones");
         }
 
-        // Implementar los métodos de la interfaz IPromotionService
-        // Esta es una implementación básica para el scaffold
+        public PromotionExtendedDTO[] GetPromotionList(int tenantId)
+        {
+            throw new UnauthorizedAccessException("El usuario final no puede obtener la lista de promociones");
+        }
+
+        public PromotionExtendedDTO GetPromotion(int promotionId, int branchId)
+        {
+            throw new UnauthorizedAccessException("El usuario final no puede obtener una promoción por ID");
+        }
     }
 
     /// <summary>
