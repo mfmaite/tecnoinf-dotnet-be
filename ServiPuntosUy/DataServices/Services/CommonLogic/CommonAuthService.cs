@@ -103,12 +103,7 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
             UserType userType = (UserType)(httpContext.Items["UserType"] ?? UserType.EndUser);
 
             // Buscar usuario por email, tenantId y rol
-            var query = _dbContext.Set<User>().Where(u => u.Email == email);
-
-            // if (tenantId.HasValue) {
-            //     query = query.Where(u => u.TenantId == tenantId);
-            //     query = query.Where(u => u.Role == userType);
-            // }
+            var query = _dbContext.Set<User>().Where(u => u.Email == email && u.TenantId == tenantId && u.Role == userType);
 
             var user = await query.FirstOrDefaultAsync();
             if (user == null)
