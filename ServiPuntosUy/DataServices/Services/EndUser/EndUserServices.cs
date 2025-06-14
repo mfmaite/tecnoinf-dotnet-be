@@ -165,10 +165,16 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
     public class PromotionService : IPromotionService
     {
         private readonly IGenericRepository<DAO.Models.Central.Promotion> _promotionRepository;
+        private readonly IGenericRepository<DAO.Models.Central.PromotionBranch> _promotionBranchRepository;
+        private readonly IGenericRepository<DAO.Models.Central.PromotionProduct> _promotionProductRepository;
 
-        public PromotionService(IGenericRepository<DAO.Models.Central.Promotion> promotionRepository)
+        public PromotionService(IGenericRepository<DAO.Models.Central.Promotion> promotionRepository,
+            IGenericRepository<DAO.Models.Central.PromotionBranch> promotionBranchRepository,
+            IGenericRepository<DAO.Models.Central.PromotionProduct> promotionProductRepository)
         {
             _promotionRepository = promotionRepository;
+            _promotionBranchRepository = promotionBranchRepository;
+            _promotionProductRepository = promotionProductRepository;
         }
         public Task<PromotionDTO?> AddPromotion(int tenantId, string description, DateTime startDate, DateTime endDate, IEnumerable<int> branch, IEnumerable<int> product)
         {
@@ -181,12 +187,59 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
 
         public PromotionExtendedDTO[] GetPromotionList(int tenantId)
         {
-            throw new UnauthorizedAccessException("El usuario final no puede obtener la lista de promociones");
+            // Obtener la lista de promociones del repositorio filtrando por TenantId
+            var promotions = _promotionRepository.GetQueryable().Where(p => p.TenantId == tenantId);
+
+            //Recorremos las promociones y las agregamos a una lista
+            var promotionList = promotions.Select(p => new PromotionExtendedDTO
+            {
+                PromotionId = p.Id,
+                TenantId = p.TenantId,
+                Description = p.Description,
+                StartDate = p.StartDate,
+                EndDate = p.EndDate,
+                Branches = _promotionBranchRepository.GetQueryable().Where(pb => pb.TenantId == tenantId && pb.PromotionId == p.Id).Select(pb => pb.BranchId).ToList(),
+                Products = _promotionProductRepository.GetQueryable().Where(pp => pp.PromotionId == p.Id).Select(pp => pp.ProductId).ToList()
+            }).ToArray();
+            return promotionList;
         }
 
         public PromotionExtendedDTO GetPromotion(int promotionId, int branchId)
         {
-            throw new UnauthorizedAccessException("El usuario final no puede obtener una promoción por ID");
+          //Obtenemos promotionBranch
+            var  promotionBranch = _promotionBranchRepository.GetQueryable().Where(pb => pb.BranchId == branchId && pb.PromotionId == promotionId).FirstOrDefault();
+     
+            if (promotionBranch == null)
+                throw new Exception($"No existe una promoción con el ID {promotionId} para la sucursal {branchId}");
+        
+            // Obtener PromotionProduct
+            var  promotionProduct = _promotionProductRepository.GetQueryable().Where(pp => pp.PromotionId == promotionId)
+                .Select(pp => pp.ProductId)
+                .ToList(); 
+
+            var promotion = _promotionRepository.GetQueryable().Where(p => p.TenantId == promotionBranch.TenantId && p.Id == promotionId)
+                .FirstOrDefault();
+            
+            if (promotion == null)
+                throw new Exception($"No existe una promoción con el ID {promotionId}");
+            
+            var promotionExtended = new PromotionExtendedDTO
+            {
+                PromotionId = promotion.Id,
+                TenantId = promotion.TenantId,
+                Description = promotion.Description,
+                StartDate = promotion.StartDate,
+                EndDate = promotion.EndDate,
+                Branches = new List<int> { promotionBranch.BranchId },
+                Products = promotionProduct
+            };
+
+            return promotionExtended;
+
+        }
+        public Task<PromotionDTO?> AddPromotionForBranch(int tenantId, int branchId, string description, DateTime startDate, DateTime endDate, IEnumerable<int> product)
+        {
+            throw new UnauthorizedAccessException("El usuario final no puede agregar promociones para una sucursal");
         }
     }
 
