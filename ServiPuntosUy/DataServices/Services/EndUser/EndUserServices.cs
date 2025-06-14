@@ -802,7 +802,7 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
                 var expiresAt = DateTime.Parse(principal.FindFirst("expiresAt").Value);
 
                 // 3. Verificar que el token no haya expirado
-                if (expiresAt < DateTime.UtcNow)
+                if (expiresAt > DateTime.UtcNow)
                 {
                     throw new Exception("El token ha expirado");
                 }
