@@ -193,7 +193,7 @@ public class BranchController : BaseController
 
             if (!TimeOnly.TryParse(request.ClosingTime, out var closingTime))
                 return BadRequest("Formato de hora inválido para ClosingTime. Use HH:mm.");
-                
+
             var branch = await BranchService?.setBranchHours(request.branchId, openTime, closingTime);
             return Ok(new ApiResponse<BranchDTO?>{
                 Error = false,
@@ -254,7 +254,7 @@ public class BranchController : BaseController
         }
     }
 
-        /// <summary>
+    /// <summary>
     /// Gestionar stock de un producto en un branch
     /// </summary>
     /// <param name="manageStock"></param>
@@ -266,7 +266,7 @@ public class BranchController : BaseController
     [ProducesResponseType(400)]
     public async Task<IActionResult> manageStock([FromBody] ManageProductStockRequest request) {
         try {
-     
+
             var productStock = await BranchService?.manageStock(request.productId, request.branchId, request.stock);
             if (productStock == null)
             {

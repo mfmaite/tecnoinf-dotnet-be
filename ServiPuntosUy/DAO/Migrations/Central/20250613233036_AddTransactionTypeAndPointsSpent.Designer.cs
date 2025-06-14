@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ServiPuntosUy.DAO.Data.Central;
 
@@ -11,9 +12,11 @@ using ServiPuntosUy.DAO.Data.Central;
 namespace ServiPuntosUy.DAO.Migrations.Central
 {
     [DbContext(typeof(CentralDbContext))]
-    partial class CentralDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250613233036_AddTransactionTypeAndPointsSpent")]
+    partial class AddTransactionTypeAndPointsSpent
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -120,17 +123,6 @@ namespace ServiPuntosUy.DAO.Migrations.Central
                     b.HasIndex("TenantId");
 
                     b.ToTable("LoyaltyConfigs");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = -1,
-                            AccumulationRule = 100m,
-                            ExpiricyPolicyDays = 180,
-                            PointsName = "Puntos",
-                            PointsValue = 1,
-                            TenantId = -1
-                        });
                 });
 
             modelBuilder.Entity("ServiPuntosUy.DAO.Models.Central.Product", b =>
@@ -558,11 +550,11 @@ namespace ServiPuntosUy.DAO.Migrations.Central
                             Id = -1,
                             Email = "admin@servipuntos.uy",
                             IsVerified = false,
-                            LastLoginDate = new DateTime(2025, 6, 14, 2, 42, 4, 606, DateTimeKind.Utc).AddTicks(6679),
+                            LastLoginDate = new DateTime(2025, 6, 13, 23, 30, 35, 858, DateTimeKind.Utc).AddTicks(7306),
                             Name = "Admin Central",
                             NotificationsEnabled = true,
-                            Password = "DunZ2vxyToxjhIPT2Ya9ci6moBUR4+Y+FqHAvMrPn18=",
-                            PasswordSalt = "sQL2cXAYerKlPtrXl+nHjA==",
+                            Password = "2GZKzZMQle5c7hbbuOWb6711Qrl1+i6oBhE3w04j7vo=",
+                            PasswordSalt = "4fEENXLtRFJzwZnfLpnA4Q==",
                             PointBalance = 0,
                             Role = 1
                         },
@@ -571,11 +563,11 @@ namespace ServiPuntosUy.DAO.Migrations.Central
                             Id = -2,
                             Email = "admintenant@servipuntos.uy",
                             IsVerified = false,
-                            LastLoginDate = new DateTime(2025, 6, 14, 2, 42, 4, 606, DateTimeKind.Utc).AddTicks(6708),
+                            LastLoginDate = new DateTime(2025, 6, 13, 23, 30, 35, 858, DateTimeKind.Utc).AddTicks(7343),
                             Name = "Admin Tenant",
                             NotificationsEnabled = true,
-                            Password = "DunZ2vxyToxjhIPT2Ya9ci6moBUR4+Y+FqHAvMrPn18=",
-                            PasswordSalt = "sQL2cXAYerKlPtrXl+nHjA==",
+                            Password = "2GZKzZMQle5c7hbbuOWb6711Qrl1+i6oBhE3w04j7vo=",
+                            PasswordSalt = "4fEENXLtRFJzwZnfLpnA4Q==",
                             PointBalance = 0,
                             Role = 2,
                             TenantId = -1

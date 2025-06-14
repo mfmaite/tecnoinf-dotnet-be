@@ -110,7 +110,7 @@ namespace ServiPuntosUy.DataServices
             _serviceCollection.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
             // Registrar el servicio público de TenantUI (disponible sin autenticación)
-            _serviceCollection.AddScoped<IPublicTenantUIService>(sp => 
+            _serviceCollection.AddScoped<IPublicTenantUIService>(sp =>
                 new PublicTenantUIService(
                     sp.GetRequiredService<IGenericRepository<TenantUI>>(),
                     sp.GetRequiredService<ITenantResolver>()));
@@ -125,6 +125,18 @@ namespace ServiPuntosUy.DataServices
                     sp.GetRequiredService<IGenericRepository<DAO.Models.Central.Tenant>>(),
                     null, // No necesitamos LoyaltyService para login
                     null)); // No hay tenant para login
+
+            _serviceCollection.AddScoped<IRedemptionService>(sp =>
+        new Services.EndUser.RedemptionService(
+            sp.GetRequiredService<DbContext>(),
+            sp.GetRequiredService<IGenericRepository<Transaction>>(),
+            sp.GetRequiredService<IGenericRepository<TransactionItem>>(),
+            sp.GetRequiredService<IGenericRepository<Product>>(),
+            sp.GetRequiredService<IGenericRepository<ProductStock>>(),
+            sp.GetRequiredService<IGenericRepository<User>>(),
+            sp.GetRequiredService<IGenericRepository<LoyaltyConfig>>(),
+            sp.GetRequiredService<IGenericRepository<Branch>>(),
+            _configuration));
 
             // Construir el proveedor de servicios para login
             _scopedServiceProvider = _serviceCollection.BuildServiceProvider();
@@ -306,10 +318,21 @@ namespace ServiPuntosUy.DataServices
                     sp.GetRequiredService<DbContext>(),
                     _configuration,
                     sp.GetRequiredService<IAuthLogic>(),
-                    sp.GetRequiredService<IGenericRepository<DAO.Models.Central.User>>(),
-                    sp.GetRequiredService<IGenericRepository<DAO.Models.Central.Tenant>>(),
+                    sp.GetRequiredService<IGenericRepository<User>>(),
+                    sp.GetRequiredService<IGenericRepository<Tenant>>(),
                     sp.GetRequiredService<ILoyaltyService>(), // Inyectamos el servicio de lealtad
                     tenantId));
+
+            _serviceCollection.AddScoped<ITransactionService>(sp =>
+                new Services.EndUser.TransactionService(
+                    sp.GetRequiredService<DbContext>(),
+                    sp.GetRequiredService<IGenericRepository<Transaction>>(),
+                    sp.GetRequiredService<IGenericRepository<LoyaltyConfig>>(),
+                    sp.GetRequiredService<IGenericRepository<Product>>(),
+                    sp.GetRequiredService<IGenericRepository<TransactionItem>>(),
+                    sp.GetRequiredService<IGenericRepository<Branch>>(),
+                    sp.GetRequiredService<IGenericRepository<ProductStock>>(),
+                    sp.GetRequiredService<IGenericRepository<User>>()));
 
             // Registrar los demás servicios
             _serviceCollection.AddScoped<IPromotionService, Services.EndUser.PromotionService>();
@@ -321,13 +344,25 @@ namespace ServiPuntosUy.DataServices
             _serviceCollection.AddScoped<IVEAIService, Services.EndUser.VEAIService>();
             _serviceCollection.AddScoped<IFuelService, Services.EndUser.FuelService>();
             _serviceCollection.AddScoped<ITenantBranchService, Services.EndUser.TenantBranchService>();
-            
+
+            _serviceCollection.AddScoped<IRedemptionService>(sp =>
+                new Services.EndUser.RedemptionService(
+                    sp.GetRequiredService<DbContext>(),
+                    sp.GetRequiredService<IGenericRepository<Transaction>>(),
+                    sp.GetRequiredService<IGenericRepository<TransactionItem>>(),
+                    sp.GetRequiredService<IGenericRepository<Product>>(),
+                    sp.GetRequiredService<IGenericRepository<ProductStock>>(),
+                    sp.GetRequiredService<IGenericRepository<User>>(),
+                    sp.GetRequiredService<IGenericRepository<LoyaltyConfig>>(),
+                    sp.GetRequiredService<IGenericRepository<Branch>>(),
+                    _configuration));
+
             // Registrar el servicio de gestión de servicios para el usuario final (solo lectura)
             _serviceCollection.AddScoped<IServiceManager>(sp =>
                 new Services.EndUser.ServiceManager(
                     sp.GetRequiredService<IGenericRepository<Service>>(),
                     sp.GetRequiredService<IGenericRepository<ServiceAvailability>>(),
-                    sp.GetRequiredService<IGenericRepository<ServiPuntosUy.DAO.Models.Central.Branch>>()));
+                    sp.GetRequiredService<IGenericRepository<Branch>>()));
         }
     }
 }

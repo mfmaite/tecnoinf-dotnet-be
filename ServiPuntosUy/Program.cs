@@ -46,7 +46,7 @@ builder.Services.AddSwaggerGen(c =>
         Version = "v1",
         Description = "API para la gestión de ServiPuntosUY"
     });
-    
+
     // Configurar la seguridad JWT para Swagger
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
@@ -89,7 +89,7 @@ builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepositor
 
 // Registrar servicios globales que no dependen del tenant/usuario
 builder.Services.AddScoped<IAuthLogic, AuthLogic>();
-builder.Services.AddScoped<ITenantResolver>(provider => 
+builder.Services.AddScoped<ITenantResolver>(provider =>
     new TenantResolver(
         provider.GetRequiredService<IConfiguration>(),
         provider.GetRequiredService<CentralDbContext>(),
@@ -112,9 +112,9 @@ app.UseRouting();
 app.UseCorsConfiguration();
 
 // Configuración del middleware
+app.UseJwtAuthentication(); // Middleware personalizado para autenticación JWT (chequea token)
 app.UseRequestContent(); // Middleware para identificar tenant y tipo de usuario
 app.UseApiResponseWrapper(); // Middleware para envolver respuestas en ApiResponse
-app.UseJwtAuthentication(); // Middleware personalizado para autenticación JWT (chequea token)
 app.UseAuthorization();
 
 app.MapControllers();

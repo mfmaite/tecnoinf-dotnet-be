@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using ServiPuntosUy.Enums;
 
 namespace ServiPuntosUy.DAO.Models.Central;
 
@@ -18,11 +19,6 @@ public class Transaction
     public int UserId { get; set; }
     public User User { get; set; }
 
-    [ForeignKey("Tenant")]
-    [Required]
-    public int TenantId { get; set; }
-    public Tenant Tenant { get; set; }
-
     [Required]
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
@@ -31,4 +27,10 @@ public class Transaction
 
     [Required]
     public int PointsEarned { get; set; } = 0;
+
+    [Required]
+    public TransactionType Type { get; set; } = TransactionType.Purchase;
+
+    [Required]
+    public int PointsSpent { get; set; } = 0;
 }
