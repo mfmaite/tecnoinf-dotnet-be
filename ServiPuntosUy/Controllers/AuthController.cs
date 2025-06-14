@@ -48,6 +48,66 @@ namespace ServiPuntosUy.Controllers
         }
 
         /// <summary>
+        /// Genera un magic link para el login
+        /// </summary>
+        /// <param name="request">Email del usuario</param>
+        /// <returns>Token del magic link</returns>
+        [HttpPost("magic-link")]
+        [ProducesResponseType(typeof(ApiResponse<string>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<object>), 400)]
+        public async Task<IActionResult> GenerateMagicLink([FromBody] MagicLinkRequest request)
+        {
+            try
+            {
+                var magicLinkToken = await AuthService.GenerateMagicLinkAsync(request.Email, HttpContext);
+                return Ok(new ApiResponse<string>
+                {
+                    Error = false,
+                    Message = "Magic link generado correctamente",
+                    Data = magicLinkToken
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new ApiResponse<object>
+                {
+                    Error = true,
+                    Message = ex.Message
+                });
+            }
+        }
+
+        /// <summary>
+        /// Valida un magic link y genera una sesión
+        /// </summary>
+        /// <param name="request">Token del magic link</param>
+        /// <returns>Token de sesión</returns>
+        [HttpPost("validate-magic-link")]
+        [ProducesResponseType(typeof(ApiResponse<UserSessionDTO>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<object>), 400)]
+        public async Task<IActionResult> ValidateMagicLink([FromBody] ValidateMagicLinkRequest request)
+        {
+            try
+            {
+                var userSession = await AuthService.ValidateMagicLinkAsync(request.Token);
+                return Ok(new ApiResponse<UserSessionDTO>
+                {
+                    Error = false,
+                    Message = "Magic link validado correctamente",
+                    Data = userSession
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new ApiResponse<object>
+                {
+                    Error = true,
+                    Message = ex.Message
+                });
+            }
+        }
+
+        /// <summary>
         /// Obtiene información del usuario actual
         /// </summary>
         /// <returns>Información del usuario</returns>
