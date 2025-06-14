@@ -38,7 +38,8 @@ public class TransactionController : BaseController
                 request.Products
             );
 
-            return Ok(new ApiResponse<TransactionDTO> {
+            return Ok(new ApiResponse<TransactionDTO>
+            {
                 Error = false,
                 Data = transaction,
                 Message = "Transacción creada exitosamente"
@@ -46,7 +47,8 @@ public class TransactionController : BaseController
         }
         catch (Exception ex)
         {
-            return BadRequest(new ApiResponse<TransactionDTO> {
+            return BadRequest(new ApiResponse<TransactionDTO>
+            {
                 Error = true,
                 Message = ex.Message
             });
@@ -67,7 +69,8 @@ public class TransactionController : BaseController
         {
             var loggedUser = ObtainUserFromToken();
             var transactions = await TransactionService.GetTransactionsByUserId(loggedUser.Id);
-            return Ok(new ApiResponse<TransactionDTO[]> {
+            return Ok(new ApiResponse<TransactionDTO[]>
+            {
                 Error = false,
                 Data = transactions,
                 Message = "Historial de transacciones obtenido exitosamente"
@@ -75,13 +78,14 @@ public class TransactionController : BaseController
         }
         catch (Exception ex)
         {
-            return BadRequest(new ApiResponse<TransactionDTO[]> {
+            return BadRequest(new ApiResponse<TransactionDTO[]>
+            {
                 Error = true,
                 Message = ex.Message
             });
         }
     }
-    
+
     /// <summary>
     /// Obtiene los productos de una transacción específica
     /// </summary>
@@ -98,17 +102,18 @@ public class TransactionController : BaseController
         try
         {
             var loggedUser = ObtainUserFromToken();
-            
+
             // Primero verificamos que la transacción pertenezca al usuario
             var transaction = await TransactionService.GetTransactionById(transactionId);
             if (transaction.UserId != loggedUser.Id)
             {
                 return Forbid();
             }
-            
+
             var items = await TransactionService.GetTransactionItems(transactionId);
-            
-            return Ok(new ApiResponse<TransactionItemDTO[]> {
+
+            return Ok(new ApiResponse<TransactionItemDTO[]>
+            {
                 Error = false,
                 Data = items,
                 Message = "Items de la transacción obtenidos exitosamente"
@@ -118,13 +123,15 @@ public class TransactionController : BaseController
         {
             if (ex.Message.Contains("No existe una transacción"))
             {
-                return NotFound(new ApiResponse<TransactionItemDTO[]> {
+                return NotFound(new ApiResponse<TransactionItemDTO[]>
+                {
                     Error = true,
                     Message = ex.Message
                 });
             }
-            
-            return BadRequest(new ApiResponse<TransactionItemDTO[]> {
+
+            return BadRequest(new ApiResponse<TransactionItemDTO[]>
+            {
                 Error = true,
                 Message = ex.Message
             });
