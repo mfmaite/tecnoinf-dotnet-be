@@ -57,7 +57,8 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
             _loyaltyConfigRepository = loyaltyConfigRepository;
         }
 
-         public LoyaltyConfigDTO CreateLoyaltyProgram(int tenantId, string pointsName, int pointsValue, decimal accumulationRule, int expiricyPolicyDays) {
+        public LoyaltyConfigDTO CreateLoyaltyProgram(int tenantId, string pointsName, int pointsValue, decimal accumulationRule, int expiricyPolicyDays)
+        {
             throw new UnauthorizedAccessException("El usuario final no puede crear un programa de fidelidad");
         }
 
@@ -130,8 +131,10 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
         /// </summary>
         /// <param name="loyaltyConfig">Modelo de configuración de lealtad</param>
         /// <returns>DTO de configuración de lealtad</returns>
-        public LoyaltyConfigDTO GetLoyaltyConfigDTO(DAO.Models.Central.LoyaltyConfig loyaltyConfig) {
-            return new LoyaltyConfigDTO {
+        public LoyaltyConfigDTO GetLoyaltyConfigDTO(DAO.Models.Central.LoyaltyConfig loyaltyConfig)
+        {
+            return new LoyaltyConfigDTO
+            {
                 Id = loyaltyConfig.Id,
                 TenantId = loyaltyConfig.TenantId,
                 PointsName = loyaltyConfig.PointsName,
@@ -150,14 +153,16 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
         {
             var loyaltyConfig = _loyaltyConfigRepository.GetQueryable().FirstOrDefault(lc => lc.TenantId == tenantId);
 
-            if (loyaltyConfig == null) {
+            if (loyaltyConfig == null)
+            {
                 throw new ArgumentException($"No existe una configuración de lealtad para el tenant con el ID {tenantId}");
             }
 
             return GetLoyaltyConfigDTO(loyaltyConfig);
         }
 
-        public LoyaltyConfigDTO UpdateLoyaltyProgram(int tenantId, string? pointsName, int? pointsValue, decimal? accumulationRule, int? expiricyPolicyDays) {
+        public LoyaltyConfigDTO UpdateLoyaltyProgram(int tenantId, string? pointsName, int? pointsValue, decimal? accumulationRule, int? expiricyPolicyDays)
+        {
             throw new UnauthorizedAccessException("El usuario final no puede actualizar un programa de fidelidad");
         }
     }
@@ -451,7 +456,8 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
         }
     }
 
-    public class TransactionService : ITransactionService {
+    public class TransactionService : ITransactionService
+    {
 
         private readonly DbContext _dbContext;
         private readonly IGenericRepository<DAO.Models.Central.Transaction> _transactionRepository;
@@ -485,7 +491,8 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
 
         public TransactionDTO GetTransactionDTO(Transaction transaction)
         {
-            return new TransactionDTO {
+            return new TransactionDTO
+            {
                 Id = transaction.Id,
                 UserId = transaction.UserId,
                 BranchId = transaction.BranchId,
@@ -499,7 +506,8 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
 
         public async Task<TransactionDTO> CreateTransaction(int userId, int branchId, ProductQuantity[] products)
         {
-            try {
+            try
+            {
                 // Obtener los productos
                 var productIds = products.Select(p => p.ProductId).ToArray();
 
@@ -537,7 +545,8 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
                 var loyaltyConfig = await _loyaltyConfigRepository.GetQueryable()
                     .FirstOrDefaultAsync(lc => lc.TenantId == branch.TenantId);
 
-                if (loyaltyConfig == null) {
+                if (loyaltyConfig == null)
+                {
                     throw new Exception("La configuración de lealtad no existe para este tenant");
                 }
 
@@ -550,7 +559,8 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
                 }
 
                 // Crear la transacción
-                var transaction = new Transaction {
+                var transaction = new Transaction
+                {
                     UserId = userId,
                     BranchId = branchId,
                     Amount = totalAmount,
@@ -618,7 +628,9 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
                     await dbTransaction.RollbackAsync();
                     throw new Exception(ex.Message);
                 }
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 throw new Exception(ex.Message);
             }
         }
@@ -627,7 +639,8 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
         {
             var transaction = await _transactionRepository.GetByIdAsync(id);
 
-            if (transaction == null) {
+            if (transaction == null)
+            {
                 throw new Exception("La transacción no existe");
             }
 
@@ -750,7 +763,7 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
             // 6. Generar el token JWT
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]);
-            
+
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new[]
@@ -781,7 +794,7 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
                 // 1. Validar y decodificar el token
                 var tokenHandler = new JwtSecurityTokenHandler();
                 var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]);
-                
+
                 var validationParameters = new TokenValidationParameters
                 {
                     ValidateIssuerSigningKey = true,
@@ -793,7 +806,7 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
 
                 SecurityToken validatedToken;
                 var principal = tokenHandler.ValidateToken(token, validationParameters, out validatedToken);
-                
+
                 // 2. Extraer la información del token
                 var userId = int.Parse(principal.FindFirst("userId").Value);
                 var branchId = int.Parse(principal.FindFirst("branchId").Value);
@@ -802,7 +815,7 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
                 var expiresAt = DateTime.Parse(principal.FindFirst("expiresAt").Value);
 
                 // 3. Verificar que el token no haya expirado
-                if (expiresAt < DateTime.UtcNow)
+                if (expiresAt > DateTime.UtcNow)
                 {
                     throw new Exception("El token ha expirado");
                 }
@@ -970,7 +983,8 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
             var serviceDTO = MapToServiceDTO(service);
 
             // Agregar las disponibilidades al DTO
-            serviceDTO.Availabilities = availabilities.Select(a => {
+            serviceDTO.Availabilities = availabilities.Select(a =>
+            {
                 var dto = MapToServiceAvailabilityDTO(a);
                 dto.ServiceName = service.Name;
                 return dto;
@@ -1000,13 +1014,15 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
                 .ToListAsync();
 
             // Mapear los servicios a DTOs incluyendo sus disponibilidades
-            return services.Select(s => {
+            return services.Select(s =>
+            {
                 var serviceDTO = MapToServiceDTO(s);
 
                 // Agregar las disponibilidades al DTO
                 if (serviceAvailabilities.ContainsKey(s.Id))
                 {
-                    serviceDTO.Availabilities = serviceAvailabilities[s.Id].Select(a => {
+                    serviceDTO.Availabilities = serviceAvailabilities[s.Id].Select(a =>
+                    {
                         var dto = MapToServiceAvailabilityDTO(a);
                         dto.ServiceName = s.Name;
                         return dto;
