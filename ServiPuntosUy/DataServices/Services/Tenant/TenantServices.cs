@@ -555,6 +555,40 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             }).ToArray();
             return promotionList;
         }
+
+        public PromotionExtendedDTO GetPromotion(int promotionId, int branchId)
+        {
+          //Obtenemos promotionBranch
+            var  promotionBranch = _promotionBranchRepository.GetQueryable().Where(pb => pb.BranchId == branchId && pb.PromotionId == promotionId).FirstOrDefault();
+     
+            if (promotionBranch == null)
+                throw new Exception($"No existe una promoción con el ID {promotionId} para la sucursal {branchId}");
+        
+            // Obtener PromotionProduct
+            var  promotionProduct = _promotionProductRepository.GetQueryable().Where(pp => pp.PromotionId == promotionId)
+                .Select(pp => pp.ProductId)
+                .ToList(); 
+
+            var promotion = _promotionRepository.GetQueryable().Where(p => p.TenantId == promotionBranch.TenantId && p.Id == promotionId)
+                .FirstOrDefault();
+            
+            if (promotion == null)
+                throw new Exception($"No existe una promoción con el ID {promotionId}");
+            
+            var promotionExtended = new PromotionExtendedDTO
+            {
+                PromotionId = promotion.Id,
+                TenantId = promotion.TenantId,
+                Description = promotion.Description,
+                StartDate = promotion.StartDate,
+                EndDate = promotion.EndDate,
+                Branches = new List<int> { promotionBranch.BranchId },
+                Products = promotionProduct
+            };
+
+            return promotionExtended;
+
+        }
     
     }
 

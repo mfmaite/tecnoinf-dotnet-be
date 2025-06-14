@@ -319,6 +319,11 @@ namespace ServiPuntosUy.DataServices.Services.Branch
             throw new NotImplementedException();
         }
 
+        public PromotionExtendedDTO GetPromotion(int promotionId, int branchId)
+        {
+            // Implementación básica para el scaffold
+            throw new NotImplementedException();
+        }
         // Implementar los métodos de la interfaz IPromotionService
         // Esta es una implementación básica para el scaffold
     }

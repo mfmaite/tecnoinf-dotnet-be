@@ -275,6 +275,12 @@ namespace ServiPuntosUy.DataServices.Services.Central
             return new PromotionExtendedDTO[0];
         }
 
+        public PromotionExtendedDTO GetPromotion(int promotionId, int branchId)
+        {
+            // Implementación básica para el scaffold
+            return new PromotionExtendedDTO();
+        }
+
         // Implementar los métodos de la interfaz IPromotionService
         // Esta es una implementación básica para el scaffold
     }

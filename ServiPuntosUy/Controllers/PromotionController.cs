@@ -18,7 +18,7 @@ public class PromotionController : BaseController
     }
 
     /// <summary>
-    /// Crear un nuevo branch
+    /// Crear una nueva promocion
     /// </summary>
     /// <param name="promotion"></param>
     /// <returns>Promocion creada</returns>
@@ -72,12 +72,10 @@ public class PromotionController : BaseController
     public async Task<IActionResult> UpdatePromotion([FromBody] UpdatePromotionRequest request) {
         try
         {
-            // if (request == null)
-            //     return BadRequest("Los datos de la promoción son requeridos.");
             
-            // // // verificamos que la fecha de la promocion sea valida
-            // if (request.StartDate >= request.EndDate)
-            //     return BadRequest("La fecha de inicio debe ser anterior a la fecha de fin.");
+            // verificamos que la fecha de la promocion sea valida
+            if (request.StartDate >= request.EndDate)
+                return BadRequest("La fecha de inicio debe ser anterior a la fecha de fin.");
             
             var promocion = await PromotionService.UpdatePromotion(
                 request.PromotionId,
@@ -120,10 +118,6 @@ public class PromotionController : BaseController
     {
         try
         {
-            // var user = ObtainUserFromToken();
-            // if (!int.TryParse(user.TenantId, out int tenantId))
-            //     return BadRequest("No se pudo obtener el TenantId del usuario");
-
             var promotionList = PromotionService.GetPromotionList(tenantId);
 
             return Ok(new ApiResponse<PromotionExtendedDTO[]>
@@ -144,34 +138,34 @@ public class PromotionController : BaseController
     }
 
         /// <summary>
-    /// Obtiene un producto por su ID
+    /// Obtiene una promocion por su ID
     /// </summary>
-    /// <param name="id">ID del producto</param>
-    /// <returns>El producto solicitado</returns>
-    /// <response code="200">Retorna el producto solicitado</response>
-    /// <response code="404">Si el producto no existe</response>
+    /// <returns>La promocion solicitada</returns>
+    /// <response code="200">Retorna la promocion solicitada</response>
+    /// <response code="404">Si la promocion no existe</response>
     /// <response code="400">Si hay un error en la búsqueda</response>
-    [HttpGet("{id}")]
-    [ProducesResponseType(typeof(ProductDTO), 200)]
+    [HttpGet("{promotionId}/{branchId}")]
+    [ProducesResponseType(typeof(PromotionExtendedDTO), 200)]
     [ProducesResponseType(404)]
     [ProducesResponseType(400)]
-    public async Task<IActionResult> GetProduct(int id)
+    public IActionResult GetPromotion(int promotionId, int branchId)
+    
     {
         try
         {
-            var product = await ProductService.GetProductById(id);
-            if (product == null)
+            var promotion = PromotionService.GetPromotion(promotionId, branchId);
+            if (promotion == null)
                 return NotFound(new ApiResponse<object>
                 {
                     Error = true,
-                    Message = $"No existe un producto con el ID {id}"
+                    Message = $"No existe un producto con el ID {promotionId}"
                 });
 
-            return Ok(new ApiResponse<ProductDTO>
+            return Ok(new ApiResponse<PromotionExtendedDTO>
             {
                 Error = false,
                 Message = "Producto encontrado correctamente",
-                Data = product
+                Data = promotion
             });
         }
         catch (Exception ex)
@@ -183,43 +177,4 @@ public class PromotionController : BaseController
             });
         }
     }
-
-    [HttpPost("Delete")]
-    [ProducesResponseType(typeof(ProductDTO), 200)]
-    [ProducesResponseType(400)]
-    public async Task<IActionResult> DeleteProduct([FromBody] AddNewProductRequest request) {
-        try {
-
-            // if (request == null)
-            //     return BadRequest("El id del producto es requerido");
-
-            // if (ObtainUserTypeFromToken() != UserType.Tenant)
-            //     return BadRequest("No tiene permisos para eliminar productos.");
-
-           var deleteProduct =  await ProductService?.DeleteProduct(request.productId);
-           if (!deleteProduct)
-            {
-                return NotFound(new ApiResponse<object>
-                {
-                    Error = true,
-                    Message = $"No existe un producto con el ID {request.productId}"
-                });
-            }
-
-            return Ok(new ApiResponse<ProductDTO>{
-                Error = false,
-                Message = "Producto eliminado correctamente",
-                Data = new ProductDTO()
-            });
-        }
-        catch (Exception ex) {
-            return BadRequest(new ApiResponse<object>{
-                Error = true,
-                Message = ex.Message
-            });
-        }
-
-    }
-
-
 }

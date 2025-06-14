@@ -200,6 +200,32 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
             // }).ToArray();
         }
 
+        public PromotionExtendedDTO GetPromotion(int promotionId, int branchId)
+        {
+            throw new UnauthorizedAccessException("El usuario final no puede obtener una promoción por ID");
+            // Obtener la promoción del repositorio filtrando por PromotionId y BranchId
+            // var promotion = _promotionRepository.GetQueryable()
+            //     .Include(p => p.PromotionBranch)
+            //     .Include(p => p.PromotionProduct)
+            //     .FirstOrDefault(p => p.Id == promotionId && p.PromotionBranch.Any(pb => pb.BranchId == branchId));
+
+            // if (promotion == null)
+            // {
+            //     throw new ArgumentException($"No existe una promoción con el ID {promotionId} para la sucursal {branchId}");
+            // }
+
+            // return new PromotionExtendedDTO
+            // {
+            //     Id = promotion.Id,
+            //     TenantId = promotion.TenantId,
+            //     Description = promotion.Description,
+            //     StartDate = promotion.StartDate,
+            //     EndDate = promotion.EndDate,
+            //     Branches = promotion.PromotionBranch.Select(pb => pb.Branch).ToArray(),
+            //     Products = promotion.PromotionProduct.Select(pp => pp.Product).ToArray()
+            // };
+        }
+
         // Implementar los métodos de la interfaz IPromotionService
         // Esta es una implementación básica para el scaffold
     }
