@@ -175,6 +175,9 @@ namespace ServiPuntosUy.DataServices
             // Registrar servicios para el administrador central
             _serviceCollection.AddScoped<ICentralTenantService, TenantService>();
             _serviceCollection.AddScoped<ILoyaltyService, Services.Central.LoyaltyService>();
+            _serviceCollection.AddScoped<IGeneralParameterService>(sp =>
+                new Services.Central.GeneralParameterService(
+                    sp.GetRequiredService<IGenericRepository<GeneralParameter>>()));
             _serviceCollection.AddScoped<IAuthService>(sp =>
                 new CommonAuthService(
                     sp.GetRequiredService<DbContext>(),
@@ -311,6 +314,11 @@ namespace ServiPuntosUy.DataServices
                 new Services.EndUser.LoyaltyService(
                     sp.GetRequiredService<DbContext>(),
                     sp.GetRequiredService<IGenericRepository<LoyaltyConfig>>()));
+                    
+            // Registrar el servicio de parámetros generales
+            _serviceCollection.AddScoped<IGeneralParameterService>(sp =>
+                new Services.EndUser.GeneralParameterService(
+                    sp.GetRequiredService<IGenericRepository<GeneralParameter>>()));
 
             // Luego registramos el AuthService con la dependencia de LoyaltyService
             _serviceCollection.AddScoped<IAuthService>(sp =>
