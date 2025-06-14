@@ -5,16 +5,19 @@ using ServiPuntosUy.Controllers.Base;
 using Microsoft.AspNetCore.Authorization;
 using ServiPuntosUY.Controllers.Response;
 using ServiPuntosUy.Requests;
-using ServiPuntosUy.DataServices.Services;
 
 namespace ServiPuntosUy.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
 [Authorize]
-public class RedemptionController(IServiceFactory serviceFactory) : BaseController(serviceFactory)
+public class RedemptionController : BaseController
 {
-    private readonly IRedemptionService _redemptionService = serviceFactory.GetService<IRedemptionService>();
+    public RedemptionController(IServiceFactory serviceFactory)
+        : base(serviceFactory)
+    {
+    }
+
     /// <summary>
     /// Genera un token para canjear un producto por puntos
     /// </summary>
@@ -30,7 +33,7 @@ public class RedemptionController(IServiceFactory serviceFactory) : BaseControll
         {
             var loggedUser = ObtainUserFromToken();
 
-            var token = await _redemptionService.GenerateRedemptionToken(
+            var token = await RedemptionService.GenerateRedemptionToken(
                 loggedUser.Id,
                 request.BranchId,
                 request.ProductId
@@ -65,7 +68,7 @@ public class RedemptionController(IServiceFactory serviceFactory) : BaseControll
     {
         try
         {
-            var transaction = await _redemptionService.ProcessRedemption(token);
+            var transaction = await RedemptionService.ProcessRedemption(token);
 
             // Devolver una página HTML simple con el resultado
             var html = $@"

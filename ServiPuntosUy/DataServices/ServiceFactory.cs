@@ -126,18 +126,6 @@ namespace ServiPuntosUy.DataServices
                     null, // No necesitamos LoyaltyService para login
                     null)); // No hay tenant para login
 
-            _serviceCollection.AddScoped<IRedemptionService>(sp =>
-        new Services.EndUser.RedemptionService(
-            sp.GetRequiredService<DbContext>(),
-            sp.GetRequiredService<IGenericRepository<Transaction>>(),
-            sp.GetRequiredService<IGenericRepository<TransactionItem>>(),
-            sp.GetRequiredService<IGenericRepository<Product>>(),
-            sp.GetRequiredService<IGenericRepository<ProductStock>>(),
-            sp.GetRequiredService<IGenericRepository<User>>(),
-            sp.GetRequiredService<IGenericRepository<LoyaltyConfig>>(),
-            sp.GetRequiredService<IGenericRepository<Branch>>(),
-            _configuration));
-
             // Construir el proveedor de servicios para login
             _scopedServiceProvider = _serviceCollection.BuildServiceProvider();
         }
@@ -344,7 +332,7 @@ namespace ServiPuntosUy.DataServices
             _serviceCollection.AddScoped<IVEAIService, Services.EndUser.VEAIService>();
             _serviceCollection.AddScoped<IFuelService, Services.EndUser.FuelService>();
             _serviceCollection.AddScoped<ITenantBranchService, Services.EndUser.TenantBranchService>();
-
+            
             _serviceCollection.AddScoped<IRedemptionService>(sp =>
                 new Services.EndUser.RedemptionService(
                     sp.GetRequiredService<DbContext>(),

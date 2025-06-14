@@ -8,9 +8,14 @@ namespace ServiPuntosUy.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class StatisticsController(IServiceFactory serviceFactory) : BaseController(serviceFactory)
+    public class StatisticsController : BaseController
     {
-        private readonly IStatisticsService _statisticsService = serviceFactory.GetService<IStatisticsService>();
+        private readonly IStatisticsService _statisticsService;
+
+        public StatisticsController(IServiceFactory serviceFactory) : base(serviceFactory)
+        {
+            _statisticsService = serviceFactory.GetService<IStatisticsService>();
+        }
 
         /// <summary>
         /// Obtiene las estadísticas según el tipo de usuario autenticado
