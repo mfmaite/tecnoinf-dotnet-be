@@ -73,7 +73,7 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
                 return userTypeFromHost.Value;
             }
 
-            // 3. Intentar obtener de un custom header (X-User-Type) -> (solo para dev mode)
+            // 3. Intentar obtener de un custom header (X-User-Type)
             UserType? userTypeFromCustomHeader = GetUserTypeFromCustomHeader(context);
             if (userTypeFromCustomHeader.HasValue)
             {
@@ -179,6 +179,7 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
 
         private string GetTenantIdFromCustomHeader(HttpContext context)
         {
+            // Este método procesa el header en todos los entornos (desarrollo y producción)
             if (context.Request.Headers.TryGetValue("X-Tenant-Name", out var tenantNameHeader))
             {
                 // Obtener el nombre del tenant del header
@@ -195,12 +196,7 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
 
         private UserType? GetUserTypeFromCustomHeader(HttpContext context)
         {
-            // Solo procesar el header en entorno de desarrollo
-            if (!_environment.IsDevelopment())
-            {
-                return null;
-            }
-
+            // Permitir procesar el header en todos los entornos
             if (context.Request.Headers.TryGetValue("X-User-Type", out var userTypeHeader))
             {
                 // Obtener el nombre del tenant del header
