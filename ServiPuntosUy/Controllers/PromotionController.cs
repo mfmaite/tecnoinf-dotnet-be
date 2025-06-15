@@ -32,11 +32,19 @@ public class PromotionController : BaseController
         try
         {
             if (request == null)
-                return BadRequest("Los datos de la promoción son requeridos.");
+                return BadRequest(new ApiResponse<object>
+                {
+                    Error = true,
+                    Message = "La solicitud no puede estar vacía."
+                });
             
             // // verificamos que la fecha de la promocion sea valida
             if (request.StartDate >= request.EndDate)
-                return BadRequest("La fecha de inicio debe ser anterior a la fecha de fin.");
+                return BadRequest(new ApiResponse<object>
+                {
+                    Error = true,
+                    Message = "La fecha de inicio debe ser anterior a la fecha de fin."
+                });
             
             var promocion = await PromotionService.AddPromotion(
                 request.tenantId,
@@ -110,14 +118,23 @@ public class PromotionController : BaseController
     /// <returns>La lista de promociones</returns>
     /// <response code="200">Retorna la lista de promociones</response>
     /// <response code="400">Si hay un error en la búsqueda</response>
-    [HttpGet("tenant/{tenantId}")]
+    [HttpGet("tenant")]
     [ProducesResponseType(typeof(PromotionExtendedDTO[]), 200)]
     [ProducesResponseType(404)]
     [ProducesResponseType(400)]
-    public IActionResult GetPromotionList(int tenantId)
+    public IActionResult GetPromotionList()
     {
         try
         {
+            // Obtenemos tenant id del usuario loguead
+            var tenantId = int.Parse(ObtainTenantFromToken() ?? "0");
+            if (tenantId == 0)
+                return BadRequest(new ApiResponse<object>
+                {
+                    Error = true,
+                    Message = "No se pudo obtener el tenant ID del token."
+                });
+            
             var promotionList = PromotionService.GetPromotionList(tenantId);
 
             return Ok(new ApiResponse<PromotionExtendedDTO[]>
