@@ -115,6 +115,9 @@ namespace ServiPuntosUy.DataServices
                     sp.GetRequiredService<IGenericRepository<TenantUI>>(),
                     sp.GetRequiredService<ITenantResolver>()));
 
+            // Registrar el servicio de email
+            _serviceCollection.AddScoped<IEmailService>(sp => _serviceProvider.GetRequiredService<IEmailService>());
+
             // Registrar un servicio de autenticación básico
             _serviceCollection.AddScoped<IAuthService>(sp =>
                 new CommonAuthService(
@@ -124,19 +127,20 @@ namespace ServiPuntosUy.DataServices
                     sp.GetRequiredService<IGenericRepository<DAO.Models.Central.User>>(),
                     sp.GetRequiredService<IGenericRepository<DAO.Models.Central.Tenant>>(),
                     null, // No necesitamos LoyaltyService para login
-                    null)); // No hay tenant para login
+                    null, // No hay tenant para login
+                    sp.GetRequiredService<IEmailService>()));
 
             _serviceCollection.AddScoped<IRedemptionService>(sp =>
-        new Services.EndUser.RedemptionService(
-            sp.GetRequiredService<DbContext>(),
-            sp.GetRequiredService<IGenericRepository<Transaction>>(),
-            sp.GetRequiredService<IGenericRepository<TransactionItem>>(),
-            sp.GetRequiredService<IGenericRepository<Product>>(),
-            sp.GetRequiredService<IGenericRepository<ProductStock>>(),
-            sp.GetRequiredService<IGenericRepository<User>>(),
-            sp.GetRequiredService<IGenericRepository<LoyaltyConfig>>(),
-            sp.GetRequiredService<IGenericRepository<Branch>>(),
-            _configuration));
+                new Services.EndUser.RedemptionService(
+                    sp.GetRequiredService<DbContext>(),
+                    sp.GetRequiredService<IGenericRepository<Transaction>>(),
+                    sp.GetRequiredService<IGenericRepository<TransactionItem>>(),
+                    sp.GetRequiredService<IGenericRepository<Product>>(),
+                    sp.GetRequiredService<IGenericRepository<ProductStock>>(),
+                    sp.GetRequiredService<IGenericRepository<User>>(),
+                    sp.GetRequiredService<IGenericRepository<LoyaltyConfig>>(),
+                    sp.GetRequiredService<IGenericRepository<Branch>>(),
+                    _configuration));
 
             // Construir el proveedor de servicios para login
             _scopedServiceProvider = _serviceCollection.BuildServiceProvider();
@@ -166,6 +170,9 @@ namespace ServiPuntosUy.DataServices
             // Registrar el servicio de TenantUI
             _serviceCollection.AddScoped<ITenantUIService, TenantUIService>();
 
+            // Registrar el servicio de email
+            _serviceCollection.AddScoped<IEmailService>(sp => _serviceProvider.GetRequiredService<IEmailService>());
+
             // Registrar HttpContextAccessor si no está registrado
             _serviceCollection.AddHttpContextAccessor();
         }
@@ -186,7 +193,8 @@ namespace ServiPuntosUy.DataServices
                     sp.GetRequiredService<IGenericRepository<DAO.Models.Central.User>>(),
                     sp.GetRequiredService<IGenericRepository<DAO.Models.Central.Tenant>>(),
                     null, // No necesitamos LoyaltyService para Central
-                    null)); // null para Central
+                    null, // null para Central
+                    sp.GetRequiredService<IEmailService>()));
 
             // Registrar los demás servicios para el administrador central
             _serviceCollection.AddScoped<IPromotionService, Services.Central.PromotionService>();
@@ -213,7 +221,8 @@ namespace ServiPuntosUy.DataServices
                     sp.GetRequiredService<IGenericRepository<DAO.Models.Central.User>>(),
                     sp.GetRequiredService<IGenericRepository<DAO.Models.Central.Tenant>>(),
                     null, // No necesitamos LoyaltyService para Tenant
-                    tenantId));
+                    tenantId,
+                    sp.GetRequiredService<IEmailService>()));
 
             _serviceCollection.AddScoped<ILoyaltyService>(sp =>
                 new Services.Tenant.LoyaltyService(
@@ -248,7 +257,8 @@ namespace ServiPuntosUy.DataServices
                     sp.GetRequiredService<IGenericRepository<DAO.Models.Central.User>>(),
                     sp.GetRequiredService<IGenericRepository<DAO.Models.Central.Tenant>>(),
                     null, // No necesitamos LoyaltyService para Branch
-                    tenantId));
+                    tenantId,
+                    sp.GetRequiredService<IEmailService>()));
 
             // Registrar los servicios implementados
             // _serviceCollection.AddScoped<IBranchService>(sp => _serviceProvider.GetRequiredService<IBranchService>());
@@ -314,7 +324,7 @@ namespace ServiPuntosUy.DataServices
                 new Services.EndUser.LoyaltyService(
                     sp.GetRequiredService<DbContext>(),
                     sp.GetRequiredService<IGenericRepository<LoyaltyConfig>>()));
-                    
+
             // Registrar el servicio de parámetros generales
             _serviceCollection.AddScoped<IGeneralParameterService>(sp =>
                 new Services.EndUser.GeneralParameterService(
@@ -329,7 +339,8 @@ namespace ServiPuntosUy.DataServices
                     sp.GetRequiredService<IGenericRepository<User>>(),
                     sp.GetRequiredService<IGenericRepository<Tenant>>(),
                     sp.GetRequiredService<ILoyaltyService>(), // Inyectamos el servicio de lealtad
-                    tenantId));
+                    tenantId,
+                    sp.GetRequiredService<IEmailService>()));
 
             _serviceCollection.AddScoped<ITransactionService>(sp =>
                 new Services.EndUser.TransactionService(

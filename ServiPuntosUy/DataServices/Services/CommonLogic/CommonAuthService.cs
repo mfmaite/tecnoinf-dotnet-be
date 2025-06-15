@@ -25,6 +25,7 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
         private readonly IGenericRepository<DAO.Models.Central.User> _userRepository;
         private readonly IGenericRepository<DAO.Models.Central.Tenant> _tenantRepository;
         private readonly ILoyaltyService _loyaltyService;
+        private readonly IEmailService _emailService;
 
         public CommonAuthService(
             DbContext dbContext,
@@ -33,7 +34,8 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
             IGenericRepository<DAO.Models.Central.User> userRepository,
             IGenericRepository<DAO.Models.Central.Tenant> tenantRepository,
             ILoyaltyService loyaltyService = null,
-            string tenantId = null)
+            string tenantId = null,
+            IEmailService emailService = null)
         {
             _dbContext = dbContext;
             _configuration = configuration;
@@ -42,6 +44,7 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
             _tenantId = tenantId;
             _userRepository = userRepository;
             _tenantRepository = tenantRepository;
+            _emailService = emailService;
         }
 
         /// Genera un token JWT para un usuario
@@ -308,6 +311,30 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
 
             // Generar el link completo
             var magicLink = $"{baseUrl}/auth/validate-magic-link?token={Uri.EscapeDataString(tokenString)}";
+
+            // Enviar el email con el magic link
+            if (_emailService != null)
+            {
+                var subject = "Tu link de acceso a ServiPuntosUY";
+                var body = $@"
+                    <html>
+                        <body>
+                            <h2>Hola {user.Name},</h2>
+                            <p>Has solicitado iniciar sesión en ServiPuntosUY. Haz clic en el siguiente enlace para acceder:</p>
+                            <p><a href='{magicLink}'>Iniciar sesión en ServiPuntosUY</a></p>
+                            <p>Este enlace expirará en 15 minutos por razones de seguridad.</p>
+                            <p>Si no solicitaste este enlace, puedes ignorar este mensaje.</p>
+                            <br>
+                            <p>Saludos,<br>El equipo de ServiPuntosUY</p>
+                        </body>
+                    </html>";
+
+                var emailSent = await _emailService.SendEmailAsync(user.Email, subject, body);
+                if (!emailSent)
+                {
+                    throw new Exception("Error al enviar el email con el magic link");
+                }
+            }
 
             return magicLink;
         }
