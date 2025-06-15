@@ -12,8 +12,8 @@ using ServiPuntosUy.DAO.Data.Central;
 namespace ServiPuntosUy.DAO.Migrations.Central
 {
     [DbContext(typeof(CentralDbContext))]
-    [Migration("20250605005943_AddTenantUISeed")]
-    partial class AddTenantUISeed
+    [Migration("20250614024205_AddLoyaltyConfigSeed")]
+    partial class AddLoyaltyConfigSeed
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -123,6 +123,17 @@ namespace ServiPuntosUy.DAO.Migrations.Central
                     b.HasIndex("TenantId");
 
                     b.ToTable("LoyaltyConfigs");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = -1,
+                            AccumulationRule = 100m,
+                            ExpiricyPolicyDays = 180,
+                            PointsName = "Puntos",
+                            PointsValue = 1,
+                            TenantId = -1
+                        });
                 });
 
             modelBuilder.Entity("ServiPuntosUy.DAO.Models.Central.Product", b =>
@@ -178,16 +189,11 @@ namespace ServiPuntosUy.DAO.Migrations.Central
                     b.Property<int>("Stock")
                         .HasColumnType("int");
 
-                    b.Property<int>("TenantId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.HasIndex("BranchId");
 
                     b.HasIndex("ProductId");
-
-                    b.HasIndex("TenantId");
 
                     b.ToTable("ProductStocks");
                 });
@@ -446,7 +452,10 @@ namespace ServiPuntosUy.DAO.Migrations.Central
                     b.Property<int>("PointsEarned")
                         .HasColumnType("int");
 
-                    b.Property<int>("TenantId")
+                    b.Property<int>("PointsSpent")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Type")
                         .HasColumnType("int");
 
                     b.Property<int>("UserId")
@@ -456,11 +465,38 @@ namespace ServiPuntosUy.DAO.Migrations.Central
 
                     b.HasIndex("BranchId");
 
-                    b.HasIndex("TenantId");
-
                     b.HasIndex("UserId");
 
                     b.ToTable("Transactions");
+                });
+
+            modelBuilder.Entity("ServiPuntosUy.DAO.Models.Central.TransactionItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TransactionId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("TransactionId");
+
+                    b.ToTable("TransactionItems");
                 });
 
             modelBuilder.Entity("ServiPuntosUy.DAO.Models.Central.User", b =>
@@ -525,11 +561,11 @@ namespace ServiPuntosUy.DAO.Migrations.Central
                             Id = -1,
                             Email = "admin@servipuntos.uy",
                             IsVerified = false,
-                            LastLoginDate = new DateTime(2025, 6, 5, 0, 59, 43, 91, DateTimeKind.Utc).AddTicks(4244),
+                            LastLoginDate = new DateTime(2025, 6, 14, 2, 42, 4, 606, DateTimeKind.Utc).AddTicks(6679),
                             Name = "Admin Central",
                             NotificationsEnabled = true,
-                            Password = "74lI/359Ugnlj9bBElG6b9ggs9qdkIm6S1lsMt4IqYM=",
-                            PasswordSalt = "yGzQElt+vx7mngS52PM05A==",
+                            Password = "DunZ2vxyToxjhIPT2Ya9ci6moBUR4+Y+FqHAvMrPn18=",
+                            PasswordSalt = "sQL2cXAYerKlPtrXl+nHjA==",
                             PointBalance = 0,
                             Role = 1
                         },
@@ -538,11 +574,11 @@ namespace ServiPuntosUy.DAO.Migrations.Central
                             Id = -2,
                             Email = "admintenant@servipuntos.uy",
                             IsVerified = false,
-                            LastLoginDate = new DateTime(2025, 6, 5, 0, 59, 43, 91, DateTimeKind.Utc).AddTicks(4268),
+                            LastLoginDate = new DateTime(2025, 6, 14, 2, 42, 4, 606, DateTimeKind.Utc).AddTicks(6708),
                             Name = "Admin Tenant",
                             NotificationsEnabled = true,
-                            Password = "74lI/359Ugnlj9bBElG6b9ggs9qdkIm6S1lsMt4IqYM=",
-                            PasswordSalt = "yGzQElt+vx7mngS52PM05A==",
+                            Password = "DunZ2vxyToxjhIPT2Ya9ci6moBUR4+Y+FqHAvMrPn18=",
+                            PasswordSalt = "sQL2cXAYerKlPtrXl+nHjA==",
                             PointBalance = 0,
                             Role = 2,
                             TenantId = -1
@@ -615,17 +651,9 @@ namespace ServiPuntosUy.DAO.Migrations.Central
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("ServiPuntosUy.DAO.Models.Central.Tenant", "Tenant")
-                        .WithMany()
-                        .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Branch");
 
                     b.Navigation("Product");
-
-                    b.Navigation("Tenant");
                 });
 
             modelBuilder.Entity("ServiPuntosUy.DAO.Models.Central.Promotion", b =>
@@ -746,12 +774,6 @@ namespace ServiPuntosUy.DAO.Migrations.Central
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ServiPuntosUy.DAO.Models.Central.Tenant", "Tenant")
-                        .WithMany()
-                        .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("ServiPuntosUy.DAO.Models.Central.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
@@ -760,9 +782,26 @@ namespace ServiPuntosUy.DAO.Migrations.Central
 
                     b.Navigation("Branch");
 
-                    b.Navigation("Tenant");
-
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("ServiPuntosUy.DAO.Models.Central.TransactionItem", b =>
+                {
+                    b.HasOne("ServiPuntosUy.DAO.Models.Central.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ServiPuntosUy.DAO.Models.Central.Transaction", "Transaction")
+                        .WithMany()
+                        .HasForeignKey("TransactionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+
+                    b.Navigation("Transaction");
                 });
 
             modelBuilder.Entity("ServiPuntosUy.DAO.Models.Central.User", b =>

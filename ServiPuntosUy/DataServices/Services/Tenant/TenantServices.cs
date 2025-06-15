@@ -27,7 +27,7 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             _branchRepository = branchRepository;
             _fuelPricesRepository = fuelPricesRepository;
         }
-    
+
 
         // Métodos de Branch
 
@@ -166,7 +166,7 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
 
             return GetBranchDTO(branch);
         }
-        
+
         public BranchDTO[] GetBranchList(int tenantId)
         {
             // Obtener la lista de branches del repositorio filtrando por TenantId
@@ -892,7 +892,7 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
 
             // Contar el total de transacciones para este tenant
             int totalTransactions = await _dbContext.Set<DAO.Models.Central.Transaction>()
-                .Where(t => t.TenantId == tenantIdInt)
+                .Where(t => t.Branch.TenantId == tenantIdInt)
                 .CountAsync();
 
             // Contar promociones por tipo (tenant o branch) para este tenant

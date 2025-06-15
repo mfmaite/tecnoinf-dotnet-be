@@ -1,16 +1,17 @@
 using System;
 using ServiceReference;
 using System.ServiceModel;
-using System.Threading.Tasks;
 using ServiPuntosUy.Models.DAO;
 using Microsoft.EntityFrameworkCore;
 using ServiPuntosUy.DTO;
 using ServiPuntosUy.DAO.Models.Central;
 using ServiPuntosUy.Enums;
 using ServiPuntosUy.DataServices.Services.Tenant;
-using ServiPuntosUy.DAO.Models.Central;
-
-
+using ServiPuntosUy.Requests;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using Microsoft.IdentityModel.Tokens;
 
 namespace ServiPuntosUy.DataServices.Services.EndUser
 {
@@ -512,6 +513,569 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
         }
     }
 
+    public class TransactionService : ITransactionService {
+
+        private readonly DbContext _dbContext;
+        private readonly IGenericRepository<DAO.Models.Central.Transaction> _transactionRepository;
+        private readonly IGenericRepository<DAO.Models.Central.LoyaltyConfig> _loyaltyConfigRepository;
+        private readonly IGenericRepository<DAO.Models.Central.Product> _productRepository;
+        private readonly IGenericRepository<DAO.Models.Central.TransactionItem> _transactionItemRepository;
+        private readonly IGenericRepository<DAO.Models.Central.Branch> _branchRepository;
+        private readonly IGenericRepository<DAO.Models.Central.ProductStock> _productStockRepository;
+        private readonly IGenericRepository<DAO.Models.Central.User> _userRepository;
+
+        public TransactionService(
+            DbContext dbContext,
+            IGenericRepository<DAO.Models.Central.Transaction> transactionRepository,
+            IGenericRepository<DAO.Models.Central.LoyaltyConfig> loyaltyConfigRepository,
+            IGenericRepository<DAO.Models.Central.Product> productRepository,
+            IGenericRepository<DAO.Models.Central.TransactionItem> transactionItemRepository,
+            IGenericRepository<DAO.Models.Central.Branch> branchRepository,
+            IGenericRepository<DAO.Models.Central.ProductStock> productStockRepository,
+            IGenericRepository<DAO.Models.Central.User> userRepository
+        )
+        {
+            _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+            _transactionRepository = transactionRepository ?? throw new ArgumentNullException(nameof(transactionRepository));
+            _loyaltyConfigRepository = loyaltyConfigRepository ?? throw new ArgumentNullException(nameof(loyaltyConfigRepository));
+            _productRepository = productRepository ?? throw new ArgumentNullException(nameof(productRepository));
+            _transactionItemRepository = transactionItemRepository ?? throw new ArgumentNullException(nameof(transactionItemRepository));
+            _branchRepository = branchRepository ?? throw new ArgumentNullException(nameof(branchRepository));
+            _productStockRepository = productStockRepository ?? throw new ArgumentNullException(nameof(productStockRepository));
+            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+        }
+        
+        /// <summary>
+        /// Obtiene los items (productos) de una transacción específica
+        /// </summary>
+        /// <param name="transactionId">ID de la transacción</param>
+        /// <returns>Array de items de la transacción</returns>
+        public async Task<TransactionItemDTO[]> GetTransactionItems(int transactionId)
+        {
+            // Verificar que la transacción existe
+            var transaction = await _transactionRepository.GetByIdAsync(transactionId);
+            if (transaction == null)
+            {
+                throw new Exception($"No existe una transacción con el ID {transactionId}");
+            }
+
+            // Obtener los items de la transacción
+            var items = await _transactionItemRepository.GetQueryable()
+                .Where(ti => ti.TransactionId == transactionId)
+                .ToListAsync();
+
+            // Obtener los productos asociados a los items
+            var productIds = items.Select(i => i.ProductId).ToArray();
+            var products = await _productRepository.GetQueryable()
+                .Where(p => productIds.Contains(p.Id))
+                .ToDictionaryAsync(p => p.Id, p => p);
+
+            // Mapear a DTOs
+            return items.Select(item => new TransactionItemDTO
+            {
+                Id = item.Id,
+                TransactionId = item.TransactionId,
+                ProductId = item.ProductId,
+                Quantity = item.Quantity,
+                UnitPrice = item.UnitPrice,
+                ProductName = products.TryGetValue(item.ProductId, out var product) ? product.Name : "Producto no encontrado",
+                ProductImageUrl = products.TryGetValue(item.ProductId, out var productForImage) ? productForImage.ImageUrl : null
+            }).ToArray();
+        }
+
+        public TransactionDTO GetTransactionDTO(Transaction transaction)
+        {
+            return new TransactionDTO {
+                Id = transaction.Id,
+                UserId = transaction.UserId,
+                BranchId = transaction.BranchId,
+                Amount = transaction.Amount,
+                PointsEarned = transaction.PointsEarned,
+                PointsSpent = transaction.PointsSpent,
+                Type = transaction.Type,
+                CreatedAt = transaction.CreatedAt
+            };
+        }
+
+        public async Task<TransactionDTO> CreateTransaction(int userId, int branchId, ProductQuantity[] products)
+        {
+            try {
+                // Obtener los productos
+                var productIds = products.Select(p => p.ProductId).ToArray();
+
+                var productsList = await _productRepository.GetQueryable()
+                    .Where(p => productIds.Contains(p.Id))
+                    .ToListAsync();
+
+                // Obtener la branch
+                var branch = await _branchRepository.GetQueryable()
+                    .FirstOrDefaultAsync(b => b.Id == branchId);
+
+                if (branch == null)
+                {
+                    throw new Exception($"No se encontró la sucursal con ID {branchId}");
+                }
+
+                // Verificar el stock de cada producto
+                foreach (var product in products)
+                {
+                    var productStock = await _productStockRepository.GetQueryable()
+                        .FirstOrDefaultAsync(ps => ps.ProductId == product.ProductId && ps.BranchId == branchId);
+
+                    if (productStock == null)
+                    {
+                        throw new Exception($"No hay stock registrado para el producto {product.ProductId} en la sucursal {branchId}");
+                    }
+
+                    if (productStock.Stock < product.Quantity)
+                    {
+                        throw new Exception($"Stock insuficiente para el producto {product.ProductId}. Stock disponible: {productStock.Stock}, Cantidad solicitada: {product.Quantity}");
+                    }
+                }
+
+                // Buscar la configuración de lealtad del tenant
+                var loyaltyConfig = await _loyaltyConfigRepository.GetQueryable()
+                    .FirstOrDefaultAsync(lc => lc.TenantId == branch.TenantId);
+
+                if (loyaltyConfig == null) {
+                    throw new Exception("La configuración de lealtad no existe para este tenant");
+                }
+
+                // Calcular el monto total considerando las cantidades
+                decimal totalAmount = 0;
+                foreach (var product in products)
+                {
+                    var productInfo = productsList.First(p => p.Id == product.ProductId);
+                    totalAmount += productInfo.Price * product.Quantity;
+                }
+
+                // Crear la transacción
+                var transaction = new Transaction {
+                    UserId = userId,
+                    BranchId = branchId,
+                    Amount = totalAmount,
+                    PointsEarned = (int)(totalAmount / loyaltyConfig.AccumulationRule),
+                    PointsSpent = 0,
+                    Type = TransactionType.Purchase,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                // Actualizar usuario y agregar puntos
+                var user = await _userRepository.GetQueryable()
+                    .FirstOrDefaultAsync(u => u.Id == userId);
+                if (user == null)
+                {
+                    throw new Exception($"No se encontró el usuario con ID {userId}");
+                }
+                user.PointBalance += transaction.PointsEarned;
+
+                // Iniciar una transacción de base de datos
+                using var dbTransaction = await _dbContext.Database.BeginTransactionAsync();
+
+                try
+                {
+                    // Guardar la transacción
+                    await _transactionRepository.AddAsync(transaction);
+                    await _transactionRepository.SaveChangesAsync();
+
+                    // Crear las relaciones entre la transacción y los productos
+                    foreach (var item in productsList)
+                    {
+                        var transactionProduct = new TransactionItem
+                        {
+                            TransactionId = transaction.Id,
+                            ProductId = item.Id,
+                            Quantity = products.First(p => p.ProductId == item.Id).Quantity,
+                            UnitPrice = item.Price
+                        };
+
+                        await _transactionItemRepository.AddAsync(transactionProduct);
+                    }
+
+                    // Actualizar el stock de los productos
+                    foreach (var product in products)
+                    {
+                        var productStock = await _productStockRepository.GetQueryable()
+                            .FirstOrDefaultAsync(ps => ps.ProductId == product.ProductId && ps.BranchId == branchId);
+
+                        productStock.Stock -= product.Quantity;
+                        await _productStockRepository.UpdateAsync(productStock);
+                    }
+
+                    // Guardar todos los cambios de una vez
+                    await _transactionItemRepository.SaveChangesAsync();
+                    await _productStockRepository.SaveChangesAsync();
+
+                    // Confirmar la transacción
+                    await dbTransaction.CommitAsync();
+
+                    // Devolver la transacción
+                    return GetTransactionDTO(transaction);
+                }
+                catch (Exception ex)
+                {
+                    // Si algo falla, revertir la transacción
+                    await dbTransaction.RollbackAsync();
+                    throw new Exception(ex.Message);
+                }
+            } catch (Exception ex) {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<TransactionDTO> GetTransactionById(int id)
+        {
+            var transaction = await _transactionRepository.GetByIdAsync(id);
+
+            if (transaction == null) {
+                throw new Exception("La transacción no existe");
+            }
+
+            return GetTransactionDTO(transaction);
+        }
+
+        public async Task<TransactionDTO[]> GetTransactionsByUserId(int userId)
+        {
+            var transactions = await _transactionRepository.GetQueryable()
+                .Where(t => t.UserId == userId)
+                .ToListAsync();
+            return transactions.Select(GetTransactionDTO).ToArray();
+        }
+
+    }
+
+    /// <summary>
+    /// Implementación del servicio de canjes para el usuario final
+    /// </summary>
+    public class RedemptionService : IRedemptionService
+    {
+        private readonly DbContext _dbContext;
+        private readonly IGenericRepository<Transaction> _transactionRepository;
+        private readonly IGenericRepository<TransactionItem> _transactionItemRepository;
+        private readonly IGenericRepository<Product> _productRepository;
+        private readonly IGenericRepository<ProductStock> _productStockRepository;
+        private readonly IGenericRepository<User> _userRepository;
+        private readonly IGenericRepository<LoyaltyConfig> _loyaltyConfigRepository;
+        private readonly IGenericRepository<DAO.Models.Central.Branch> _branchRepository;
+        private readonly IConfiguration _configuration;
+
+        public RedemptionService(
+            DbContext dbContext,
+            IGenericRepository<Transaction> transactionRepository,
+            IGenericRepository<TransactionItem> transactionItemRepository,
+            IGenericRepository<Product> productRepository,
+            IGenericRepository<ProductStock> productStockRepository,
+            IGenericRepository<User> userRepository,
+            IGenericRepository<LoyaltyConfig> loyaltyConfigRepository,
+            IGenericRepository<DAO.Models.Central.Branch> branchRepository,
+            IConfiguration configuration)
+        {
+            _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+            _transactionRepository = transactionRepository ?? throw new ArgumentNullException(nameof(transactionRepository));
+            _transactionItemRepository = transactionItemRepository ?? throw new ArgumentNullException(nameof(transactionItemRepository));
+            _productRepository = productRepository ?? throw new ArgumentNullException(nameof(productRepository));
+            _productStockRepository = productStockRepository ?? throw new ArgumentNullException(nameof(productStockRepository));
+            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+            _loyaltyConfigRepository = loyaltyConfigRepository ?? throw new ArgumentNullException(nameof(loyaltyConfigRepository));
+            _branchRepository = branchRepository ?? throw new ArgumentNullException(nameof(branchRepository));
+            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+        }
+
+        /// <summary>
+        /// Genera un token JWT con la información del canje
+        /// </summary>
+        public async Task<string> GenerateRedemptionToken(int userId, int branchId, int productId)
+        {
+            // 1. Verificar que el usuario exista
+            var user = await _userRepository.GetByIdAsync(userId);
+            if (user == null)
+            {
+                throw new Exception("Usuario no encontrado");
+            }
+
+            // 2. Verificar que el producto exista y tenga stock
+            var product = await _productRepository.GetByIdAsync(productId);
+            if (product == null)
+            {
+                throw new Exception("Producto no encontrado");
+            }
+
+            var productStock = await _productStockRepository.GetQueryable()
+                .FirstOrDefaultAsync(ps => ps.ProductId == productId && ps.BranchId == branchId);
+
+            if (productStock == null || productStock.Stock < 1)
+            {
+                throw new Exception("Stock insuficiente para el producto");
+            }
+
+            // 3. Obtener la configuración de lealtad
+            var branch = await _branchRepository.GetByIdAsync(branchId);
+            if (branch == null)
+            {
+                throw new Exception("Sucursal no encontrada");
+            }
+
+            var loyaltyConfig = await _loyaltyConfigRepository.GetQueryable()
+                .FirstOrDefaultAsync(lc => lc.TenantId == branch.TenantId);
+
+            if (loyaltyConfig == null)
+            {
+                throw new Exception("Configuración de lealtad no encontrada");
+            }
+
+            // 4. Calcular el costo en puntos
+            int pointsCost = (int)(product.Price / loyaltyConfig.PointsValue);
+
+            if (user.PointBalance < pointsCost)
+            {
+                throw new Exception("Puntos insuficientes para realizar el canje");
+            }
+
+            // 5. Crear el payload del token
+            var expiresAt = DateTime.UtcNow.AddMinutes(15); // El token expira en 15 minutos
+
+            // 6. Generar el token JWT
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]);
+            
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new[]
+                {
+                    new Claim("userId", userId.ToString()),
+                    new Claim("branchId", branchId.ToString()),
+                    new Claim("productId", productId.ToString()),
+                    new Claim("pointsCost", pointsCost.ToString()),
+                    new Claim("expiresAt", expiresAt.ToString("o"))
+                }),
+                Expires = expiresAt,
+                SigningCredentials = new SigningCredentials(
+                    new SymmetricSecurityKey(key),
+                    SecurityAlgorithms.HmacSha256Signature)
+            };
+
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
+        }
+
+        /// <summary>
+        /// Procesa un canje a partir de un token
+        /// </summary>
+        public async Task<TransactionDTO> ProcessRedemption(string token)
+        {
+            try
+            {
+                // 1. Validar y decodificar el token
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]);
+                
+                var validationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    ClockSkew = TimeSpan.Zero
+                };
+
+                SecurityToken validatedToken;
+                var principal = tokenHandler.ValidateToken(token, validationParameters, out validatedToken);
+                
+                // 2. Extraer la información del token
+                var userId = int.Parse(principal.FindFirst("userId").Value);
+                var branchId = int.Parse(principal.FindFirst("branchId").Value);
+                var productId = int.Parse(principal.FindFirst("productId").Value);
+                var pointsCost = int.Parse(principal.FindFirst("pointsCost").Value);
+                var expiresAt = DateTime.Parse(principal.FindFirst("expiresAt").Value);
+
+                // 3. Verificar que el token no haya expirado
+                if (expiresAt > DateTime.UtcNow)
+                {
+                    throw new Exception("El token ha expirado");
+                }
+
+                // 4. Verificar que el usuario exista y tenga suficientes puntos
+                var user = await _userRepository.GetByIdAsync(userId);
+                if (user == null)
+                {
+                    throw new Exception("Usuario no encontrado");
+                }
+
+                if (user.PointBalance < pointsCost)
+                {
+                    throw new Exception("Puntos insuficientes para realizar el canje");
+                }
+
+                // 5. Verificar que el producto exista y tenga stock
+                var product = await _productRepository.GetByIdAsync(productId);
+                if (product == null)
+                {
+                    throw new Exception("Producto no encontrado");
+                }
+
+                var productStock = await _productStockRepository.GetQueryable()
+                    .FirstOrDefaultAsync(ps => ps.ProductId == productId && ps.BranchId == branchId);
+
+                if (productStock == null || productStock.Stock < 1)
+                {
+                    throw new Exception("Stock insuficiente para el producto");
+                }
+
+                // 6. Iniciar transacción de base de datos
+                using var dbTransaction = await _dbContext.Database.BeginTransactionAsync();
+
+                try
+                {
+                    // 7. Crear la transacción
+                    var transaction = new Transaction
+                    {
+                        UserId = userId,
+                        BranchId = branchId,
+                        Amount = 0, // No hay monto en dinero
+                        PointsEarned = 0, // No se ganan puntos
+                        PointsSpent = pointsCost, // Se gastan puntos
+                        Type = TransactionType.Redemption,
+                        CreatedAt = DateTime.UtcNow
+                    };
+
+                    await _transactionRepository.AddAsync(transaction);
+                    await _transactionRepository.SaveChangesAsync();
+
+                    // 8. Crear el item de transacción
+                    var transactionItem = new TransactionItem
+                    {
+                        TransactionId = transaction.Id,
+                        ProductId = productId,
+                        Quantity = 1,
+                        UnitPrice = product.Price
+                    };
+
+                    await _transactionItemRepository.AddAsync(transactionItem);
+
+                    // 9. Actualizar el stock
+                    productStock.Stock -= 1;
+                    await _productStockRepository.UpdateAsync(productStock);
+
+                    // 10. Restar puntos al usuario
+                    user.PointBalance -= pointsCost;
+                    await _userRepository.UpdateAsync(user);
+
+                    // 11. Guardar todos los cambios
+                    await _transactionItemRepository.SaveChangesAsync();
+                    await _productStockRepository.SaveChangesAsync();
+                    await _userRepository.SaveChangesAsync();
+
+                    // 12. Confirmar la transacción
+                    await dbTransaction.CommitAsync();
+
+                    // 13. Devolver la transacción
+                    return new TransactionDTO
+                    {
+                        Id = transaction.Id,
+                        UserId = transaction.UserId,
+                        BranchId = transaction.BranchId,
+                        Amount = transaction.Amount,
+                        PointsEarned = transaction.PointsEarned,
+                        PointsSpent = transaction.PointsSpent,
+                        Type = transaction.Type,
+                        CreatedAt = transaction.CreatedAt
+                    };
+                }
+                catch (Exception ex)
+                {
+                    // Si algo falla, revertir la transacción
+                    await dbTransaction.RollbackAsync();
+                    throw new Exception(ex.Message);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error al procesar el canje: {ex.Message}");
+            }
+        }
+    }
+
+    /// <summary>
+    /// Implementación del servicio de parámetros generales para el usuario final
+    /// </summary>
+    public class GeneralParameterService : IGeneralParameterService
+    {
+        private readonly IGenericRepository<GeneralParameter> _generalParameterRepository;
+
+        public GeneralParameterService(IGenericRepository<GeneralParameter> generalParameterRepository)
+        {
+            _generalParameterRepository = generalParameterRepository;
+        }
+
+        /// <summary>
+        /// Convierte un modelo de parámetro general a DTO
+        /// </summary>
+        /// <param name="parameter">Modelo de parámetro general</param>
+        /// <returns>DTO de parámetro general</returns>
+        private GeneralParameterDTO GetGeneralParameterDTO(GeneralParameter parameter)
+        {
+            return new GeneralParameterDTO
+            {
+                Id = parameter.Id,
+                Key = parameter.Key,
+                Value = parameter.Value,
+                Description = parameter.Description
+            };
+        }
+
+        /// <summary>
+        /// Obtiene un parámetro general por su clave
+        /// </summary>
+        /// <param name="key">Clave del parámetro</param>
+        /// <returns>DTO del parámetro general</returns>
+        public GeneralParameterDTO GetParameter(string key)
+        {
+            var parameter = _generalParameterRepository.GetQueryable()
+                .FirstOrDefault(p => p.Key == key);
+
+            if (parameter == null)
+            {
+                throw new ArgumentException($"No existe un parámetro con la clave '{key}'");
+            }
+
+            return GetGeneralParameterDTO(parameter);
+        }
+
+        /// <summary>
+        /// Obtiene todos los parámetros generales
+        /// </summary>
+        /// <returns>Array de DTOs de parámetros generales</returns>
+        public GeneralParameterDTO[] GetAllParameters()
+        {
+            var parameters = _generalParameterRepository.GetQueryable().ToList();
+            return parameters.Select(GetGeneralParameterDTO).ToArray();
+        }
+
+        /// <summary>
+        /// Actualiza un parámetro general existente (no permitido para usuarios finales)
+        /// </summary>
+        /// <param name="key">Clave del parámetro</param>
+        /// <param name="value">Nuevo valor</param>
+        /// <param name="description">Nueva descripción (opcional)</param>
+        /// <returns>DTO del parámetro actualizado</returns>
+        public GeneralParameterDTO UpdateParameter(string key, string value, string description = null)
+        {
+            throw new UnauthorizedAccessException("El usuario final no puede modificar parámetros generales");
+        }
+
+        /// <summary>
+        /// Crea un nuevo parámetro general (no permitido para usuarios finales)
+        /// </summary>
+        /// <param name="key">Clave del parámetro</param>
+        /// <param name="value">Valor del parámetro</param>
+        /// <param name="description">Descripción del parámetro</param>
+        /// <returns>DTO del parámetro creado</returns>
+        public GeneralParameterDTO CreateParameter(string key, string value, string description)
+        {
+            throw new UnauthorizedAccessException("El usuario final no puede crear parámetros generales");
+        }
+    }
+
     /// <summary>
     /// Implementación del servicio de gestión de servicios para el usuario final
     /// </summary>
@@ -572,7 +1136,7 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
 
             // Mapear el servicio a DTO
             var serviceDTO = MapToServiceDTO(service);
-            
+
             // Agregar las disponibilidades al DTO
             serviceDTO.Availabilities = availabilities.Select(a => {
                 var dto = MapToServiceAvailabilityDTO(a);
@@ -606,7 +1170,7 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
             // Mapear los servicios a DTOs incluyendo sus disponibilidades
             return services.Select(s => {
                 var serviceDTO = MapToServiceDTO(s);
-                
+
                 // Agregar las disponibilidades al DTO
                 if (serviceAvailabilities.ContainsKey(s.Id))
                 {
@@ -616,7 +1180,7 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
                         return dto;
                     }).ToArray();
                 }
-                
+
                 return serviceDTO;
             }).ToArray();
         }

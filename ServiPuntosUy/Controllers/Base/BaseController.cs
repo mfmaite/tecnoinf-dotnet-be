@@ -271,6 +271,21 @@ namespace ServiPuntosUy.Controllers.Base
         /// </summary>
         protected IPublicTenantUIService PublicTenantUIService => _serviceFactory.GetService<IPublicTenantUIService>();
 
+        /// <summary>
+        /// Obtiene el servicio de transacciones
+        /// </summary>
+        protected ITransactionService TransactionService => _serviceFactory.GetService<ITransactionService>();
+
+        /// <summary>
+        /// Obtiene el servicio de canjes
+        /// </summary>
+        protected IRedemptionService RedemptionService => _serviceFactory.GetService<IRedemptionService>();
+
+        /// <summary>
+        /// Obtiene el servicio de parámetros generales
+        /// </summary>
+        protected IGeneralParameterService GeneralParameterService => _serviceFactory.GetService<IGeneralParameterService>();
+
         #endregion
     }
 }

@@ -30,6 +30,8 @@ public class CentralDbContext : DbContext
     public DbSet<Transaction> Transactions { get; set; }
     public DbSet<User> Users { get; set; }
     public DbSet<Tenant> Tenants { get; set; }
+    public DbSet<TransactionItem> TransactionItems { get; set; }
+    public DbSet<GeneralParameter> GeneralParameters { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -132,7 +134,7 @@ public class CentralDbContext : DbContext
                 Name = "ancap"
             }
         );
-        
+
         // Crear TenantUI para el tenant por defecto
         modelBuilder.Entity<TenantUI>().HasData(
             new TenantUI
@@ -142,6 +144,30 @@ public class CentralDbContext : DbContext
                 LogoUrl = Constants.UIConstants.DEFAULT_LOGO_URL,
                 PrimaryColor = Constants.UIConstants.DEFAULT_PRIMARY_COLOR,
                 SecondaryColor = Constants.UIConstants.DEFAULT_SECONDARY_COLOR
+            }
+        );
+
+        // Crear LoyaltyConfig para el tenant por defecto
+        modelBuilder.Entity<LoyaltyConfig>().HasData(
+            new LoyaltyConfig
+            {
+                Id = -1,
+                TenantId = -1,
+                PointsName = "Puntos",
+                PointsValue = 1,
+                AccumulationRule = 100, // 100 pesos = 1 punto
+                ExpiricyPolicyDays = 180
+            }
+        );
+
+        // Crear parámetro general para Currency
+        modelBuilder.Entity<GeneralParameter>().HasData(
+            new GeneralParameter
+            {
+                Id = -1,
+                Key = "Currency",
+                Value = "USD",
+                Description = "Moneda por defecto para la aplicación"
             }
         );
 
@@ -214,5 +240,5 @@ public class CentralDbContext : DbContext
             }
         );
     }
-    
+
 }

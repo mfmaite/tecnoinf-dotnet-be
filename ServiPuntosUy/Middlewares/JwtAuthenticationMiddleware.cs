@@ -31,7 +31,8 @@ namespace ServiPuntosUy.Middlewares
                 "/swagger",
                 "/api/auth/register",
                 "/api/health",
-                "/api/tenantui/public" // Ruta pública para obtener la UI del tenant actual
+                "/api/tenantui/public", // Ruta pública para obtener la UI del tenant actual
+                "/api/redemption/process" // Ruta para procesar canjes por QR
             };
         }
 
