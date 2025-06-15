@@ -263,11 +263,10 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
             // Obtener tenantId y userType del contexto HTTP
             string? tenantIdStr = httpContext.Items["CurrentTenant"] as string;
             int? tenantId = !string.IsNullOrEmpty(tenantIdStr) && int.TryParse(tenantIdStr, out int tid) ? tid : null;
-            UserType userType = (UserType)(httpContext.Items["UserType"] ?? UserType.EndUser);
 
             // Buscar usuario por email, tenantId y rol
             var user = await _dbContext.Set<User>()
-                .FirstOrDefaultAsync(u => u.Email == email && u.TenantId == tenantId && u.Role == userType);
+                .FirstOrDefaultAsync(u => u.Email == email && u.TenantId == tenantId);
 
             if (user == null)
             {
@@ -307,10 +306,25 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
             var tokenString = tokenHandler.WriteToken(jwtToken);
 
             // Obtener la URL base de la aplicación
-            var baseUrl = _configuration["AppSettings:FrontendUrl"] ?? "http://localhost:3000";
+            var baseUrl = _configuration["AppSettings:FrontendUrl"];
+
+            // Obtener el tenant para el subdominio
+            var tenant = await _tenantRepository.GetByIdAsync(user.TenantId ?? -1);
+            var tenantSubdomain = tenant != null ? $"{tenant.Name.ToLower().Replace(" ", "")}." : "";
+
+            // Construir la URL con el subdominio del tenant
+            string tenantUrl;
+            if (string.IsNullOrEmpty(baseUrl))
+            {
+                tenantUrl = "http://localhost:3000";
+            }
+            else
+            {
+                tenantUrl = $"http://{tenantSubdomain}{baseUrl}";
+            }
 
             // Generar el link completo
-            var magicLink = $"{baseUrl}/auth/validate-magic-link?token={Uri.EscapeDataString(tokenString)}";
+            var magicLink = $"{tenantUrl}/auth/validate-magic-link?token={Uri.EscapeDataString(tokenString)}";
 
             // Enviar el email con el magic link
             if (_emailService != null)
