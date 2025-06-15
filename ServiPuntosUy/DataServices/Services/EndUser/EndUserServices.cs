@@ -241,6 +241,10 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
         {
             throw new UnauthorizedAccessException("El usuario final no puede agregar promociones para una sucursal");
         }
+        public Task<PromotionDTO?> UpdatePromotionBranch(int promotionId, int tenantId, int branchId, string description, DateTime startDate, DateTime endDate, IEnumerable<int> product)
+        {
+            throw new UnauthorizedAccessException("El usuario final no puede actualizar promociones para una sucursal");
+        }
     }
 
     /// <summary>

@@ -285,6 +285,11 @@ namespace ServiPuntosUy.DataServices.Services.Central
             // Implementación básica para el scaffold
             throw new NotImplementedException();
         }
+        public Task<PromotionDTO> UpdatePromotionBranch(int promotionId, int tenantId, int branchId, string description, DateTime startDate, DateTime endDate, IEnumerable<int> product)
+        {
+            // Implementación básica para el scaffold
+            throw new NotImplementedException();
+        }
     }
 
     /// <summary>

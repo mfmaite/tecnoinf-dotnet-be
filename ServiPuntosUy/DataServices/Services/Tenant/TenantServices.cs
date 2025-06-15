@@ -634,6 +634,79 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             // Devolver el DTO de la promoción creada
             return Task.FromResult(promotionDTO);
         }
+
+
+        public async Task<PromotionDTO?> UpdatePromotionBranch(int PromotionId,int tenantId, int branchId, string description, DateTime startDate, DateTime endDate, IEnumerable<int> product)
+        {
+            // obtener la promoción por ID
+            var promotionDTO = await GetPrmotionById(PromotionId);
+            if (promotionDTO == null)
+                throw new Exception($"No existe una promoción con el ID {PromotionId}");
+            // verificamos que la promocion este asociada unicamente a este solo branchid
+            var verifyBranchExclusivity = _promotionBranchRepository.GetQueryable()
+                .Where(pb => pb.PromotionId == PromotionId && pb.BranchId != branchId)
+                .ToList();
+            if (verifyBranchExclusivity.Any())
+                throw new Exception($"La promoción con el ID {PromotionId} esta asociada a mas de 1 branch");
+                
+            // Mapear el DTO a la entidad
+            var promotion = MapToPromotion(promotionDTO);
+
+            // Actualizar los campos de la promoción
+            promotion.TenantId = tenantId;
+            promotion.Description = description;
+            promotion.StartDate = startDate;
+            promotion.EndDate = endDate;
+            // Actualizar la promoción en la base de datos
+            await _promotionRepository.UpdateAsync(promotion);
+            await _promotionRepository.SaveChangesAsync();
+
+            // Actualizar los productos asociados a la promoción
+            var promotionProducts = _promotionProductRepository.GetQueryable()
+                .Where(pp => pp.PromotionId == PromotionId).ToList();
+            
+            // modificar los productos asociados a la promoción
+            foreach (var pp in promotionProducts)
+            {
+                // _promotionProductRepository.DeleteAsync(pp.PromotionId).GetAwaiter().GetResult();
+                    _promotionProductRepository.DeleteAsync(pp.PromotionId, pp.ProductId).GetAwaiter().GetResult();
+            }
+            _promotionProductRepository.SaveChangesAsync().GetAwaiter().GetResult();
+            // Asociar los nuevos productos a la promoción
+            foreach (var productId in product)
+            {
+                var promotionProduct = new DAO.Models.Central.PromotionProduct
+                {
+                    PromotionId = promotion.Id,
+                    ProductId = productId
+                };
+                _promotionProductRepository.AddAsync(promotionProduct).GetAwaiter().GetResult();
+
+            }
+            _promotionProductRepository.SaveChangesAsync().GetAwaiter().GetResult();
+
+            // Actualizar los branches asociados a la promoción
+            var promotionBranches = _promotionBranchRepository.GetQueryable()
+                .Where(pb => pb.PromotionId == PromotionId).ToList();
+            // modificar los branches asociados a la promoción
+            foreach (var pb in promotionBranches)
+            {
+                _promotionBranchRepository.DeleteAsync(pb.PromotionId, pb.BranchId, pb.TenantId).GetAwaiter().GetResult();
+            }
+            _promotionBranchRepository.SaveChangesAsync().GetAwaiter().GetResult();
+            // Asociar los nuevos branches a la promoción
+                var promotionBranch = new DAO.Models.Central.PromotionBranch
+                {
+                    PromotionId = promotion.Id,
+                    BranchId = branchId,
+                    TenantId = tenantId
+                };
+                _promotionBranchRepository.AddAsync(promotionBranch).GetAwaiter().GetResult();
+            _promotionBranchRepository.SaveChangesAsync().GetAwaiter().GetResult();
+
+            // Devolver el DTO de la promoción actualizada
+            return GetPromotionDTO(promotion);
+        }
     
     }
 
