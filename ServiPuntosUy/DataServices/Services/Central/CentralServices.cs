@@ -258,9 +258,33 @@ namespace ServiPuntosUy.DataServices.Services.Central
             _dbContext = dbContext;
             _configuration = configuration;
         }
+        public Task<PromotionDTO> AddPromotion(int tenantId, string description, DateTime startDate, DateTime endDate, IEnumerable<int> branch, IEnumerable<int> product)
+        {
+            // Implementación básica para el scaffold
+            throw new NotImplementedException();
+        }
+        public Task<PromotionDTO> UpdatePromotion(int promotionId, int tenantId, string description, DateTime startDate, DateTime endDate, IEnumerable<int> branch, IEnumerable<int> product)
+        {
+            // Implementación básica para el scaffold
+            throw new NotImplementedException();
+        }
 
-        // Implementar los métodos de la interfaz IPromotionService
-        // Esta es una implementación básica para el scaffold
+        public PromotionExtendedDTO[] GetPromotionList(int tenantId)
+        {
+            // Implementación básica para el scaffold
+            return new PromotionExtendedDTO[0];
+        }
+
+        public PromotionExtendedDTO GetPromotion(int promotionId, int branchId)
+        {
+            // Implementación básica para el scaffold
+            return new PromotionExtendedDTO();
+        }
+        public Task<PromotionDTO> AddPromotionForBranch(int tenantId, int branchId, string description, DateTime startDate, DateTime endDate, IEnumerable<int> product)
+        {
+            // Implementación básica para el scaffold
+            throw new NotImplementedException();
+        }
     }
 
     /// <summary>
@@ -512,11 +536,9 @@ namespace ServiPuntosUy.DataServices.Services.Central
 
             // Contar promociones por tipo (tenant o branch)
             var tenantPromotions = await _dbContext.Set<DAO.Models.Central.Promotion>()
-                .Where(p => p.BranchId == null)
                 .CountAsync();
 
             var branchPromotions = await _dbContext.Set<DAO.Models.Central.Promotion>()
-                .Where(p => p.BranchId != null)
                 .CountAsync();
 
             int totalPromotions = tenantPromotions + branchPromotions;

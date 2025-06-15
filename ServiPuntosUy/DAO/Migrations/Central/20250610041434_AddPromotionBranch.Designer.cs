@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ServiPuntosUy.DAO.Data.Central;
 
@@ -11,9 +12,11 @@ using ServiPuntosUy.DAO.Data.Central;
 namespace ServiPuntosUy.DAO.Migrations.Central
 {
     [DbContext(typeof(CentralDbContext))]
-    partial class CentralDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250610041434_AddPromotionBranch")]
+    partial class AddPromotionBranch
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -91,43 +94,6 @@ namespace ServiPuntosUy.DAO.Migrations.Central
                     b.ToTable("FuelPrices");
                 });
 
-            modelBuilder.Entity("ServiPuntosUy.DAO.Models.Central.GeneralParameter", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("Key")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("Value")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("GeneralParameters");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = -1,
-                            Description = "Moneda por defecto para la aplicación",
-                            Key = "Currency",
-                            Value = "USD"
-                        });
-                });
-
             modelBuilder.Entity("ServiPuntosUy.DAO.Models.Central.LoyaltyConfig", b =>
                 {
                     b.Property<int>("Id")
@@ -157,17 +123,6 @@ namespace ServiPuntosUy.DAO.Migrations.Central
                     b.HasIndex("TenantId");
 
                     b.ToTable("LoyaltyConfigs");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = -1,
-                            AccumulationRule = 100m,
-                            ExpiricyPolicyDays = 180,
-                            PointsName = "Puntos",
-                            PointsValue = 1,
-                            TenantId = -1
-                        });
                 });
 
             modelBuilder.Entity("ServiPuntosUy.DAO.Models.Central.Product", b =>
@@ -240,6 +195,9 @@ namespace ServiPuntosUy.DAO.Migrations.Central
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("BranchId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -254,6 +212,8 @@ namespace ServiPuntosUy.DAO.Migrations.Central
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BranchId");
 
                     b.HasIndex("TenantId");
 
@@ -278,56 +238,6 @@ namespace ServiPuntosUy.DAO.Migrations.Central
                     b.HasIndex("TenantId");
 
                     b.ToTable("PromotionBranches");
-                });
-
-            modelBuilder.Entity("ServiPuntosUy.DAO.Models.Central.PromotionProduct", b =>
-                {
-                    b.Property<int>("PromotionId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ProductId")
-                        .HasColumnType("int");
-
-                    b.HasKey("PromotionId", "ProductId");
-
-                    b.HasIndex("ProductId");
-
-                    b.ToTable("PromotionProducts");
-                });
-
-            modelBuilder.Entity("ServiPuntosUy.DAO.Models.Central.PromotionBranch", b =>
-                {
-                    b.Property<int>("PromotionId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("BranchId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("TenantId")
-                        .HasColumnType("int");
-
-                    b.HasKey("PromotionId", "BranchId", "TenantId");
-
-                    b.HasIndex("BranchId");
-
-                    b.HasIndex("TenantId");
-
-                    b.ToTable("PromotionBranches");
-                });
-
-            modelBuilder.Entity("ServiPuntosUy.DAO.Models.Central.PromotionProduct", b =>
-                {
-                    b.Property<int>("PromotionId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ProductId")
-                        .HasColumnType("int");
-
-                    b.HasKey("PromotionId", "ProductId");
-
-                    b.HasIndex("ProductId");
-
-                    b.ToTable("PromotionProducts");
                 });
 
             modelBuilder.Entity("ServiPuntosUy.DAO.Models.Central.Redemption", b =>
@@ -551,10 +461,7 @@ namespace ServiPuntosUy.DAO.Migrations.Central
                     b.Property<int>("PointsEarned")
                         .HasColumnType("int");
 
-                    b.Property<int>("PointsSpent")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Type")
+                    b.Property<int>("TenantId")
                         .HasColumnType("int");
 
                     b.Property<int>("UserId")
@@ -564,38 +471,11 @@ namespace ServiPuntosUy.DAO.Migrations.Central
 
                     b.HasIndex("BranchId");
 
+                    b.HasIndex("TenantId");
+
                     b.HasIndex("UserId");
 
                     b.ToTable("Transactions");
-                });
-
-            modelBuilder.Entity("ServiPuntosUy.DAO.Models.Central.TransactionItem", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ProductId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("int");
-
-                    b.Property<int>("TransactionId")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("UnitPrice")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProductId");
-
-                    b.HasIndex("TransactionId");
-
-                    b.ToTable("TransactionItems");
                 });
 
             modelBuilder.Entity("ServiPuntosUy.DAO.Models.Central.User", b =>
@@ -660,11 +540,11 @@ namespace ServiPuntosUy.DAO.Migrations.Central
                             Id = -1,
                             Email = "admin@servipuntos.uy",
                             IsVerified = false,
-                            LastLoginDate = new DateTime(2025, 6, 14, 21, 10, 38, 453, DateTimeKind.Utc).AddTicks(286),
+                            LastLoginDate = new DateTime(2025, 6, 10, 4, 14, 34, 323, DateTimeKind.Utc).AddTicks(3250),
                             Name = "Admin Central",
                             NotificationsEnabled = true,
-                            Password = "loq59Li4ednNlyXGYxyILXvqksuxlMJ7O6wodN7u/b4=",
-                            PasswordSalt = "AkaGhSjc+zM4kcTrHcp2+w==",
+                            Password = "tnx/euppy2dFn5WrquNu7Ehg6bz4ApsT+gEzQhWxXwg=",
+                            PasswordSalt = "vNxRez94WnSuBrcBsZD2MA==",
                             PointBalance = 0,
                             Role = 1
                         },
@@ -673,11 +553,11 @@ namespace ServiPuntosUy.DAO.Migrations.Central
                             Id = -2,
                             Email = "admintenant@servipuntos.uy",
                             IsVerified = false,
-                            LastLoginDate = new DateTime(2025, 6, 14, 21, 10, 38, 453, DateTimeKind.Utc).AddTicks(328),
+                            LastLoginDate = new DateTime(2025, 6, 10, 4, 14, 34, 323, DateTimeKind.Utc).AddTicks(3280),
                             Name = "Admin Tenant",
                             NotificationsEnabled = true,
-                            Password = "loq59Li4ednNlyXGYxyILXvqksuxlMJ7O6wodN7u/b4=",
-                            PasswordSalt = "AkaGhSjc+zM4kcTrHcp2+w==",
+                            Password = "tnx/euppy2dFn5WrquNu7Ehg6bz4ApsT+gEzQhWxXwg=",
+                            PasswordSalt = "vNxRez94WnSuBrcBsZD2MA==",
                             PointBalance = 0,
                             Role = 2,
                             TenantId = -1
@@ -757,11 +637,17 @@ namespace ServiPuntosUy.DAO.Migrations.Central
 
             modelBuilder.Entity("ServiPuntosUy.DAO.Models.Central.Promotion", b =>
                 {
+                    b.HasOne("ServiPuntosUy.DAO.Models.Central.Branch", "Branch")
+                        .WithMany()
+                        .HasForeignKey("BranchId");
+
                     b.HasOne("ServiPuntosUy.DAO.Models.Central.Tenant", "Tenant")
                         .WithMany()
                         .HasForeignKey("TenantId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Branch");
 
                     b.Navigation("Tenant");
                 });
@@ -791,25 +677,6 @@ namespace ServiPuntosUy.DAO.Migrations.Central
                     b.Navigation("Promotion");
 
                     b.Navigation("Tenant");
-                });
-
-            modelBuilder.Entity("ServiPuntosUy.DAO.Models.Central.PromotionProduct", b =>
-                {
-                    b.HasOne("ServiPuntosUy.DAO.Models.Central.Product", "Product")
-                        .WithMany("PromotionProduct")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("ServiPuntosUy.DAO.Models.Central.Promotion", "Promotion")
-                        .WithMany("PromotionProduct")
-                        .HasForeignKey("PromotionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Product");
-
-                    b.Navigation("Promotion");
                 });
 
             modelBuilder.Entity("ServiPuntosUy.DAO.Models.Central.Redemption", b =>
@@ -913,6 +780,12 @@ namespace ServiPuntosUy.DAO.Migrations.Central
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("ServiPuntosUy.DAO.Models.Central.Tenant", "Tenant")
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("ServiPuntosUy.DAO.Models.Central.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
@@ -921,45 +794,9 @@ namespace ServiPuntosUy.DAO.Migrations.Central
 
                     b.Navigation("Branch");
 
+                    b.Navigation("Tenant");
+
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("ServiPuntosUy.DAO.Models.Central.TransactionItem", b =>
-                {
-                    b.HasOne("ServiPuntosUy.DAO.Models.Central.Product", "Product")
-                        .WithMany()
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ServiPuntosUy.DAO.Models.Central.Transaction", "Transaction")
-                        .WithMany()
-                        .HasForeignKey("TransactionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Product");
-
-                    b.Navigation("Transaction");
-                });
-
-            modelBuilder.Entity("ServiPuntosUy.DAO.Models.Central.TransactionItem", b =>
-                {
-                    b.HasOne("ServiPuntosUy.DAO.Models.Central.Product", "Product")
-                        .WithMany()
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ServiPuntosUy.DAO.Models.Central.Transaction", "Transaction")
-                        .WithMany()
-                        .HasForeignKey("TransactionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Product");
-
-                    b.Navigation("Transaction");
                 });
 
             modelBuilder.Entity("ServiPuntosUy.DAO.Models.Central.User", b =>
@@ -983,16 +820,9 @@ namespace ServiPuntosUy.DAO.Migrations.Central
                     b.Navigation("PromotionBranch");
                 });
 
-            modelBuilder.Entity("ServiPuntosUy.DAO.Models.Central.Product", b =>
-                {
-                    b.Navigation("PromotionProduct");
-                });
-
             modelBuilder.Entity("ServiPuntosUy.DAO.Models.Central.Promotion", b =>
                 {
                     b.Navigation("PromotionBranch");
-
-                    b.Navigation("PromotionProduct");
                 });
 
             modelBuilder.Entity("ServiPuntosUy.DAO.Models.Central.Tenant", b =>

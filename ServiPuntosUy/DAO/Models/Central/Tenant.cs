@@ -9,4 +9,7 @@ public class Tenant
 
     [Required]
     public string Name { get; set; } = "";
+
+    // Propiedad de navegación inversa
+    public ICollection<PromotionBranch> PromotionBranch { get; set; }
 }

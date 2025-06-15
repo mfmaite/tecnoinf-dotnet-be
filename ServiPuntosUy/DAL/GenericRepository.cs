@@ -18,6 +18,11 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
         return await _dbSet.FindAsync(id);
     }
 
+public virtual async Task<T?> GetByIdAsync(params object[] keyValues)
+{
+    return await _dbSet.FindAsync(keyValues);
+}
+
     public virtual async Task<IEnumerable<T>> GetAllAsync()
     {
         return await _dbSet.ToListAsync();
@@ -43,6 +48,16 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
             _dbSet.Remove(entity);
         }
     }
+
+        public virtual async Task DeleteAsync(params object[] keyValues)
+    {
+        var entity = await GetByIdAsync(keyValues);
+        if (entity != null)
+        {
+            _dbSet.Remove(entity);
+        }
+    }
+
 
     public async Task SaveChangesAsync()
     {
