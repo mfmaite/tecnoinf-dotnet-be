@@ -61,5 +61,20 @@ namespace ServiPuntosUy.DataServices.Services
             int? tenantId,
             int? branchId
         );
+
+        /// <summary>
+        /// Genera un magic link para el login
+        /// </summary>
+        /// <param name="email">Email del usuario</param>
+        /// <param name="httpContext">Contexto HTTP para obtener información adicional</param>
+        /// <returns>Token del magic link</returns>
+        Task<string> GenerateMagicLinkAsync(string email, HttpContext httpContext);
+
+        /// <summary>
+        /// Valida un magic link y genera una sesión
+        /// </summary>
+        /// <param name="magicLinkToken">Token del magic link</param>
+        /// <returns>Token de sesión si el magic link es válido</returns>
+        Task<UserSessionDTO> ValidateMagicLinkAsync(string magicLinkToken);
     }
 }

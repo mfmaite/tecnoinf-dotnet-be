@@ -9,6 +9,19 @@ using ServiPuntosUy.DataServices;
 using ServiPuntosUy.DataServices.Services.CommonLogic;
 using ServiPuntosUy.Middlewares;
 using ServiPuntosUy.Utils;
+using DotNetEnv;
+using System.IO;
+
+// Cargar variables de entorno
+var envPath = Path.Combine(Directory.GetCurrentDirectory(), "..", ".env");
+if (File.Exists(envPath))
+{
+    Env.Load(envPath);
+}
+else
+{
+    Console.WriteLine("Warning: .env file not found at: " + envPath);
+}
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -96,6 +109,9 @@ builder.Services.AddScoped<ITenantResolver>(provider =>
         provider.GetRequiredService<IHostEnvironment>()
     ));
 builder.Services.AddScoped<IServiceFactory, ServiceFactory>();
+
+// Registrar el servicio de email
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 var app = builder.Build();
 

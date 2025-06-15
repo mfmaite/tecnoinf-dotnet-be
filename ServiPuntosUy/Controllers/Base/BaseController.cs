@@ -286,6 +286,11 @@ namespace ServiPuntosUy.Controllers.Base
         /// </summary>
         protected IGeneralParameterService GeneralParameterService => _serviceFactory.GetService<IGeneralParameterService>();
 
+        /// <summary>
+        /// Obtiene el servicio de email
+        /// </summary>
+        protected IEmailService EmailService => _serviceFactory.GetService<IEmailService>();
+
         #endregion
     }
 }
