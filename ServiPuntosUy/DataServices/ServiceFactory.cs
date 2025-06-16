@@ -115,6 +115,11 @@ namespace ServiPuntosUy.DataServices
                     sp.GetRequiredService<IGenericRepository<TenantUI>>(),
                     sp.GetRequiredService<ITenantResolver>()));
 
+            // Registrar el servicio público de Tenant (disponible sin autenticación)
+            _serviceCollection.AddScoped<IPublicTenantService>(sp =>
+                new PublicTenantService(
+                    sp.GetRequiredService<IGenericRepository<DAO.Models.Central.Tenant>>()));
+
             // Registrar un servicio de autenticación básico
             _serviceCollection.AddScoped<IAuthService>(sp =>
                 new CommonAuthService(
