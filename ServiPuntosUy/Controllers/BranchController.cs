@@ -7,6 +7,7 @@ using ServiPuntosUY.Controllers.Response;
 using Microsoft.AspNetCore.Authorization;
 using ServiPuntosUy.DataServices.Services.Tenant;
 using ServiPuntosUy.DataServices.Services.Branch;
+using ServiPuntosUy.Enums;
 
 namespace ServiPuntosUy.Controllers;
 
@@ -187,6 +188,14 @@ public class BranchController : BaseController
     [ProducesResponseType(400)]
     public async Task<IActionResult> setBranchHours([FromBody] SetBranchHoursRequest request) {
         try {
+
+            // Validar el tipo de usuario
+            if (ObtainUserTypeFromToken() != UserType.Branch)
+                return Unauthorized(new ApiResponse<object>{
+                    Error = true,
+                    Message = "No tiene permisos para actualizar los horarios del branch"
+                });
+
             // Intentar parsear OpenTime y ClosingTime
             if (!TimeOnly.TryParse(request.OpenTime, out var openTime))
                 return BadRequest("Formato de hora inválido para OpenTime. Use HH:mm.");
