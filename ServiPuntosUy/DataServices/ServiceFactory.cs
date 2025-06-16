@@ -115,6 +115,11 @@ namespace ServiPuntosUy.DataServices
                     sp.GetRequiredService<IGenericRepository<TenantUI>>(),
                     sp.GetRequiredService<ITenantResolver>()));
 
+            // Registrar el servicio público de Tenant (disponible sin autenticación)
+            _serviceCollection.AddScoped<IPublicTenantService>(sp =>
+                new PublicTenantService(
+                    sp.GetRequiredService<IGenericRepository<DAO.Models.Central.Tenant>>()));
+
             // Registrar un servicio de autenticación básico
             _serviceCollection.AddScoped<IAuthService>(sp =>
                 new CommonAuthService(
@@ -226,6 +231,7 @@ namespace ServiPuntosUy.DataServices
                     sp.GetRequiredService<IGenericRepository<LoyaltyConfig>>()));
 
             _serviceCollection.AddScoped<ITenantBranchService, Services.Tenant.TenantBranchService>();
+            _serviceCollection.AddScoped<IBranchService, BranchService>();
             _serviceCollection.AddScoped<IPromotionService>(sp => new Services.Tenant.PromotionService(
                 sp.GetRequiredService<IGenericRepository<DAO.Models.Central.Promotion>>(),
                 sp.GetRequiredService<IGenericRepository<DAO.Models.Central.PromotionProduct>>(),
@@ -275,6 +281,7 @@ namespace ServiPuntosUy.DataServices
                 sp.GetRequiredService<IGenericRepository<ServiPuntosUy.DAO.Models.Central.Branch>>(),
                 sp.GetRequiredService<IGenericRepository<DAO.Models.Central.Product>>()
             ));
+            // _serviceCollection.AddScoped<IProductService, Services.Branch.ProductService>();
             _serviceCollection.AddScoped<IUserService>(sp =>
                 new Services.Branch.UserService(
                     sp.GetRequiredService<DbContext>(),

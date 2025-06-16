@@ -286,6 +286,11 @@ namespace ServiPuntosUy.Controllers.Base
         /// </summary>
         protected IGeneralParameterService GeneralParameterService => _serviceFactory.GetService<IGeneralParameterService>();
 
+        /// <summary>
+        /// Obtiene el servicio público de tenants (sin autenticación)
+        /// </summary>
+        protected IPublicTenantService PublicTenantService => _serviceFactory.GetService<IPublicTenantService>();
+
         #endregion
     }
 }
