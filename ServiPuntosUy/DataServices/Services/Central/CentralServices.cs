@@ -258,12 +258,12 @@ namespace ServiPuntosUy.DataServices.Services.Central
             _dbContext = dbContext;
             _configuration = configuration;
         }
-        public Task<PromotionDTO> AddPromotion(int tenantId, string description, DateTime startDate, DateTime endDate, IEnumerable<int> branch, IEnumerable<int> product)
+        public Task<PromotionDTO> AddPromotion(int tenantId, string description, DateTime startDate, DateTime endDate, IEnumerable<int> branch, IEnumerable<int> product, int price)
         {
             // Implementación básica para el scaffold
             throw new NotImplementedException();
         }
-        public Task<PromotionDTO> UpdatePromotion(int promotionId, int tenantId, string description, DateTime startDate, DateTime endDate, IEnumerable<int> branch, IEnumerable<int> product)
+        public Task<PromotionDTO> UpdatePromotion(int promotionId, int tenantId, string description, DateTime startDate, DateTime endDate, IEnumerable<int> branch, IEnumerable<int> product, int price)
         {
             // Implementación básica para el scaffold
             throw new NotImplementedException();
@@ -280,7 +280,7 @@ namespace ServiPuntosUy.DataServices.Services.Central
             // Implementación básica para el scaffold
             return new PromotionExtendedDTO();
         }
-        public Task<PromotionDTO> AddPromotionForBranch(int tenantId, int branchId, string description, DateTime startDate, DateTime endDate, IEnumerable<int> product)
+        public Task<PromotionDTO> AddPromotionForBranch(int tenantId, int branchId, string description, DateTime startDate, DateTime endDate, IEnumerable<int> product, int price)
         {
             // Implementación básica para el scaffold
             throw new NotImplementedException();

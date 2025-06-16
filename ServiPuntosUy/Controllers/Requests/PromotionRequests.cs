@@ -9,6 +9,7 @@ public class AddNewPromotionRequest
     public DateTime EndDate { get; set; } = DateTime.UtcNow.AddDays(7);
     public List<int> Branch { get; set; } = new List<int>();
     public List<int> Product { get; set; } = new List<int>();
+    public int Price { get; set; } = 0;
 }
 
 public class UpdatePromotionRequest 
@@ -20,4 +21,5 @@ public class UpdatePromotionRequest
     public DateTime EndDate { get; set; } = DateTime.UtcNow.AddDays(7);
     public List<int> Branch { get; set; } = new List<int>();
     public List<int> Product { get; set; } = new List<int>();
+    public int Price { get; set; } = 0;
 }
