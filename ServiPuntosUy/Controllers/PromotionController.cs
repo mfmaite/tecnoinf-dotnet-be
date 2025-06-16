@@ -52,7 +52,8 @@ public class PromotionController : BaseController
                 request.StartDate,
                 request.EndDate,
                 request.Branch,
-                request.Product
+                request.Product,
+                request.Price
             );
 
 
@@ -92,7 +93,8 @@ public class PromotionController : BaseController
                 request.StartDate,
                 request.EndDate,
                 request.Branch,
-                request.Product
+                request.Product,
+                request.Price
             );
 
 
@@ -127,7 +129,7 @@ public class PromotionController : BaseController
         try
         {
             // Obtenemos tenant id del usuario loguead
-            var tenantId = int.Parse(ObtainTenantFromToken() ?? "0");
+            var tenantId = int.Parse(ObtainUserFromToken().TenantId ?? "0");
             if (tenantId == 0)
                 return BadRequest(new ApiResponse<object>
                 {
@@ -181,7 +183,7 @@ public class PromotionController : BaseController
             return Ok(new ApiResponse<PromotionExtendedDTO>
             {
                 Error = false,
-                Message = "Producto encontrado correctamente",
+                Message = "Promocion encontrada correctamente",
                 Data = promotion
             });
         }
@@ -223,7 +225,8 @@ public class PromotionController : BaseController
                 request.Description,
                 request.StartDate,
                 request.EndDate,
-                request.Product
+                request.Product,
+                request.Price
             );
 
 

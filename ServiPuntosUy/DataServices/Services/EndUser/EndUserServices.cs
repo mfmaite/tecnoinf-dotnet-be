@@ -177,11 +177,11 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
             _promotionBranchRepository = promotionBranchRepository;
             _promotionProductRepository = promotionProductRepository;
         }
-        public Task<PromotionDTO?> AddPromotion(int tenantId, string description, DateTime startDate, DateTime endDate, IEnumerable<int> branch, IEnumerable<int> product)
+        public Task<PromotionDTO?> AddPromotion(int tenantId, string description, DateTime startDate, DateTime endDate, IEnumerable<int> branch, IEnumerable<int> product, int price)
         {
             throw new UnauthorizedAccessException("El usuario final no puede agregar promociones");
         }
-        public Task<PromotionDTO?> UpdatePromotion(int promotionId, int tenantId, string description, DateTime startDate, DateTime endDate, IEnumerable<int> branch, IEnumerable<int> product)
+        public Task<PromotionDTO?> UpdatePromotion(int promotionId, int tenantId, string description, DateTime startDate, DateTime endDate, IEnumerable<int> branch, IEnumerable<int> product, int price)
         {
             throw new UnauthorizedAccessException("El usuario final no puede actualizar promociones");
         }
@@ -200,7 +200,8 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
                 StartDate = p.StartDate,
                 EndDate = p.EndDate,
                 Branches = _promotionBranchRepository.GetQueryable().Where(pb => pb.TenantId == tenantId && pb.PromotionId == p.Id).Select(pb => pb.BranchId).ToList(),
-                Products = _promotionProductRepository.GetQueryable().Where(pp => pp.PromotionId == p.Id).Select(pp => pp.ProductId).ToList()
+                Products = _promotionProductRepository.GetQueryable().Where(pp => pp.PromotionId == p.Id).Select(pp => pp.ProductId).ToList(),
+                Price = p.Price
             }).ToArray();
             return promotionList;
         }
@@ -232,13 +233,14 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
                 StartDate = promotion.StartDate,
                 EndDate = promotion.EndDate,
                 Branches = new List<int> { promotionBranch.BranchId },
-                Products = promotionProduct
+                Products = promotionProduct,
+                Price = promotion.Price
             };
 
             return promotionExtended;
 
         }
-        public Task<PromotionDTO?> AddPromotionForBranch(int tenantId, int branchId, string description, DateTime startDate, DateTime endDate, IEnumerable<int> product)
+        public Task<PromotionDTO?> AddPromotionForBranch(int tenantId, int branchId, string description, DateTime startDate, DateTime endDate, IEnumerable<int> product, int price)
         {
             throw new UnauthorizedAccessException("El usuario final no puede agregar promociones para una sucursal");
         }

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ServiPuntosUy.DAO.Data.Central;
 
@@ -11,9 +12,11 @@ using ServiPuntosUy.DAO.Data.Central;
 namespace ServiPuntosUy.DAO.Migrations.Central
 {
     [DbContext(typeof(CentralDbContext))]
-    partial class CentralDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250616195120_addPromotionPrice")]
+    partial class addPromotionPrice
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -581,9 +584,6 @@ namespace ServiPuntosUy.DAO.Migrations.Central
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("GoogleId")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<bool>("IsVerified")
                         .HasColumnType("bit");
 
@@ -631,11 +631,11 @@ namespace ServiPuntosUy.DAO.Migrations.Central
                             Id = -1,
                             Email = "admin@servipuntos.uy",
                             IsVerified = false,
-                            LastLoginDate = new DateTime(2025, 6, 16, 21, 43, 38, 667, DateTimeKind.Utc).AddTicks(7762),
+                            LastLoginDate = new DateTime(2025, 6, 16, 19, 51, 19, 648, DateTimeKind.Utc).AddTicks(4270),
                             Name = "Admin Central",
                             NotificationsEnabled = true,
-                            Password = "Ed1N4omY8E7BAy0IOcMrNT3JtZe/ZV3/FVTML+wbN58=",
-                            PasswordSalt = "5Gedh+PkIxFsPEqAQleJqg==",
+                            Password = "HkpItQSRf7sgLGXpgTvQUfcGLhCWgJnxl6+l7S6vBWE=",
+                            PasswordSalt = "/YqS4KL1CJi31s09QJFWvA==",
                             PointBalance = 0,
                             Role = 1
                         },
@@ -644,11 +644,11 @@ namespace ServiPuntosUy.DAO.Migrations.Central
                             Id = -2,
                             Email = "admintenant@servipuntos.uy",
                             IsVerified = false,
-                            LastLoginDate = new DateTime(2025, 6, 16, 21, 43, 38, 667, DateTimeKind.Utc).AddTicks(7822),
+                            LastLoginDate = new DateTime(2025, 6, 16, 19, 51, 19, 648, DateTimeKind.Utc).AddTicks(4300),
                             Name = "Admin Tenant",
                             NotificationsEnabled = true,
-                            Password = "Ed1N4omY8E7BAy0IOcMrNT3JtZe/ZV3/FVTML+wbN58=",
-                            PasswordSalt = "5Gedh+PkIxFsPEqAQleJqg==",
+                            Password = "HkpItQSRf7sgLGXpgTvQUfcGLhCWgJnxl6+l7S6vBWE=",
+                            PasswordSalt = "/YqS4KL1CJi31s09QJFWvA==",
                             PointBalance = 0,
                             Role = 2,
                             TenantId = -1

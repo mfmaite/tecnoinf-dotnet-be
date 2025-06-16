@@ -147,24 +147,9 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             _branchRepository.SaveChangesAsync().GetAwaiter().GetResult();
         }
 
-        public BranchDTO setBranchHours(int id,  TimeOnly openTime, TimeOnly closingTime)
+        public BranchDTO setBranchHours(int id, TimeOnly openTime, TimeOnly closingTiem)
         {
-            // Obtener la estación por ID
-            var branch = _branchRepository.GetByIdAsync(id).GetAwaiter().GetResult();
-            if (branch == null)
-            {
-                throw new Exception($"No existe una estación con el ID {id}");
-            }
-
-            // Actualizar las horas de apertura y cierre
-            branch.OpenTime = openTime;
-            branch.ClosingTime = closingTime;
-
-            // Guardar los cambios en la base de datos
-            _branchRepository.UpdateAsync(branch).GetAwaiter().GetResult();
-            _branchRepository.SaveChangesAsync().GetAwaiter().GetResult();
-
-            return GetBranchDTO(branch);
+            throw new NotImplementedException("Este método no está implementado en la versión actual del servicio.");
         }
 
         public BranchDTO[] GetBranchList(int tenantId)
@@ -353,7 +338,8 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
                 TenantId = promotionDTO.TenantId,
                 Description = promotionDTO.Description,
                 StartDate = promotionDTO.StartDate,
-                EndDate = promotionDTO.EndDate
+                EndDate = promotionDTO.EndDate,
+                Price = promotionDTO.Price 
             };
         }
 
@@ -366,7 +352,8 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
                 TenantId = promotion.TenantId,
                 Description = promotion.Description,
                 StartDate = promotion.StartDate,
-                EndDate = promotion.EndDate
+                EndDate = promotion.EndDate,
+                Price = promotion.Price
             };
         }
 
@@ -407,7 +394,7 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
         }
         
 
-        public Task<PromotionDTO?> AddPromotion(int tenantId, string description, DateTime startDate, DateTime endDate, IEnumerable<int> branch, IEnumerable<int> product)        
+        public Task<PromotionDTO?> AddPromotion(int tenantId, string description, DateTime startDate, DateTime endDate, IEnumerable<int> branch, IEnumerable<int> product, int price)        
         {
             // Validaciones previas - verificar existencia de branches
             verifyBranchList(branch, tenantId);
@@ -419,7 +406,8 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
                 TenantId = tenantId,
                 Description = description,
                 StartDate = startDate,
-                EndDate = endDate
+                EndDate = endDate,
+                Price = price   
             };
 
             // Guardar la promoción en la base de datos usando el repositorio de la clase
@@ -469,7 +457,7 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             }
         }
 
-        public async Task<PromotionDTO?> UpdatePromotion(int PromotionId,int tenantId, string description, DateTime startDate, DateTime endDate, IEnumerable<int> branch, IEnumerable<int> product)
+        public async Task<PromotionDTO?> UpdatePromotion(int PromotionId,int tenantId, string description, DateTime startDate, DateTime endDate, IEnumerable<int> branch, IEnumerable<int> product, int price)
         {
             // obtener la promoción por ID
             var promotionDTO = await GetPrmotionById(PromotionId);
@@ -483,6 +471,7 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             promotion.Description = description;
             promotion.StartDate = startDate;
             promotion.EndDate = endDate;
+            promotion.Price = price;
             // Actualizar la promoción en la base de datos
             await _promotionRepository.UpdateAsync(promotion);
             await _promotionRepository.SaveChangesAsync();
@@ -551,7 +540,8 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
                 StartDate = p.StartDate,
                 EndDate = p.EndDate,
                 Branches = _promotionBranchRepository.GetQueryable().Where(pb => pb.TenantId == tenantId && pb.PromotionId == p.Id).Select(pb => pb.BranchId).ToList(),
-                Products = _promotionProductRepository.GetQueryable().Where(pp => pp.PromotionId == p.Id).Select(pp => pp.ProductId).ToList()
+                Products = _promotionProductRepository.GetQueryable().Where(pp => pp.PromotionId == p.Id).Select(pp => pp.ProductId).ToList(),
+                Price = p.Price
             }).ToArray();
             return promotionList;
         }
@@ -583,14 +573,15 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
                 StartDate = promotion.StartDate,
                 EndDate = promotion.EndDate,
                 Branches = new List<int> { promotionBranch.BranchId },
-                Products = promotionProduct
+                Products = promotionProduct,
+                Price = promotion.Price
             };
 
             return promotionExtended;
 
         }
 
-        public Task<PromotionDTO?> AddPromotionForBranch(int tenantId, int branchId, string description, DateTime startDate, DateTime endDate, IEnumerable<int> product)        
+        public Task<PromotionDTO?> AddPromotionForBranch(int tenantId, int branchId, string description, DateTime startDate, DateTime endDate, IEnumerable<int> product, int price)        
         {
             // Validaciones previas - verificar existencia de productos
             verifyProductList(product);
@@ -600,7 +591,8 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
                 TenantId = tenantId,
                 Description = description,
                 StartDate = startDate,
-                EndDate = endDate
+                EndDate = endDate,
+                Price = price
             };
 
             // Guardar la promoción en la base de datos usando el repositorio de la clase
