@@ -10,6 +10,22 @@ namespace ServiPuntosUy.DataServices.Services
     public interface IAuthService
     {
         /// <summary>
+        /// Autentica a un usuario con Google
+        /// </summary>
+        /// <param name="idToken">Token de ID de Google</param>
+        /// <param name="email">Email del usuario</param>
+        /// <param name="name">Nombre del usuario</param>
+        /// <param name="googleId">ID de Google del usuario</param>
+        /// <param name="httpContext">Contexto HTTP para obtener información adicional</param>
+        /// <returns>Token JWT si la autenticación es exitosa, null en caso contrario</returns>
+        Task<UserSessionDTO?> AuthenticateWithGoogleAsync(
+            string idToken, 
+            string email, 
+            string name, 
+            string googleId, 
+            HttpContext httpContext);
+            
+        /// <summary>
         /// Autentica a un usuario con sus credenciales
         /// </summary>
         /// <param name="email">Email del usuario</param>
@@ -52,6 +68,7 @@ namespace ServiPuntosUy.DataServices.Services
         /// <param name="role">Tipo de usuario</param>
         /// <param name="tenantId">ID del tenant</param>
         /// <param name="branchId">ID de la sucursal</param>
+        /// <param name="googleId">ID de Google del usuario (opcional)</param>
         /// <returns>Token JWT</returns>
         Task<UserSessionDTO> GenerateJwtToken(
             int userId,
@@ -59,7 +76,8 @@ namespace ServiPuntosUy.DataServices.Services
             string name,
             UserType role,
             int? tenantId,
-            int? branchId
+            int? branchId,
+            string googleId = null
         );
     }
 }
