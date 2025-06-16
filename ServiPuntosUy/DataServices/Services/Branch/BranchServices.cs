@@ -302,9 +302,33 @@ namespace ServiPuntosUy.DataServices.Services.Branch
             _tenantId = tenantId;
             _branchId = branchId;
         }
+            public Task<PromotionDTO?> AddPromotion(int tenantId, string description, DateTime startDate, DateTime endDate, IEnumerable<int> branch, IEnumerable<int> product)
+        {
+            // Implementación básica para el scaffold
+            throw new NotImplementedException();
+        }
+        public Task<PromotionDTO?> UpdatePromotion(int promotionId, int tenantId, string description, DateTime startDate, DateTime endDate, IEnumerable<int> branch, IEnumerable<int> product)
+        {
+            // Implementación básica para el scaffold
+            throw new NotImplementedException();
+        }
 
-        // Implementar los métodos de la interfaz IPromotionService
-        // Esta es una implementación básica para el scaffold
+        public PromotionExtendedDTO[] GetPromotionList(int tenantId)
+        {
+            // Implementación básica para el scaffold
+            throw new NotImplementedException();
+        }
+
+        public PromotionExtendedDTO GetPromotion(int promotionId, int branchId)
+        {
+            // Implementación básica para el scaffold
+            throw new NotImplementedException();
+        }
+        public Task<PromotionDTO?> AddPromotionForBranch(int tenantId, int branchId, string description, DateTime startDate, DateTime endDate, IEnumerable<int> product)
+        {
+            // Implementación básica para el scaffold
+            throw new NotImplementedException();
+        }
     }
 
     /// <summary>
@@ -463,7 +487,8 @@ namespace ServiPuntosUy.DataServices.Services.Branch
         {
             // Contar promociones para este branch
             int branchPromotions = await _dbContext.Set<DAO.Models.Central.Promotion>()
-                .Where(p => p.BranchId == _branchId)
+                .Where(p => p.TenantId == int.Parse(_tenantId) && 
+                            p.PromotionBranch.Any(pb => pb.BranchId == _branchId))
                 .CountAsync();
 
             // Construir el objeto de respuesta

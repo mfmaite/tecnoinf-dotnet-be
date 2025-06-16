@@ -13,10 +13,6 @@ public class Promotion
     public int TenantId { get; set; }
     public Tenant Tenant { get; set; }
 
-    [ForeignKey("Branch")]
-    public int? BranchId { get; set; }
-    public Branch Branch { get; set; }
-
     public string Description { get; set; } = "";
 
     [Required]
@@ -24,4 +20,9 @@ public class Promotion
 
     [Required]
     public DateTime EndDate { get; set; } = DateTime.UtcNow;
+
+    // Propiedad de navegación inversa
+    public ICollection<PromotionBranch> PromotionBranch { get; set; }
+    public ICollection<PromotionProduct> PromotionProduct { get; set; }
+
 }
