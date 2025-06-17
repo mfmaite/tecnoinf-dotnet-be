@@ -19,6 +19,50 @@ public class FuelController : BaseController
     }
 
     /// <summary>
+    /// Obtiene todos los precios de combustible para una estación
+    /// </summary>
+    /// <param name="branchId">ID de la estación</param>
+    /// <returns>Lista de precios de combustible</returns>
+    [HttpGet("{branchId}/prices")]
+    [ProducesResponseType(typeof(List<FuelPrices>), 200)]
+    [ProducesResponseType(400)]
+    public IActionResult GetAllFuelPrices(int branchId)
+    {
+        try
+        {
+            var fuelPrices = FuelService.GetAllFuelPrices(branchId);
+            
+            if (fuelPrices == null || !fuelPrices.Any())
+            {
+                return NotFound(new ApiResponse<object>
+                {
+                    Error = true,
+                    Message = $"No se encontraron precios de combustible para la estación {branchId}"
+                });
+            }
+
+            return Ok(new ApiResponse<List<FuelPrices>>
+            {
+                Error = false,
+                Message = "Precios obtenidos correctamente",
+                Data = fuelPrices
+            });
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new ApiResponse<object>
+            {
+                Error = true,
+                Message = ex.Message
+            });
+        }
+    }
+
+    /// <summary>
     /// Obtiene el precio de un combustible para una estación
     /// </summary>
     /// <param name="branchId">ID de la estación</param>
