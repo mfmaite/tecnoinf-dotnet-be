@@ -23,11 +23,11 @@ public class PublicTenantController : ControllerBase
     /// <summary>
     /// Obtiene la lista de tenants (endpoint público)
     /// </summary>
-    /// <returns>La lista de tenants</returns>
+    /// <returns>La lista de tenants (solo nombres, sin IDs)</returns>
     /// <response code="200">Retorna la lista de tenants</response>
     /// <response code="400">Si hay un error en la búsqueda</response>
     [HttpGet("")]
-    [ProducesResponseType(typeof(TenantDTO[]), 200)]
+    [ProducesResponseType(typeof(PublicTenantDTO[]), 200)]
     [ProducesResponseType(400)]
     public IActionResult GetTenantsList()
     {
@@ -35,7 +35,7 @@ public class PublicTenantController : ControllerBase
         {
             var tenants = _publicTenantService.GetTenantsList();
 
-            return Ok(new ApiResponse<TenantDTO[]>{
+            return Ok(new ApiResponse<PublicTenantDTO[]>{
                 Error = false,
                 Message = "Lista de tenants obtenida correctamente",
                 Data = tenants

@@ -10,7 +10,7 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
         /// <summary>
         /// Obtiene la lista de tenants
         /// </summary>
-        /// <returns>Lista de tenants</returns>
-        TenantDTO[] GetTenantsList();
+        /// <returns>Lista de tenants (solo nombres, sin IDs)</returns>
+        PublicTenantDTO[] GetTenantsList();
     }
 }

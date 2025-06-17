@@ -18,27 +18,26 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
         }
 
         /// <summary>
-        /// Convierte un modelo de tenant a DTO
+        /// Convierte un modelo de tenant a DTO público (solo nombre, sin ID)
         /// </summary>
         /// <param name="tenant">Modelo de tenant</param>
-        /// <returns>DTO de tenant</returns>
-        private TenantDTO GetTenantDTO(DAO.Models.Central.Tenant tenant)
+        /// <returns>DTO público de tenant</returns>
+        private PublicTenantDTO MapToPublicTenantDTO(DAO.Models.Central.Tenant tenant)
         {
-            return new TenantDTO
+            return new PublicTenantDTO
             {
-                Id = tenant.Id,
-                Name = tenant.Name,
+                Name = tenant.Name
             };
         }
 
         /// <summary>
-        /// Obtiene la lista de tenants
+        /// Obtiene la lista de tenants (solo nombres, sin IDs)
         /// </summary>
         /// <returns>Lista de tenants</returns>
-        public TenantDTO[] GetTenantsList()
+        public PublicTenantDTO[] GetTenantsList()
         {
             var tenants = _tenantRepository.GetQueryable().ToList();
-            return tenants.Select(t => GetTenantDTO(t)).ToArray();
+            return tenants.Select(t => MapToPublicTenantDTO(t)).ToArray();
         }
     }
 }
