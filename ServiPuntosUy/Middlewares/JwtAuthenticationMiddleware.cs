@@ -35,7 +35,8 @@ namespace ServiPuntosUy.Middlewares
                 "/api/redemption/process", // Ruta para procesar canjes por QR
                 "/api/auth/magic-link", // Ruta para generar magic link
                 "/api/auth/validate-magic-link", // Ruta para validar magic link
-                "/api/auth/redirect/validate-magic-link" // Ruta para redirigir al usuario a la app
+                "/api/auth/redirect/validate-magic-link", // Ruta para redirigir al usuario a la app
+                "/api/public/tenant" // Ruta pública para listar tenants
             };
         }
 

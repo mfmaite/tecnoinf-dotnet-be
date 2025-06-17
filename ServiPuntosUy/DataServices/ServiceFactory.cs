@@ -117,6 +117,10 @@ namespace ServiPuntosUy.DataServices
 
             // Registrar el servicio de email
             _serviceCollection.AddScoped<IEmailService>(sp => _serviceProvider.GetRequiredService<IEmailService>());
+            // Registrar el servicio público de Tenant (disponible sin autenticación)
+            _serviceCollection.AddScoped<IPublicTenantService>(sp =>
+                new PublicTenantService(
+                    sp.GetRequiredService<IGenericRepository<DAO.Models.Central.Tenant>>()));
 
             // Registrar un servicio de autenticación básico
             _serviceCollection.AddScoped<IAuthService>(sp =>
@@ -197,8 +201,13 @@ namespace ServiPuntosUy.DataServices
                     sp.GetRequiredService<IEmailService>()));
 
             // Registrar los demás servicios para el administrador central
-            _serviceCollection.AddScoped<IPromotionService, Services.Central.PromotionService>();
-            // _serviceCollection.AddScoped<IProductService, Services.Central.ProductService>();
+            _serviceCollection.AddScoped<IPromotionService>(sp => new Services.Tenant.PromotionService(
+                sp.GetRequiredService<IGenericRepository<DAO.Models.Central.Promotion>>(),
+                sp.GetRequiredService<IGenericRepository<DAO.Models.Central.PromotionProduct>>(),
+                sp.GetRequiredService<IGenericRepository<DAO.Models.Central.PromotionBranch>>(),
+                sp.GetRequiredService<IGenericRepository<DAO.Models.Central.Branch>>(),
+                sp.GetRequiredService<IGenericRepository<DAO.Models.Central.Product>>()
+            ));
             _serviceCollection.AddScoped<IUserService, Services.Central.UserService>();
             _serviceCollection.AddScoped<INotificationService, Services.Central.NotificationService>();
             _serviceCollection.AddScoped<IVerificationService, Services.Central.VerificationService>();
@@ -230,8 +239,13 @@ namespace ServiPuntosUy.DataServices
                     sp.GetRequiredService<IGenericRepository<LoyaltyConfig>>()));
 
             _serviceCollection.AddScoped<ITenantBranchService, Services.Tenant.TenantBranchService>();
-            _serviceCollection.AddScoped<IBranchService, BranchService>();
-            _serviceCollection.AddScoped<IPromotionService, Services.Tenant.PromotionService>();
+            _serviceCollection.AddScoped<IPromotionService>(sp => new Services.Tenant.PromotionService(
+                sp.GetRequiredService<IGenericRepository<DAO.Models.Central.Promotion>>(),
+                sp.GetRequiredService<IGenericRepository<DAO.Models.Central.PromotionProduct>>(),
+                sp.GetRequiredService<IGenericRepository<DAO.Models.Central.PromotionBranch>>(),
+                sp.GetRequiredService<IGenericRepository<DAO.Models.Central.Branch>>(),
+                sp.GetRequiredService<IGenericRepository<DAO.Models.Central.Product>>()
+            ));
             _serviceCollection.AddScoped<IProductService, Services.Tenant.ProductService>();
             _serviceCollection.AddScoped<IUserService, Services.Tenant.UserService>();
             _serviceCollection.AddScoped<INotificationService, Services.Tenant.NotificationService>();
@@ -261,7 +275,6 @@ namespace ServiPuntosUy.DataServices
                     sp.GetRequiredService<IEmailService>()));
 
             // Registrar los servicios implementados
-            // _serviceCollection.AddScoped<IBranchService>(sp => _serviceProvider.GetRequiredService<IBranchService>());
             _serviceCollection.AddScoped<IBranchService>(sp =>
                 new BranchService(
                     sp.GetRequiredService<IGenericRepository<ServiPuntosUy.DAO.Models.Central.Branch>>(),
@@ -269,13 +282,13 @@ namespace ServiPuntosUy.DataServices
                     sp.GetRequiredService<IGenericRepository<ServiPuntosUy.DAO.Models.Central.Product>>()));
 
 
-            _serviceCollection.AddScoped<IPromotionService>(sp =>
-                new Services.Branch.PromotionService(
-                    sp.GetRequiredService<DbContext>(),
-                    _configuration,
-                    tenantId,
-                    branchId));
-            // _serviceCollection.AddScoped<IProductService, Services.Branch.ProductService>();
+            _serviceCollection.AddScoped<IPromotionService>(sp => new Services.Tenant.PromotionService(
+                sp.GetRequiredService<IGenericRepository<DAO.Models.Central.Promotion>>(),
+                sp.GetRequiredService<IGenericRepository<DAO.Models.Central.PromotionProduct>>(),
+                sp.GetRequiredService<IGenericRepository<DAO.Models.Central.PromotionBranch>>(),
+                sp.GetRequiredService<IGenericRepository<ServiPuntosUy.DAO.Models.Central.Branch>>(),
+                sp.GetRequiredService<IGenericRepository<DAO.Models.Central.Product>>()
+            ));
             _serviceCollection.AddScoped<IUserService>(sp =>
                 new Services.Branch.UserService(
                     sp.GetRequiredService<DbContext>(),
@@ -354,7 +367,13 @@ namespace ServiPuntosUy.DataServices
                     sp.GetRequiredService<IGenericRepository<User>>()));
 
             // Registrar los demás servicios
-            _serviceCollection.AddScoped<IPromotionService, Services.EndUser.PromotionService>();
+            _serviceCollection.AddScoped<IPromotionService>(sp => new Services.Tenant.PromotionService(
+    sp.GetRequiredService<IGenericRepository<DAO.Models.Central.Promotion>>(),
+    sp.GetRequiredService<IGenericRepository<DAO.Models.Central.PromotionProduct>>(),
+    sp.GetRequiredService<IGenericRepository<DAO.Models.Central.PromotionBranch>>(),
+    sp.GetRequiredService<IGenericRepository<ServiPuntosUy.DAO.Models.Central.Branch>>(),
+    sp.GetRequiredService<IGenericRepository<ServiPuntosUy.DAO.Models.Central.Product>>()
+));
             _serviceCollection.AddScoped<IProductService, Services.EndUser.ProductService>();
             _serviceCollection.AddScoped<IUserService, Services.EndUser.UserService>();
             _serviceCollection.AddScoped<INotificationService, Services.EndUser.NotificationService>();
