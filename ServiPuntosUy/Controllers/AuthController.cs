@@ -16,10 +16,11 @@ namespace ServiPuntosUy.Controllers
     [ApiController]
     public class AuthController : BaseController
     {
-        public AuthController(IServiceFactory serviceFactory) : base(serviceFactory)
+        public AuthController(IServiceFactory serviceFactory, IConfiguration configuration) : base(serviceFactory)
         {
+            _configuration = configuration;
         }
-
+        private readonly IConfiguration _configuration;
         /// <summary>
         /// Autentica a un usuario y devuelve un token JWT
         /// </summary>
@@ -192,6 +193,11 @@ namespace ServiPuntosUy.Controllers
                 });
             }
         }
-
+        [HttpGet("redirect/validate-magic-link")]
+        public IActionResult RedirectToApp([FromQuery] string token)
+        {
+            var uri = $"{_configuration["AppSettings:MobileUri"]!}/validate-magic-link?token={Uri.EscapeDataString(token)}";
+            return Redirect(uri);
+        }
     }
 }

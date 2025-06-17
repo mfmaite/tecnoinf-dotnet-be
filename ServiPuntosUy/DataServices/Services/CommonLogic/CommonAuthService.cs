@@ -308,7 +308,7 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
             string baseUrl;
             if (httpContext.Request.Headers.TryGetValue("X-Tenant-Name", out var tenantName)) // Viene de la app
             {
-                baseUrl = _configuration["AppSettings:MobileUri"]!;
+                baseUrl = $"{httpContext.Request.Scheme}://{httpContext.Request.Host}/api/auth/redirect";
             }
             else
             {
