@@ -119,14 +119,14 @@ namespace ServiPuntosUy.DataServices.Services.Branch
         public async Task<ProductStockDTO?> GetProductStockById(int productId, int branchId)
         {
             // var product = await _productRepository.GetByIdAsync(productId)
-                var productStock = await _productStockRepository.GetQueryable()
-                                          .AsNoTracking()
-                                          .FirstOrDefaultAsync(p => p.Id == productId && p.BranchId == branchId);
+            var productStock = await _productStockRepository.GetQueryable()
+                                      .AsNoTracking()
+                                      .FirstOrDefaultAsync(p => p.Id == productId && p.BranchId == branchId);
 
             return productStock is not null ? GetProductStockDTO(productStock) : null;
         }
 
-         // Método de mapeo
+        // Método de mapeo
         private DAO.Models.Central.ProductStock MapToProductStock(ProductStockDTO productStockDTO)
         {
             return new DAO.Models.Central.ProductStock
@@ -140,16 +140,17 @@ namespace ServiPuntosUy.DataServices.Services.Branch
         public async Task<bool> VerifyProductById(int productId)
         {
             // var product = await _productRepository.GetByIdAsync(productId)
-                var product = await _productRepository.GetQueryable()
-                                          .AsNoTracking()
-                                          .FirstOrDefaultAsync(p => p.Id == productId);
+            var product = await _productRepository.GetQueryable()
+                                      .AsNoTracking()
+                                      .FirstOrDefaultAsync(p => p.Id == productId);
 
             return product is not null ? true : false;
         }
 
-        public  async Task<ProductStockDTO?> manageStock(int productId, int branchId, int stock)
+        public async Task<ProductStockDTO?> manageStock(int productId, int branchId, int stock)
         {
-            try{
+            try
+            {
                 // verificar que existe el producto
                 var product = await VerifyProductById(productId);
                 if (!product)
@@ -168,7 +169,9 @@ namespace ServiPuntosUy.DataServices.Services.Branch
                     await _productStockRepository.AddAsync(stockDTO);
                     await _productStockRepository.SaveChangesAsync();
                     return GetProductStockDTO(stockDTO);
-                }else{
+                }
+                else
+                {
                     // Si ya existe, actualizamos el stock
                     var stockDTO = MapToProductStock(productStockDTO); //Update no espera DTO
                     stockDTO.Id = productId;
@@ -203,7 +206,7 @@ namespace ServiPuntosUy.DataServices.Services.Branch
             };
         }
 
-        public async Task<BranchDTO?> setBranchHours(int id,  TimeOnly openTime, TimeOnly closingTime)
+        public async Task<BranchDTO?> setBranchHours(int id, TimeOnly openTime, TimeOnly closingTime)
         {
             // Obtener la estación por ID
             var branch = await GetBranchById(id);
@@ -239,7 +242,8 @@ namespace ServiPuntosUy.DataServices.Services.Branch
             _loyaltyConfigRepository = loyaltyConfigRepository;
         }
 
-        public LoyaltyConfigDTO CreateLoyaltyProgram(int tenantId, string pointsName, int pointsValue, decimal accumulationRule, int expiricyPolicyDays) {
+        public LoyaltyConfigDTO CreateLoyaltyProgram(int tenantId, string pointsName, int pointsValue, decimal accumulationRule, int expiricyPolicyDays)
+        {
             throw new UnauthorizedAccessException("El administrador de branch no puede crear un programa de fidelidad");
         }
 
@@ -264,11 +268,13 @@ namespace ServiPuntosUy.DataServices.Services.Branch
         {
             var loyaltyConfig = _loyaltyConfigRepository.GetQueryable().FirstOrDefault(lc => lc.TenantId == tenantId);
 
-            if (loyaltyConfig == null) {
+            if (loyaltyConfig == null)
+            {
                 throw new ArgumentException($"No existe una configuración de lealtad para el tenant con el ID {tenantId}");
             }
 
-            return new LoyaltyConfigDTO {
+            return new LoyaltyConfigDTO
+            {
                 Id = loyaltyConfig.Id,
                 TenantId = loyaltyConfig.TenantId,
                 PointsName = loyaltyConfig.PointsName,
@@ -279,7 +285,8 @@ namespace ServiPuntosUy.DataServices.Services.Branch
         }
 
 
-        public LoyaltyConfigDTO UpdateLoyaltyProgram(int tenantId, string? pointsName, int? pointsValue, decimal? accumulationRule, int? expiricyPolicyDays) {
+        public LoyaltyConfigDTO UpdateLoyaltyProgram(int tenantId, string? pointsName, int? pointsValue, decimal? accumulationRule, int? expiricyPolicyDays)
+        {
             throw new UnauthorizedAccessException("El admin branch no puede actualizar un programa de fidelidad");
         }
 
@@ -302,7 +309,7 @@ namespace ServiPuntosUy.DataServices.Services.Branch
             _tenantId = tenantId;
             _branchId = branchId;
         }
-            public Task<PromotionDTO?> AddPromotion(int tenantId, string description, DateTime startDate, DateTime endDate, IEnumerable<int> branch, IEnumerable<int> product, int price)
+        public Task<PromotionDTO?> AddPromotion(int tenantId, string description, DateTime startDate, DateTime endDate, IEnumerable<int> branch, IEnumerable<int> product, int price)
         {
             // Implementación básica para el scaffold
             throw new NotImplementedException();
@@ -487,7 +494,7 @@ namespace ServiPuntosUy.DataServices.Services.Branch
         {
             // Contar promociones para este branch
             int branchPromotions = await _dbContext.Set<DAO.Models.Central.Promotion>()
-                .Where(p => p.TenantId == int.Parse(_tenantId) && 
+                .Where(p => p.TenantId == int.Parse(_tenantId) &&
                             p.PromotionBranch.Any(pb => pb.BranchId == _branchId))
                 .CountAsync();
 
@@ -558,25 +565,22 @@ namespace ServiPuntosUy.DataServices.Services.Branch
         private async Task ValidateServiceHours(int branchId, TimeOnly startTime, TimeOnly endTime)
         {
             var branch = await _branchRepository.GetByIdAsync(branchId);
-            
+
             if (branch == null)
                 throw new Exception($"No existe una branch con el ID {branchId}");
-                
+
             if (startTime < branch.OpenTime)
                 throw new Exception($"La hora de inicio del servicio ({startTime}) debe ser posterior a la hora de apertura de la branch ({branch.OpenTime})");
-                
+
             if (endTime > branch.ClosingTime)
                 throw new Exception($"La hora de fin del servicio ({endTime}) debe ser anterior a la hora de cierre de la branch ({branch.ClosingTime})");
-                
+
             if (startTime >= endTime)
                 throw new Exception("La hora de inicio debe ser anterior a la hora de fin");
         }
 
         public async Task<ServiceDTO> CreateServiceAsync(int branchId, string name, string description, decimal price, bool ageRestricted, TimeOnly startTime, TimeOnly endTime)
         {
-            // Verificar que el usuario solo pueda crear servicios para su propia branch
-            if (branchId != _branchId)
-                throw new UnauthorizedAccessException("Solo puede crear servicios para su propia branch");
 
             // Validar que las horas estén dentro del horario de la branch
             await ValidateServiceHours(branchId, startTime, endTime);
@@ -603,10 +607,10 @@ namespace ServiPuntosUy.DataServices.Services.Branch
                 StartTime = startTime,
                 EndTime = endTime
             };
-            
+
             await _serviceAvailabilityRepository.AddAsync(serviceAvailability);
             await _serviceAvailabilityRepository.SaveChangesAsync();
-            
+
             // Devolver el servicio creado con su disponibilidad
             return await GetServiceByIdAsync(createdService.Id);
         }
@@ -646,7 +650,7 @@ namespace ServiPuntosUy.DataServices.Services.Branch
                 // Actualizar la disponibilidad
                 serviceAvailability.StartTime = startTime.Value;
                 serviceAvailability.EndTime = endTime.Value;
-                
+
                 await _serviceAvailabilityRepository.UpdateAsync(serviceAvailability);
                 await _serviceAvailabilityRepository.SaveChangesAsync();
             }
@@ -676,7 +680,7 @@ namespace ServiPuntosUy.DataServices.Services.Branch
             var availabilities = await _serviceAvailabilityRepository.GetQueryable()
                 .Where(sa => sa.ServiceId == serviceId)
                 .ToListAsync();
-            
+
             foreach (var availability in availabilities)
             {
                 await _serviceAvailabilityRepository.DeleteAsync(availability.Id);
@@ -704,9 +708,10 @@ namespace ServiPuntosUy.DataServices.Services.Branch
 
             // Mapear el servicio a DTO
             var serviceDTO = MapToServiceDTO(service);
-            
+
             // Agregar las disponibilidades al DTO
-            serviceDTO.Availabilities = availabilities.Select(a => {
+            serviceDTO.Availabilities = availabilities.Select(a =>
+            {
                 var dto = MapToServiceAvailabilityDTO(a);
                 dto.ServiceName = service.Name;
                 return dto;
@@ -736,19 +741,21 @@ namespace ServiPuntosUy.DataServices.Services.Branch
                 .ToListAsync();
 
             // Mapear los servicios a DTOs incluyendo sus disponibilidades
-            return services.Select(s => {
+            return services.Select(s =>
+            {
                 var serviceDTO = MapToServiceDTO(s);
-                
+
                 // Agregar las disponibilidades al DTO
                 if (serviceAvailabilities.ContainsKey(s.Id))
                 {
-                    serviceDTO.Availabilities = serviceAvailabilities[s.Id].Select(a => {
+                    serviceDTO.Availabilities = serviceAvailabilities[s.Id].Select(a =>
+                    {
                         var dto = MapToServiceAvailabilityDTO(a);
                         dto.ServiceName = s.Name;
                         return dto;
                     }).ToArray();
                 }
-                
+
                 return serviceDTO;
             }).ToArray();
         }
