@@ -188,13 +188,23 @@ public class BranchController : BaseController
     [ProducesResponseType(400)]
     public async Task<IActionResult> setBranchHours([FromBody] SetBranchHoursRequest request) {
         try {
-
             // Validar el tipo de usuario
             if (ObtainUserTypeFromToken() != UserType.Branch)
                 return Unauthorized(new ApiResponse<object>{
                     Error = true,
                     Message = "No tiene permisos para actualizar los horarios del branch"
                 });
+
+            // Obtener branchId del token
+            int? branchIdNullable = ObtainBranchIdFromToken();
+            if (!branchIdNullable.HasValue)
+            {
+                return BadRequest(new ApiResponse<object>{
+                    Error = true,
+                    Message = "No se pudo obtener el ID de la estación del token"
+                });
+            }
+            int branchId = branchIdNullable.Value;
 
             // Intentar parsear OpenTime y ClosingTime
             if (!TimeOnly.TryParse(request.OpenTime, out var openTime))
@@ -203,7 +213,7 @@ public class BranchController : BaseController
             if (!TimeOnly.TryParse(request.ClosingTime, out var closingTime))
                 return BadRequest("Formato de hora inválido para ClosingTime. Use HH:mm.");
 
-            var branch = await BranchService?.setBranchHours(request.branchId, openTime, closingTime);
+            var branch = await BranchService?.setBranchHours(branchId, openTime, closingTime);
             return Ok(new ApiResponse<BranchDTO?>{
                 Error = false,
                 Message = "Horario del branch actualizado correctamente",
@@ -275,8 +285,18 @@ public class BranchController : BaseController
     [ProducesResponseType(400)]
     public async Task<IActionResult> manageStock([FromBody] ManageProductStockRequest request) {
         try {
+            // Obtener branchId del token
+            int? branchIdNullable = ObtainBranchIdFromToken();
+            if (!branchIdNullable.HasValue)
+            {
+                return BadRequest(new ApiResponse<object>{
+                    Error = true,
+                    Message = "No se pudo obtener el ID de la estación del token"
+                });
+            }
+            int branchId = branchIdNullable.Value;
 
-            var productStock = await BranchService?.manageStock(request.productId, request.branchId, request.stock);
+            var productStock = await BranchService?.manageStock(request.productId, branchId, request.stock);
             if (productStock == null)
             {
                 return BadRequest(new ApiResponse<object>{
