@@ -154,7 +154,8 @@ namespace ServiPuntosUy.Controllers
         [ProducesResponseType(typeof(ApiResponse<object>), 401)]
         public async Task<IActionResult> Signup([FromBody] SignupRequest request)
         {
-            try {
+            try
+            {
                 // Obtener el tenantId del contexto HTTP (jwt o header)
                 var tenantIdStr = HttpContext.Items["CurrentTenant"] as string;
                 if (string.IsNullOrEmpty(tenantIdStr) || !int.TryParse(tenantIdStr, out int tenantId))
@@ -181,7 +182,9 @@ namespace ServiPuntosUy.Controllers
                     Message = "Usuario registrado correctamente",
                     Data = userSession
                 });
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 return BadRequest(new ApiResponse<object>
                 {
                     Error = true,

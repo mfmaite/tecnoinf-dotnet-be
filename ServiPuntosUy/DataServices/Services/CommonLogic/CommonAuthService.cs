@@ -305,26 +305,32 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
             var jwtToken = tokenHandler.CreateToken(tokenDescriptor);
             var tokenString = tokenHandler.WriteToken(jwtToken);
 
-            // Obtener la URL base de la aplicación
-            var baseUrl = _configuration["AppSettings:FrontendUrl"];
-
-            // Obtener el tenant para el subdominio
-            var tenant = await _tenantRepository.GetByIdAsync(user.TenantId ?? -1);
-            var tenantSubdomain = tenant != null ? $"{tenant.Name.ToLower().Replace(" ", "")}." : "";
-
-            // Construir la URL con el subdominio del tenant
-            string tenantUrl;
-            if (string.IsNullOrEmpty(baseUrl))
+            string baseUrl;
+            if (httpContext.Request.Headers.TryGetValue("X-Tenant-Name", out var tenantName)) // Viene de la app
             {
-                tenantUrl = "http://localhost:3000";
+                baseUrl = _configuration["AppSettings:MobileUri"]!;
             }
             else
             {
-                tenantUrl = $"http://{tenantSubdomain}{baseUrl}";
+                // Obtener la URL base de la aplicación
+                var frontendUrl = _configuration["AppSettings:FrontendUrl"];
+                // Obtener el tenant para el subdominio
+                var tenant = await _tenantRepository.GetByIdAsync(user.TenantId ?? -1);
+                var tenantSubdomain = tenant != null ? $"{tenant.Name.ToLower().Replace(" ", "")}." : "";
+
+                // Construir la URL con el subdominio del tenant
+                if (string.IsNullOrEmpty(frontendUrl))
+                {
+                    baseUrl = "http://localhost:3000";
+                }
+                else
+                {
+                    baseUrl = $"http://{tenantSubdomain}{frontendUrl}";
+                }
             }
 
             // Generar el link completo
-            var magicLink = $"{tenantUrl}/auth/validate-magic-link?token={Uri.EscapeDataString(tokenString)}";
+            var magicLink = $"{baseUrl}/validate-magic-link?token={Uri.EscapeDataString(tokenString)}";
 
             // Enviar el email con el magic link
             if (_emailService != null)
