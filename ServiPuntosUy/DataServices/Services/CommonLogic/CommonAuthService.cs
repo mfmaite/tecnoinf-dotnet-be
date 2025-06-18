@@ -262,7 +262,6 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
                 if (string.IsNullOrEmpty(user.GoogleId))
                 {
                     user.GoogleId = googleId;
-                    user.IsVerified = true; // Mark as verified since they've authenticated with Google
                 }
 
                 // Update last login date
