@@ -9,6 +9,7 @@ using System.IdentityModel.Tokens.Jwt;
 using ServiPuntosUy.DAO.Models.Central;
 using ServiPuntosUy.DataServices.Services.CommonLogic;
 using Microsoft.AspNetCore.Http;
+using System.Security.Cryptography;
 
 namespace ServiPuntosUy.DataServices.Services.CommonLogic
 {
@@ -24,6 +25,7 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
         private readonly IGenericRepository<DAO.Models.Central.User> _userRepository;
         private readonly IGenericRepository<DAO.Models.Central.Tenant> _tenantRepository;
         private readonly ILoyaltyService _loyaltyService;
+        private readonly IEmailService _emailService;
 
         public CommonAuthService(
             DbContext dbContext,
@@ -32,7 +34,8 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
             IGenericRepository<DAO.Models.Central.User> userRepository,
             IGenericRepository<DAO.Models.Central.Tenant> tenantRepository,
             ILoyaltyService loyaltyService = null,
-            string tenantId = null)
+            string tenantId = null,
+            IEmailService emailService = null)
         {
             _dbContext = dbContext;
             _configuration = configuration;
@@ -41,6 +44,7 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
             _tenantId = tenantId;
             _userRepository = userRepository;
             _tenantRepository = tenantRepository;
+            _emailService = emailService;
         }
 
         /// Genera un token JWT para un usuario
@@ -241,6 +245,185 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
                 createdUser.TenantId,
                 null
             );
+        }
+
+        /// <summary>
+        /// Genera un magic link para el login
+        /// </summary>
+        /// <param name="email">Email del usuario</param>
+        /// <param name="httpContext">Contexto HTTP para obtener información adicional</param>
+        /// <returns>Link completo para el magic link</returns>
+        public async Task<string> GenerateMagicLinkAsync(string email, HttpContext httpContext)
+        {
+            if (string.IsNullOrEmpty(email))
+            {
+                throw new ArgumentException("El email es requerido");
+            }
+
+            // Obtener tenantId y userType del contexto HTTP
+            string? tenantIdStr = httpContext.Items["CurrentTenant"] as string;
+            int? tenantId = !string.IsNullOrEmpty(tenantIdStr) && int.TryParse(tenantIdStr, out int tid) ? tid : null;
+
+            // Buscar usuario por email, tenantId y rol
+            var user = await _dbContext.Set<User>()
+                .FirstOrDefaultAsync(u => u.Email == email && u.TenantId == tenantId);
+
+            if (user == null)
+            {
+                throw new Exception("Usuario no encontrado");
+            }
+
+            // Generar un token único
+            var tokenBytes = new byte[32];
+            using (var rng = RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(tokenBytes);
+            }
+            var token = Convert.ToBase64String(tokenBytes);
+
+            // Crear el token JWT con la información necesaria
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]);
+
+            var claims = new[]
+            {
+                new Claim("userEmail", user.Email),
+                new Claim("userType", ((int)user.Role).ToString()),
+                new Claim("tenantId", user.TenantId.ToString()),
+                new Claim("magicLinkToken", token)
+            };
+
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(claims),
+                Expires = DateTime.UtcNow.AddMinutes(15), // El magic link expira en 15 minutos
+                SigningCredentials = new SigningCredentials(
+                    new SymmetricSecurityKey(key),
+                    SecurityAlgorithms.HmacSha256Signature)
+            };
+
+            var jwtToken = tokenHandler.CreateToken(tokenDescriptor);
+            var tokenString = tokenHandler.WriteToken(jwtToken);
+
+            string baseUrl;
+            if (httpContext.Request.Headers.TryGetValue("X-Tenant-Name", out var tenantName)) // Viene de la app
+            {
+                baseUrl = $"{httpContext.Request.Scheme}://{httpContext.Request.Host}/api/auth/redirect";
+            }
+            else
+            {
+                // Obtener la URL base de la aplicación
+                var frontendUrl = _configuration["AppSettings:FrontendUrl"];
+                // Obtener el tenant para el subdominio
+                var tenant = await _tenantRepository.GetByIdAsync(user.TenantId ?? -1);
+                var tenantSubdomain = tenant != null ? $"{tenant.Name.ToLower().Replace(" ", "")}." : "";
+
+                // Construir la URL con el subdominio del tenant
+                if (string.IsNullOrEmpty(frontendUrl))
+                {
+                    baseUrl = "http://localhost:3000";
+                }
+                else
+                {
+                    baseUrl = $"http://{tenantSubdomain}{frontendUrl}";
+                }
+            }
+
+            // Generar el link completo
+            var magicLink = $"{baseUrl}/validate-magic-link?token={Uri.EscapeDataString(tokenString)}";
+
+            // Enviar el email con el magic link
+            if (_emailService != null)
+            {
+                var subject = "Tu link de acceso a ServiPuntosUY";
+                var body = $@"
+                    <html>
+                        <body>
+                            <h2>Hola {user.Name},</h2>
+                            <p>Has solicitado iniciar sesión en ServiPuntosUY. Haz clic en el siguiente enlace para acceder:</p>
+                            <p><a href='{magicLink}'>Iniciar sesión en ServiPuntosUY</a></p>
+                            <p>Este enlace expirará en 15 minutos por razones de seguridad.</p>
+                            <p>Si no solicitaste este enlace, puedes ignorar este mensaje.</p>
+                            <br>
+                            <p>Saludos,<br>El equipo de ServiPuntosUY</p>
+                        </body>
+                    </html>";
+
+                var emailSent = await _emailService.SendEmailAsync(user.Email, subject, body);
+                if (!emailSent)
+                {
+                    throw new Exception("Error al enviar el email con el magic link");
+                }
+            }
+
+            return magicLink;
+        }
+
+        /// <summary>
+        /// Valida un magic link y genera una sesión
+        /// </summary>
+        /// <param name="magicLinkToken">Token del magic link</param>
+        /// <returns>Token de sesión si el magic link es válido</returns>
+        public async Task<UserSessionDTO> ValidateMagicLinkAsync(string magicLinkToken)
+        {
+            try
+            {
+                // Validar el token JWT
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]);
+
+                var validationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    ClockSkew = TimeSpan.Zero
+                };
+
+                SecurityToken validatedToken;
+                var principal = tokenHandler.ValidateToken(magicLinkToken, validationParameters, out validatedToken);
+
+                // Extraer la información del token
+                var email = principal.FindFirst("userEmail")?.Value;
+                var userTypeStr = principal.FindFirst("userType")?.Value;
+                var tenantIdStr = principal.FindFirst("tenantId")?.Value;
+
+                if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(userTypeStr) || string.IsNullOrEmpty(tenantIdStr))
+                {
+                    throw new Exception("Token inválido");
+                }
+
+                var userType = (UserType)int.Parse(userTypeStr);
+                var tenantId = int.Parse(tenantIdStr);
+
+                // Buscar el usuario
+                var user = await _dbContext.Set<User>()
+                    .FirstOrDefaultAsync(u => u.Email == email && u.TenantId == tenantId && u.Role == userType);
+
+                if (user == null)
+                {
+                    throw new Exception("Usuario no encontrado");
+                }
+
+                // Actualizar la fecha del último login
+                user.LastLoginDate = DateTime.UtcNow;
+                await _dbContext.SaveChangesAsync();
+
+                // Generar el token de sesión
+                return await GenerateJwtToken(
+                    user.Id,
+                    user.Email,
+                    user.Name,
+                    user.Role,
+                    user.TenantId,
+                    user.BranchId
+                );
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error al validar el magic link: {ex.Message}");
+            }
         }
     }
 }
