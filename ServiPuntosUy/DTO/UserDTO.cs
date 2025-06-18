@@ -58,5 +58,10 @@ namespace ServiPuntosUy.DTO
         /// Indica si las notificaciones están habilitadas
         /// </summary>
         public bool NotificationsEnabled { get; set; } = true;
+
+        /// <summary>
+        /// ID de Google del usuario (solo para usuarios autenticados con Google)
+        /// </summary>
+        public string? GoogleId { get; set; }
     }
 }

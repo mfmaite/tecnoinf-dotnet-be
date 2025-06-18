@@ -16,10 +16,11 @@ namespace ServiPuntosUy.Controllers
     [ApiController]
     public class AuthController : BaseController
     {
-        public AuthController(IServiceFactory serviceFactory) : base(serviceFactory)
+        public AuthController(IServiceFactory serviceFactory, IConfiguration configuration) : base(serviceFactory)
         {
+            _configuration = configuration;
         }
-
+        private readonly IConfiguration _configuration;
         /// <summary>
         /// Autentica a un usuario y devuelve un token JWT
         /// </summary>
@@ -45,6 +46,66 @@ namespace ServiPuntosUy.Controllers
                 Message = "Inicio de sesión correcto",
                 Data = userSession
             });
+        }
+
+        /// <summary>
+        /// Genera un magic link para el login
+        /// </summary>
+        /// <param name="request">Email del usuario</param>
+        /// <returns>Token del magic link</returns>
+        [HttpPost("magic-link")]
+        [ProducesResponseType(typeof(ApiResponse<string>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<object>), 400)]
+        public async Task<IActionResult> GenerateMagicLink([FromBody] MagicLinkRequest request)
+        {
+            try
+            {
+                var magicLinkToken = await AuthService.GenerateMagicLinkAsync(request.Email, HttpContext);
+                return Ok(new ApiResponse<string>
+                {
+                    Error = false,
+                    Message = "Magic link generado correctamente",
+                    Data = magicLinkToken
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new ApiResponse<object>
+                {
+                    Error = true,
+                    Message = ex.Message
+                });
+            }
+        }
+
+        /// <summary>
+        /// Valida un magic link y genera una sesión
+        /// </summary>
+        /// <param name="request">Token del magic link</param>
+        /// <returns>Token de sesión</returns>
+        [HttpPost("validate-magic-link")]
+        [ProducesResponseType(typeof(ApiResponse<UserSessionDTO>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<object>), 400)]
+        public async Task<IActionResult> ValidateMagicLink([FromBody] ValidateMagicLinkRequest request)
+        {
+            try
+            {
+                var userSession = await AuthService.ValidateMagicLinkAsync(request.Token);
+                return Ok(new ApiResponse<UserSessionDTO>
+                {
+                    Error = false,
+                    Message = "Magic link validado correctamente",
+                    Data = userSession
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new ApiResponse<object>
+                {
+                    Error = true,
+                    Message = ex.Message
+                });
+            }
         }
 
         /// <summary>
@@ -85,6 +146,46 @@ namespace ServiPuntosUy.Controllers
         }
 
         /// <summary>
+        /// Autentica a un usuario con Google
+        /// </summary>
+        /// <param name="request">Información del usuario de Google</param>
+        /// <returns>Token JWT</returns>
+        [HttpPost("google-login")]
+        [ProducesResponseType(typeof(ApiResponse<UserSessionDTO>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<object>), 401)]
+        public async Task<IActionResult> GoogleLogin([FromBody] GoogleAuthRequest request)
+        {
+            try {
+                var userSession = await AuthService.AuthenticateWithGoogleAsync(
+                    request.IdToken, 
+                    request.Email, 
+                    request.Name, 
+                    request.GoogleId, 
+                    HttpContext);
+
+                if (userSession == null || string.IsNullOrEmpty(userSession.token))
+                    return Unauthorized(new ApiResponse<object>
+                    {
+                        Error = true,
+                        Message = "Error al autenticar con Google"
+                    });
+
+                return Ok(new ApiResponse<UserSessionDTO>
+                {
+                    Error = false,
+                    Message = "Inicio de sesión con Google correcto",
+                    Data = userSession
+                });
+            } catch (Exception ex) {
+                return BadRequest(new ApiResponse<object>
+                {
+                    Error = true,
+                    Message = ex.Message
+                });
+            }
+        }
+
+        /// <summary>
         /// Registra a un usuario
         /// </summary>
         /// <param name="request">Credenciales del usuario</param>
@@ -94,7 +195,8 @@ namespace ServiPuntosUy.Controllers
         [ProducesResponseType(typeof(ApiResponse<object>), 401)]
         public async Task<IActionResult> Signup([FromBody] SignupRequest request)
         {
-            try {
+            try
+            {
                 // Obtener el tenantId del contexto HTTP (jwt o header)
                 var tenantIdStr = HttpContext.Items["CurrentTenant"] as string;
                 if (string.IsNullOrEmpty(tenantIdStr) || !int.TryParse(tenantIdStr, out int tenantId))
@@ -121,7 +223,9 @@ namespace ServiPuntosUy.Controllers
                     Message = "Usuario registrado correctamente",
                     Data = userSession
                 });
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 return BadRequest(new ApiResponse<object>
                 {
                     Error = true,
@@ -129,6 +233,11 @@ namespace ServiPuntosUy.Controllers
                 });
             }
         }
-
+        [HttpGet("redirect/validate-magic-link")]
+        public IActionResult RedirectToApp([FromQuery] string token)
+        {
+            var uri = $"{_configuration["AppSettings:MobileUri"]!}/validate-magic-link?token={Uri.EscapeDataString(token)}";
+            return Redirect(uri);
+        }
     }
 }
