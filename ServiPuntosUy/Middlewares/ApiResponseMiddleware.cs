@@ -100,13 +100,6 @@ namespace ServiPuntosUy.Middlewares
                 {
                     // Si no es un ApiResponse, envolverlo en uno
                     newResponseContent = WrapInApiResponse(responseContent, context.Response.StatusCode);
-                    
-                    // Asegurarse de que el status code sea 200 OK si estamos devolviendo un ApiResponse
-                    // incluso para errores, ya que el error se indica dentro del ApiResponse
-                    if (context.Response.StatusCode >= 400)
-                    {
-                        context.Response.StatusCode = (int)HttpStatusCode.OK;
-                    }
                 }
 
                 // Configurar la respuesta con el nuevo contenido
