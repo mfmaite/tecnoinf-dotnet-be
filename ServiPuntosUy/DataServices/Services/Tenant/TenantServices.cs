@@ -12,6 +12,9 @@ using ServiPuntosUy.DataServices.Services;
 using ServiPuntosUy.DataServices.Services.Branch;
 using ServiPuntosUy.Enums;
 using ServiPuntosUy.DataServices.Services.CommonLogic;
+using FirebaseAdmin.Messaging;
+using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace ServiPuntosUy.DataServices.Services.Tenant
 {
@@ -21,7 +24,7 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
         private readonly IGenericRepository<DAO.Models.Central.FuelPrices> _fuelPricesRepository;
         private readonly IGenericRepository<User> _userRepository;
         private readonly IAuthLogic _authLogic;
-        
+
 
         public TenantBranchService(
             IGenericRepository<DAO.Models.Central.Branch> branchRepository,
@@ -78,7 +81,8 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             };
 
             // Guardar el usuario en la base de datos
-            try{
+            try
+            {
                 var createdUser = _userRepository.AddAsync(adminUser).GetAwaiter().GetResult();
                 _userRepository.SaveChangesAsync().GetAwaiter().GetResult();
 
@@ -195,7 +199,8 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             }
 
             var users = _userRepository.GetQueryable().Where(u => u.BranchId == branchId).ToList();
-            foreach (var user in users) {
+            foreach (var user in users)
+            {
                 _userRepository.DeleteAsync(user.Id).GetAwaiter().GetResult();
             }
             _userRepository.SaveChangesAsync().GetAwaiter().GetResult();
@@ -249,7 +254,8 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
         {
             var existingLoyaltyConfig = _loyaltyConfigRepository.GetQueryable().FirstOrDefault(lc => lc.TenantId == tenantId);
 
-            if (existingLoyaltyConfig == null) {
+            if (existingLoyaltyConfig == null)
+            {
                 throw new Exception($"No existe una configuración de lealtad para el tenant con el ID {tenantId}");
             }
 
@@ -284,12 +290,14 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
         {
             var existingLoyaltyConfig = _loyaltyConfigRepository.GetQueryable().FirstOrDefault(lc => lc.TenantId == tenantId);
 
-            if (existingLoyaltyConfig != null) {
+            if (existingLoyaltyConfig != null)
+            {
                 throw new Exception($"Ya existe una configuración de lealtad para el tenant con el ID {tenantId}");
             }
 
             // Crear la configuración de lealtad para el tenant
-            var newLoyaltyConfig = new DAO.Models.Central.LoyaltyConfig {
+            var newLoyaltyConfig = new DAO.Models.Central.LoyaltyConfig
+            {
                 TenantId = tenantId,
                 PointsName = pointsName,
                 PointsValue = pointsValue,
@@ -320,8 +328,10 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
         /// </summary>
         /// <param name="loyaltyConfig">Modelo de configuración de lealtad</param>
         /// <returns>DTO de configuración de lealtad</returns>
-        public LoyaltyConfigDTO GetLoyaltyConfigDTO(LoyaltyConfig loyaltyConfig) {
-            return new LoyaltyConfigDTO {
+        public LoyaltyConfigDTO GetLoyaltyConfigDTO(LoyaltyConfig loyaltyConfig)
+        {
+            return new LoyaltyConfigDTO
+            {
                 Id = loyaltyConfig.Id,
                 TenantId = loyaltyConfig.TenantId,
                 PointsName = loyaltyConfig.PointsName,
@@ -340,7 +350,8 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
         {
             var loyaltyConfig = _loyaltyConfigRepository.GetQueryable().FirstOrDefault(lc => lc.TenantId == tenantId);
 
-            if (loyaltyConfig == null) {
+            if (loyaltyConfig == null)
+            {
                 throw new ArgumentException($"No existe una configuración de lealtad para el tenant con el ID {tenantId}");
             }
 
@@ -355,26 +366,29 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
     public class PromotionService : IPromotionService
     {
         private readonly IGenericRepository<DAO.Models.Central.Promotion> _promotionRepository;
+        private readonly IGenericRepository<DAO.Models.Central.Tenant> _tenantRepository;
         private readonly IGenericRepository<DAO.Models.Central.PromotionBranch> _promotionBranchRepository;
         private readonly IGenericRepository<DAO.Models.Central.PromotionProduct> _promotionProductRepository;
         private readonly IGenericRepository<DAO.Models.Central.Branch> _branchRepository;
         private readonly IGenericRepository<DAO.Models.Central.Product> _productRepository;
-
-
-
+        private readonly IGenericRepository<DAO.Models.Central.GeneralParameter> _generalParameterRepository;
         public PromotionService(IGenericRepository<DAO.Models.Central.Promotion> promotionRepository,
                                 IGenericRepository<DAO.Models.Central.PromotionProduct> promotionProductRepository,
                                 IGenericRepository<DAO.Models.Central.PromotionBranch> promotionBranchRepository,
                                 IGenericRepository<DAO.Models.Central.Branch> branchRepository,
-                                IGenericRepository<DAO.Models.Central.Product> productRepository
+                                IGenericRepository<DAO.Models.Central.Product> productRepository,
+                                IGenericRepository<DAO.Models.Central.Tenant> tenantRepository,
+                                IGenericRepository<DAO.Models.Central.GeneralParameter> generalParameterRepository
                                 )
-        
+
         {
             _promotionBranchRepository = promotionBranchRepository;
             _promotionProductRepository = promotionProductRepository;
             _promotionRepository = promotionRepository;
             _branchRepository = branchRepository;
             _productRepository = productRepository;
+            _tenantRepository = tenantRepository;
+            _generalParameterRepository = generalParameterRepository;
         }
 
         public async Task<PromotionDTO?> GetPrmotionById(int promotionId)
@@ -398,7 +412,7 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
                 Description = promotionDTO.Description,
                 StartDate = promotionDTO.StartDate,
                 EndDate = promotionDTO.EndDate,
-                Price = promotionDTO.Price 
+                Price = promotionDTO.Price
             };
         }
 
@@ -428,7 +442,7 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
                     .Select(p => p.Id)
                     .Distinct()
                     .ToList();
-                    
+
                 var missingProductIds = productIds.Except(existingProductIds).ToList();
                 if (missingProductIds.Any())
                     throw new Exception($"No existen productos con los IDs: {string.Join(", ", missingProductIds)} para el tenant");
@@ -445,28 +459,28 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
                     .Select(b => b.Id)
                     .Distinct()
                     .ToList();
-                    
+
                 var missingBranchIds = branchIds.Except(existingBranchIds).ToList();
                 if (missingBranchIds.Any())
                     throw new Exception($"No existen branches con los IDs: {string.Join(", ", missingBranchIds)} para el tenant");
             }
         }
-        
 
-        public Task<PromotionDTO?> AddPromotion(int tenantId, string description, DateTime startDate, DateTime endDate, IEnumerable<int> branch, IEnumerable<int> product, int price)        
+
+        public async Task<PromotionDTO?> AddPromotion(int tenantId, string description, DateTime startDate, DateTime endDate, IEnumerable<int> branch, IEnumerable<int> product, int price)
         {
             // Validaciones previas - verificar existencia de branches
             verifyBranchList(branch, tenantId);
             // Validaciones previas - verificar existencia de productos
             verifyProductList(product);
-            
+
             var promotion = new DAO.Models.Central.Promotion
             {
                 TenantId = tenantId,
                 Description = description,
                 StartDate = startDate,
                 EndDate = endDate,
-                Price = price   
+                Price = price
             };
 
             // Guardar la promoción en la base de datos usando el repositorio de la clase
@@ -498,9 +512,12 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
                 _promotionBranchRepository.AddAsync(promotionBranch).GetAwaiter().GetResult();
             }
             _promotionBranchRepository.SaveChangesAsync().GetAwaiter().GetResult();
+            var tenant = await _tenantRepository.GetByIdAsync(tenantId);
+            var currencySymbol = _generalParameterRepository.GetQueryable().Where(gp => gp.Key == "Currency").FirstOrDefault()?.Value ?? "$";
+            if (tenant?.Name is not null) await FCM(createdPromotion.Id, tenant.Name, description, startDate, endDate, price, currencySymbol);
 
             // Devolver el DTO de la promoción creada
-            return Task.FromResult(promotionDTO);
+            return promotionDTO;
         }
 
         public async Task DeleteAsync(int promotionId, int productId, int tenantId)
@@ -509,14 +526,54 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
                 .GetByIdAsync(promotionId, productId);
             if (entity != null && tenantId == null)
             {
-               await _promotionProductRepository.DeleteAsync(entity.PromotionId, entity.ProductId);
+                await _promotionProductRepository.DeleteAsync(entity.PromotionId, entity.ProductId);
             }
-            else{
-                        await _promotionProductRepository.DeleteAsync(entity.PromotionId, entity.ProductId, tenantId);
+            else
+            {
+                await _promotionProductRepository.DeleteAsync(entity.PromotionId, entity.ProductId, tenantId);
             }
         }
 
-        public async Task<PromotionDTO?> UpdatePromotion(int PromotionId,int tenantId, string description, DateTime startDate, DateTime endDate, IEnumerable<int> branch, IEnumerable<int> product, int price)
+        public async Task<bool> FCM(int promotionId, string tenantName, string description, DateTime startDate, DateTime endDate, int price, string currencySymbol)
+        {
+            // Crear el mensaje de notificación
+            var message = new Message()
+            {
+                Notification = new Notification
+                {
+                    Title = "Nueva oferta flash!",
+                    Body = "Clickea aqui para enterarte mas!",
+                },
+                Topic = $"ofertas_{tenantName}",
+                Android = new AndroidConfig()
+                {
+                    Priority = Priority.High,
+                    Notification = new AndroidNotification()
+                    {
+                        ChannelId = "default"
+                    }
+                },
+                Data = new Dictionary<string, string>
+                {
+                    { "Description", $"{description}\nPor el modico precio de {currencySymbol} {price}.\nDesde el {startDate}, hasta el {endDate}" },
+                }
+            };
+
+            try
+            {
+                // Enviar el mensaje a Firebase Cloud Messaging
+                string response = await FirebaseMessaging.DefaultInstance.SendAsync(message);
+                Console.WriteLine($"Successfully sent message to topic: {response}");
+                return true;
+            }
+            catch (FirebaseMessagingException ex)
+            {
+                Console.WriteLine($"Error sending message to topic: {ex.Message}");
+                throw new Exception($"Error al enviar la notificación a los usuarios suscritos al topic");
+            }
+        }
+
+        public async Task<PromotionDTO?> UpdatePromotion(int PromotionId, int tenantId, string description, DateTime startDate, DateTime endDate, IEnumerable<int> branch, IEnumerable<int> product, int price)
         {
             // obtener la promoción por ID
             var promotionDTO = await GetPrmotionById(PromotionId);
@@ -538,12 +595,12 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             // Actualizar los productos asociados a la promoción
             var promotionProducts = _promotionProductRepository.GetQueryable()
                 .Where(pp => pp.PromotionId == PromotionId).ToList();
-            
+
             // modificar los productos asociados a la promoción
             foreach (var pp in promotionProducts)
             {
                 // _promotionProductRepository.DeleteAsync(pp.PromotionId).GetAwaiter().GetResult();
-                    _promotionProductRepository.DeleteAsync(pp.PromotionId, pp.ProductId).GetAwaiter().GetResult();
+                _promotionProductRepository.DeleteAsync(pp.PromotionId, pp.ProductId).GetAwaiter().GetResult();
             }
             _promotionProductRepository.SaveChangesAsync().GetAwaiter().GetResult();
             // Asociar los nuevos productos a la promoción
@@ -607,23 +664,23 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
 
         public PromotionExtendedDTO GetPromotion(int promotionId, int branchId)
         {
-          //Obtenemos promotionBranch
-            var  promotionBranch = _promotionBranchRepository.GetQueryable().Where(pb => pb.BranchId == branchId && pb.PromotionId == promotionId).FirstOrDefault();
-     
+            //Obtenemos promotionBranch
+            var promotionBranch = _promotionBranchRepository.GetQueryable().Where(pb => pb.BranchId == branchId && pb.PromotionId == promotionId).FirstOrDefault();
+
             if (promotionBranch == null)
                 throw new Exception($"No existe una promoción con el ID {promotionId} para la sucursal {branchId}");
-        
+
             // Obtener PromotionProduct
-            var  promotionProduct = _promotionProductRepository.GetQueryable().Where(pp => pp.PromotionId == promotionId)
+            var promotionProduct = _promotionProductRepository.GetQueryable().Where(pp => pp.PromotionId == promotionId)
                 .Select(pp => pp.ProductId)
-                .ToList(); 
+                .ToList();
 
             var promotion = _promotionRepository.GetQueryable().Where(p => p.TenantId == promotionBranch.TenantId && p.Id == promotionId)
                 .FirstOrDefault();
-            
+
             if (promotion == null)
                 throw new Exception($"No existe una promoción con el ID {promotionId}");
-            
+
             var promotionExtended = new PromotionExtendedDTO
             {
                 PromotionId = promotion.Id,
@@ -640,11 +697,11 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
 
         }
 
-        public Task<PromotionDTO?> AddPromotionForBranch(int tenantId, int branchId, string description, DateTime startDate, DateTime endDate, IEnumerable<int> product, int price)        
+        public Task<PromotionDTO?> AddPromotionForBranch(int tenantId, int branchId, string description, DateTime startDate, DateTime endDate, IEnumerable<int> product, int price)
         {
             // Validaciones previas - verificar existencia de productos
             verifyProductList(product);
-            
+
             var promotion = new DAO.Models.Central.Promotion
             {
                 TenantId = tenantId,
@@ -685,7 +742,7 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             // Devolver el DTO de la promoción creada
             return Task.FromResult(promotionDTO);
         }
-    
+
     }
 
     /// <summary>
@@ -716,9 +773,9 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
         public async Task<ProductDTO?> GetProductById(int productId)
         {
             // var product = await _productRepository.GetByIdAsync(productId)
-                var product = await _productRepository.GetQueryable()
-                                          .AsNoTracking()
-                                          .FirstOrDefaultAsync(p => p.Id == productId);
+            var product = await _productRepository.GetQueryable()
+                                      .AsNoTracking()
+                                      .FirstOrDefaultAsync(p => p.Id == productId);
 
             return product is not null ? GetProductDTO(product) : null;
         }
@@ -749,7 +806,7 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
 
         }
 
-                // Método de mapeo
+        // Método de mapeo
         private DAO.Models.Central.Product MapToProduct(ProductDTO productDTO)
         {
             return new DAO.Models.Central.Product

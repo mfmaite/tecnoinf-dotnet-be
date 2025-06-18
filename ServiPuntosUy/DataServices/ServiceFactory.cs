@@ -206,7 +206,9 @@ namespace ServiPuntosUy.DataServices
                 sp.GetRequiredService<IGenericRepository<DAO.Models.Central.PromotionProduct>>(),
                 sp.GetRequiredService<IGenericRepository<DAO.Models.Central.PromotionBranch>>(),
                 sp.GetRequiredService<IGenericRepository<DAO.Models.Central.Branch>>(),
-                sp.GetRequiredService<IGenericRepository<DAO.Models.Central.Product>>()
+                sp.GetRequiredService<IGenericRepository<DAO.Models.Central.Product>>(),
+                sp.GetRequiredService<IGenericRepository<DAO.Models.Central.Tenant>>(),
+                sp.GetRequiredService<IGenericRepository<DAO.Models.Central.GeneralParameter>>()
             ));
             _serviceCollection.AddScoped<IUserService, Services.Central.UserService>();
             _serviceCollection.AddScoped<INotificationService, Services.Central.NotificationService>();
@@ -244,7 +246,9 @@ namespace ServiPuntosUy.DataServices
                 sp.GetRequiredService<IGenericRepository<DAO.Models.Central.PromotionProduct>>(),
                 sp.GetRequiredService<IGenericRepository<DAO.Models.Central.PromotionBranch>>(),
                 sp.GetRequiredService<IGenericRepository<DAO.Models.Central.Branch>>(),
-                sp.GetRequiredService<IGenericRepository<DAO.Models.Central.Product>>()
+                sp.GetRequiredService<IGenericRepository<DAO.Models.Central.Product>>(),
+                sp.GetRequiredService<IGenericRepository<DAO.Models.Central.Tenant>>(),
+                sp.GetRequiredService<IGenericRepository<DAO.Models.Central.GeneralParameter>>()
             ));
             _serviceCollection.AddScoped<IProductService, Services.Tenant.ProductService>();
             _serviceCollection.AddScoped<IUserService, Services.Tenant.UserService>();
@@ -287,7 +291,9 @@ namespace ServiPuntosUy.DataServices
                 sp.GetRequiredService<IGenericRepository<DAO.Models.Central.PromotionProduct>>(),
                 sp.GetRequiredService<IGenericRepository<DAO.Models.Central.PromotionBranch>>(),
                 sp.GetRequiredService<IGenericRepository<ServiPuntosUy.DAO.Models.Central.Branch>>(),
-                sp.GetRequiredService<IGenericRepository<DAO.Models.Central.Product>>()
+                sp.GetRequiredService<IGenericRepository<DAO.Models.Central.Product>>(),
+                sp.GetRequiredService<IGenericRepository<DAO.Models.Central.Tenant>>(),
+                sp.GetRequiredService<IGenericRepository<DAO.Models.Central.GeneralParameter>>()
             ));
             _serviceCollection.AddScoped<IUserService>(sp =>
                 new Services.Branch.UserService(
@@ -372,7 +378,9 @@ namespace ServiPuntosUy.DataServices
     sp.GetRequiredService<IGenericRepository<DAO.Models.Central.PromotionProduct>>(),
     sp.GetRequiredService<IGenericRepository<DAO.Models.Central.PromotionBranch>>(),
     sp.GetRequiredService<IGenericRepository<ServiPuntosUy.DAO.Models.Central.Branch>>(),
-    sp.GetRequiredService<IGenericRepository<ServiPuntosUy.DAO.Models.Central.Product>>()
+    sp.GetRequiredService<IGenericRepository<ServiPuntosUy.DAO.Models.Central.Product>>(),
+    sp.GetRequiredService<IGenericRepository<DAO.Models.Central.Tenant>>(),
+    sp.GetRequiredService<IGenericRepository<DAO.Models.Central.GeneralParameter>>()
 ));
             _serviceCollection.AddScoped<IProductService, Services.EndUser.ProductService>();
             _serviceCollection.AddScoped<IUserService, Services.EndUser.UserService>();

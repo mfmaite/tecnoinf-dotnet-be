@@ -24,7 +24,7 @@ namespace ServiPuntosUy.Middlewares
         {
             _next = next;
             _logger = logger;
-            
+
             // Rutas excluidas del procesamiento de ApiResponse
             _excludedPaths = new List<string>
             {
@@ -42,7 +42,7 @@ namespace ServiPuntosUy.Middlewares
         {
             // Verificar si la ruta está excluida del procesamiento
             string path = context.Request.Path.Value.ToLower();
-            
+
             if (_excludedPaths.Any(p => path.StartsWith(p)))
             {
                 // Ruta excluida, continuar con el pipeline sin procesar
@@ -52,7 +52,7 @@ namespace ServiPuntosUy.Middlewares
 
             // Verificar si es una solicitud de API (basado en el Accept header o la ruta)
             bool isApiRequest = IsApiRequest(context);
-            
+
             if (!isApiRequest)
             {
                 // No es una solicitud de API, continuar con el pipeline sin procesar
@@ -84,13 +84,13 @@ namespace ServiPuntosUy.Middlewares
                 // Leer la respuesta
                 responseBody.Seek(0, SeekOrigin.Begin);
                 var responseContent = await new StreamReader(responseBody).ReadToEndAsync();
-                
+
                 // Verificar si la respuesta ya está en formato ApiResponse
                 bool isAlreadyApiResponse = IsApiResponseFormat(responseContent);
 
                 // Preparar el nuevo contenido de la respuesta
                 string newResponseContent;
-                
+
                 if (isAlreadyApiResponse)
                 {
                     // Si ya es un ApiResponse, mantenerlo como está
@@ -106,7 +106,7 @@ namespace ServiPuntosUy.Middlewares
                 context.Response.ContentType = "application/json; charset=utf-8";
                 responseBody.Seek(0, SeekOrigin.Begin);
                 responseBody.SetLength(0);
-                
+
                 await new StreamWriter(responseBody).WriteAsync(newResponseContent);
                 await responseBody.FlushAsync();
 
@@ -117,20 +117,20 @@ namespace ServiPuntosUy.Middlewares
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error en ApiResponseMiddleware");
-                
+
                 // En caso de error en el middleware, asegurarse de restaurar el body original
                 context.Response.Body = originalBodyStream;
-                
+
                 // Crear una respuesta de error
                 context.Response.ContentType = "application/json; charset=utf-8";
                 context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-                
+
                 var errorResponse = new ApiResponse<object>
                 {
                     Error = true,
                     Message = "Error interno del servidor: " + ex.Message
                 };
-                
+
                 await context.Response.WriteAsJsonAsync(errorResponse);
             }
         }
@@ -175,7 +175,7 @@ namespace ServiPuntosUy.Middlewares
                         Error = statusCode >= 400,
                         Message = statusCode >= 400 ? GetDefaultErrorMessage(statusCode) : "Operación completada con éxito"
                     };
-                    
+
                     return JsonSerializer.Serialize(emptyResponse);
                 }
 
@@ -184,7 +184,7 @@ namespace ServiPuntosUy.Middlewares
                 {
                     // Deserializar el contenido original
                     using var document = JsonDocument.Parse(content);
-                    
+
                     // Crear un ApiResponse con el contenido como Data
                     var successResponse = new
                     {
@@ -192,25 +192,25 @@ namespace ServiPuntosUy.Middlewares
                         data = document.RootElement,
                         message = "Operación completada con éxito"
                     };
-                    
+
                     return JsonSerializer.Serialize(successResponse);
                 }
                 else // Si es un código de error (4xx, 5xx)
                 {
                     // Intentar extraer un mensaje de error del contenido
                     string errorMessage = ExtractErrorMessage(content);
-                    
+
                     if (string.IsNullOrWhiteSpace(errorMessage))
                     {
                         errorMessage = GetDefaultErrorMessage(statusCode);
                     }
-                    
+
                     var errorResponse = new ApiResponse<object>
                     {
                         Error = true,
                         Message = errorMessage
                     };
-                    
+
                     return JsonSerializer.Serialize(errorResponse);
                 }
             }
@@ -222,7 +222,7 @@ namespace ServiPuntosUy.Middlewares
                     Error = true,
                     Message = "Error al procesar la respuesta: " + ex.Message
                 };
-                
+
                 return JsonSerializer.Serialize(fallbackResponse);
             }
         }
