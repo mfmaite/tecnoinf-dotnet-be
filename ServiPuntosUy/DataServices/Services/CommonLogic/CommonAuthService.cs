@@ -9,6 +9,7 @@ using System.IdentityModel.Tokens.Jwt;
 using ServiPuntosUy.DAO.Models.Central;
 using ServiPuntosUy.DataServices.Services.CommonLogic;
 using Microsoft.AspNetCore.Http;
+using System.Security.Cryptography;
 
 namespace ServiPuntosUy.DataServices.Services.CommonLogic
 {
@@ -24,6 +25,7 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
         private readonly IGenericRepository<DAO.Models.Central.User> _userRepository;
         private readonly IGenericRepository<DAO.Models.Central.Tenant> _tenantRepository;
         private readonly ILoyaltyService _loyaltyService;
+        private readonly IEmailService _emailService;
 
         public CommonAuthService(
             DbContext dbContext,
@@ -32,7 +34,8 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
             IGenericRepository<DAO.Models.Central.User> userRepository,
             IGenericRepository<DAO.Models.Central.Tenant> tenantRepository,
             ILoyaltyService loyaltyService = null,
-            string tenantId = null)
+            string tenantId = null,
+            IEmailService emailService = null)
         {
             _dbContext = dbContext;
             _configuration = configuration;
@@ -41,8 +44,10 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
             _tenantId = tenantId;
             _userRepository = userRepository;
             _tenantRepository = tenantRepository;
+            _emailService = emailService;
         }
 
+        /// <summary>
         /// Genera un token JWT para un usuario
         /// </summary>
         /// <param name="userId">ID del usuario</param>
@@ -51,8 +56,9 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
         /// <param name="role">Tipo de usuario</param>
         /// <param name="tenantId">ID del tenant</param>
         /// <param name="branchId">ID de la sucursal</param>
+        /// <param name="googleId">ID de Google del usuario (opcional)</param>
         /// <returns>Token JWT</returns>
-        public async Task<UserSessionDTO> GenerateJwtToken(int userId, string email, string name, UserType role, int? tenantId, int? branchId)
+        public async Task<UserSessionDTO> GenerateJwtToken(int userId, string email, string name, UserType role, int? tenantId, int? branchId, string googleId = null)
         {
             // Generar token JWT
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -71,6 +77,12 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
             if (role == UserType.Branch)
             {
                 claims.Add(new Claim("branchId", branchId.ToString()));
+            }
+
+            // Agregar googleId al token si está disponible
+            if (!string.IsNullOrEmpty(googleId))
+            {
+                claims.Add(new Claim("googleId", googleId));
             }
 
             var tokenDescriptor = new SecurityTokenDescriptor
@@ -143,7 +155,8 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
                 user.Name,
                 user.Role,
                 user.TenantId ?? null,
-                user.BranchId ?? null
+                user.BranchId ?? null,
+                user.GoogleId
             );
         }
 
@@ -170,7 +183,8 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
                 BranchId = user.BranchId,
                 IsVerified = user.IsVerified,
                 PointBalance = user.PointBalance,
-                NotificationsEnabled = user.NotificationsEnabled
+                NotificationsEnabled = user.NotificationsEnabled,
+                GoogleId = user.GoogleId
             };
         }
 
@@ -182,6 +196,110 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
         public bool ValidateToken(string token)
         {
             return _authLogic.ValidateToken(token);
+        }
+
+        /// <summary>
+        /// Autentica a un usuario con Google
+        /// </summary>
+        /// <param name="idToken">Token de ID de Google</param>
+        /// <param name="email">Email del usuario</param>
+        /// <param name="name">Nombre del usuario</param>
+        /// <param name="googleId">ID de Google del usuario</param>
+        /// <param name="httpContext">Contexto HTTP para obtener información adicional</param>
+        /// <returns>Token JWT si la autenticación es exitosa, null en caso contrario</returns>
+        public async Task<UserSessionDTO?> AuthenticateWithGoogleAsync(
+            string idToken,
+            string email,
+            string name,
+            string googleId,
+            HttpContext httpContext)
+        {
+            // Obtener tenantId y userType del contexto HTTP
+            string? tenantIdStr = httpContext.Items["CurrentTenant"] as string;
+            if (string.IsNullOrEmpty(tenantIdStr) || !int.TryParse(tenantIdStr, out int tenantId))
+            {
+                throw new Exception("No se pudo determinar el tenant para el login con Google");
+            }
+
+            UserType userType = (UserType)(httpContext.Items["UserType"] ?? UserType.EndUser);
+
+            // Verify if the user exists by GoogleId
+            var user = await _dbContext.Set<User>()
+                .FirstOrDefaultAsync(u => u.GoogleId == googleId && u.TenantId == tenantId);
+
+            // If user doesn't exist, try to find by email
+            if (user == null)
+            {
+                user = await _dbContext.Set<User>()
+                    .FirstOrDefaultAsync(u => u.Email == email && u.TenantId == tenantId);
+            }
+
+            // If user still doesn't exist, create a new one
+            if (user == null)
+            {
+                // Create a random password for the user (they'll never use it)
+                string salt;
+                var randomPassword = Guid.NewGuid().ToString();
+                var passwordHash = _authLogic.HashPassword(randomPassword, out salt);
+
+                user = new User
+                {
+                    Email = email,
+                    Name = name,
+                    TenantId = tenantId,
+                    Role = userType,
+                    IsVerified = true, // Google users are already verified
+                    NotificationsEnabled = true,
+                    LastLoginDate = DateTime.UtcNow,
+                    PointBalance = 0,
+                    Password = passwordHash,
+                    PasswordSalt = salt,
+                    GoogleId = googleId
+                };
+
+                await _dbContext.Set<User>().AddAsync(user);
+                await _dbContext.SaveChangesAsync();
+            }
+            else
+            {
+                // Update Google ID if it's not set
+                if (string.IsNullOrEmpty(user.GoogleId))
+                {
+                    user.GoogleId = googleId;
+                }
+
+                // Update last login date
+                user.LastLoginDate = DateTime.UtcNow;
+                await _dbContext.SaveChangesAsync();
+            }
+
+            // Verify expiration of points for end users
+            if (user.Role == UserType.EndUser && _loyaltyService != null)
+            {
+                try
+                {
+                    await _loyaltyService.CheckPointsExpirationAsync(user.Id);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error checking point expiration: {ex.Message}");
+                }
+            }
+
+            // Actualizar la fecha del último login (siempre)
+            user.LastLoginDate = DateTime.UtcNow;
+            await _dbContext.SaveChangesAsync();
+
+            // Generate token
+            return await GenerateJwtToken(
+                user.Id,
+                user.Email,
+                user.Name,
+                user.Role,
+                user.TenantId ?? null,
+                user.BranchId ?? null,
+                user.GoogleId
+            );
         }
 
         /// <summary>
@@ -221,7 +339,7 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
                 Email = email,
                 Name = name,
                 TenantId = tenantId,
-                Role = UserType.EndUser,
+                Role = userType,
                 IsVerified = false,
                 NotificationsEnabled = true,
                 LastLoginDate = DateTime.UtcNow,
@@ -239,8 +357,188 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
                 createdUser.Name,
                 createdUser.Role,
                 createdUser.TenantId,
-                null
+                null,
+                null // GoogleId is null for regular signup
             );
+        }
+
+        /// <summary>
+        /// Genera un magic link para el login
+        /// </summary>
+        /// <param name="email">Email del usuario</param>
+        /// <param name="httpContext">Contexto HTTP para obtener información adicional</param>
+        /// <returns>Link completo para el magic link</returns>
+        public async Task<string> GenerateMagicLinkAsync(string email, HttpContext httpContext)
+        {
+            if (string.IsNullOrEmpty(email))
+            {
+                throw new ArgumentException("El email es requerido");
+            }
+
+            // Obtener tenantId y userType del contexto HTTP
+            string? tenantIdStr = httpContext.Items["CurrentTenant"] as string;
+            int? tenantId = !string.IsNullOrEmpty(tenantIdStr) && int.TryParse(tenantIdStr, out int tid) ? tid : null;
+
+            // Buscar usuario por email, tenantId y rol
+            var user = await _dbContext.Set<User>()
+                .FirstOrDefaultAsync(u => u.Email == email && u.TenantId == tenantId);
+
+            if (user == null)
+            {
+                throw new Exception("Usuario no encontrado");
+            }
+
+            // Generar un token único
+            var tokenBytes = new byte[32];
+            using (var rng = RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(tokenBytes);
+            }
+            var token = Convert.ToBase64String(tokenBytes);
+
+            // Crear el token JWT con la información necesaria
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]);
+
+            var claims = new[]
+            {
+                new Claim("userEmail", user.Email),
+                new Claim("userType", ((int)user.Role).ToString()),
+                new Claim("tenantId", user.TenantId.ToString()),
+                new Claim("magicLinkToken", token)
+            };
+
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(claims),
+                Expires = DateTime.UtcNow.AddMinutes(15), // El magic link expira en 15 minutos
+                SigningCredentials = new SigningCredentials(
+                    new SymmetricSecurityKey(key),
+                    SecurityAlgorithms.HmacSha256Signature)
+            };
+
+            var jwtToken = tokenHandler.CreateToken(tokenDescriptor);
+            var tokenString = tokenHandler.WriteToken(jwtToken);
+
+            string baseUrl;
+            if (httpContext.Request.Headers.TryGetValue("X-Tenant-Name", out var tenantName)) // Viene de la app
+            {
+                baseUrl = $"{httpContext.Request.Scheme}://{httpContext.Request.Host}/api/auth/redirect";
+            }
+            else
+            {
+                // Obtener la URL base de la aplicación
+                var frontendUrl = _configuration["AppSettings:FrontendUrl"];
+                // Obtener el tenant para el subdominio
+                var tenant = await _tenantRepository.GetByIdAsync(user.TenantId ?? -1);
+                var tenantSubdomain = tenant != null ? $"{tenant.Name.ToLower().Replace(" ", "")}." : "";
+
+                // Construir la URL con el subdominio del tenant
+                if (string.IsNullOrEmpty(frontendUrl))
+                {
+                    baseUrl = "http://localhost:3000";
+                }
+                else
+                {
+                    baseUrl = $"http://{tenantSubdomain}{frontendUrl}";
+                }
+            }
+
+            // Generar el link completo
+            var magicLink = $"{baseUrl}/validate-magic-link?token={Uri.EscapeDataString(tokenString)}";
+
+            // Enviar el email con el magic link
+            if (_emailService != null)
+            {
+                var subject = "Tu link de acceso a ServiPuntosUY";
+                var body = $@"
+                    <html>
+                        <body>
+                            <h2>Hola {user.Name},</h2>
+                            <p>Has solicitado iniciar sesión en ServiPuntosUY. Haz clic en el siguiente enlace para acceder:</p>
+                            <p><a href='{magicLink}'>Iniciar sesión en ServiPuntosUY</a></p>
+                            <p>Este enlace expirará en 15 minutos por razones de seguridad.</p>
+                            <p>Si no solicitaste este enlace, puedes ignorar este mensaje.</p>
+                            <br>
+                            <p>Saludos,<br>El equipo de ServiPuntosUY</p>
+                        </body>
+                    </html>";
+
+                var emailSent = await _emailService.SendEmailAsync(user.Email, subject, body);
+                if (!emailSent)
+                {
+                    throw new Exception("Error al enviar el email con el magic link");
+                }
+            }
+
+            return magicLink;
+        }
+
+        /// <summary>
+        /// Valida un magic link y genera una sesión
+        /// </summary>
+        /// <param name="magicLinkToken">Token del magic link</param>
+        /// <returns>Token de sesión si el magic link es válido</returns>
+        public async Task<UserSessionDTO> ValidateMagicLinkAsync(string magicLinkToken)
+        {
+            try
+            {
+                // Validar el token JWT
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]);
+
+                var validationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    ClockSkew = TimeSpan.Zero
+                };
+
+                SecurityToken validatedToken;
+                var principal = tokenHandler.ValidateToken(magicLinkToken, validationParameters, out validatedToken);
+
+                // Extraer la información del token
+                var email = principal.FindFirst("userEmail")?.Value;
+                var userTypeStr = principal.FindFirst("userType")?.Value;
+                var tenantIdStr = principal.FindFirst("tenantId")?.Value;
+
+                if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(userTypeStr) || string.IsNullOrEmpty(tenantIdStr))
+                {
+                    throw new Exception("Token inválido");
+                }
+
+                var userType = (UserType)int.Parse(userTypeStr);
+                var tenantId = int.Parse(tenantIdStr);
+
+                // Buscar el usuario
+                var user = await _dbContext.Set<User>()
+                    .FirstOrDefaultAsync(u => u.Email == email && u.TenantId == tenantId && u.Role == userType);
+
+                if (user == null)
+                {
+                    throw new Exception("Usuario no encontrado");
+                }
+
+                // Actualizar la fecha del último login
+                user.LastLoginDate = DateTime.UtcNow;
+                await _dbContext.SaveChangesAsync();
+
+                // Generar el token de sesión
+                return await GenerateJwtToken(
+                    user.Id,
+                    user.Email,
+                    user.Name,
+                    user.Role,
+                    user.TenantId,
+                    user.BranchId
+                );
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error al validar el magic link: {ex.Message}");
+            }
         }
     }
 }

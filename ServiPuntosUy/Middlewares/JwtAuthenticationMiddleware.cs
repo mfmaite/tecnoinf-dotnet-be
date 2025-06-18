@@ -28,11 +28,15 @@ namespace ServiPuntosUy.Middlewares
             {
                 "/api/auth/login",
                 "/api/auth/signup",
+                "/api/auth/google-login", // Ruta para autenticación con Google
                 "/swagger",
                 "/api/auth/register",
                 "/api/health",
                 "/api/tenantui/public", // Ruta pública para obtener la UI del tenant actual
                 "/api/redemption/process", // Ruta para procesar canjes por QR
+                "/api/auth/magic-link", // Ruta para generar magic link
+                "/api/auth/validate-magic-link", // Ruta para validar magic link
+                "/api/auth/redirect/validate-magic-link", // Ruta para redirigir al usuario a la app
                 "/api/public/tenant" // Ruta pública para listar tenants
             };
         }

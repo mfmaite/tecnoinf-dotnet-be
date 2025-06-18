@@ -22,13 +22,20 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
     {
         private readonly IGenericRepository<DAO.Models.Central.Branch> _branchRepository;
         private readonly IGenericRepository<DAO.Models.Central.FuelPrices> _fuelPricesRepository;
+        private readonly IGenericRepository<User> _userRepository;
+        private readonly IAuthLogic _authLogic;
+        
 
         public TenantBranchService(
             IGenericRepository<DAO.Models.Central.Branch> branchRepository,
-            IGenericRepository<DAO.Models.Central.FuelPrices> fuelPricesRepository)
+            IGenericRepository<DAO.Models.Central.FuelPrices> fuelPricesRepository,
+            IGenericRepository<User> userRepository,
+            IAuthLogic authLogic)
         {
             _branchRepository = branchRepository;
             _fuelPricesRepository = fuelPricesRepository;
+            _userRepository = userRepository;
+            _authLogic = authLogic;
         }
 
 
@@ -49,6 +56,46 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             };
         }
 
+        private void CreateBranchAdminUser(DAO.Models.Central.Branch branch)
+        {
+            // Generar email y contraseña para el administrador del tenant
+            string adminEmail = $"branch{branch.Id}tenant{branch.TenantId}-admin@mail.com";
+            string adminPassword = $"branch{branch.Id}tenant{branch.TenantId}-admin-password";
+
+            // Generar hash y salt para la contraseña
+            string passwordHash = _authLogic.HashPassword(adminPassword, out string passwordSalt);
+
+            // Crear el usuario administrador
+            var adminUser = new User
+            {
+                TenantId = branch.TenantId,
+                Email = adminEmail,
+                Name = $"Default branch{branch.Id}tenant{branch.TenantId} Administrator",
+                Password = passwordHash,
+                PasswordSalt = passwordSalt,
+                Role = UserType.Branch, // Tipo de usuario: branch admin
+                IsVerified = true, // El usuario ya está verificado
+                NotificationsEnabled = true,
+                BranchId = branch.Id
+
+            };
+
+            // Guardar el usuario en la base de datos
+            try{
+                var createdUser = _userRepository.AddAsync(adminUser).GetAwaiter().GetResult();
+                _userRepository.SaveChangesAsync().GetAwaiter().GetResult();
+
+                if (createdUser == null)
+                {
+                    throw new Exception("No se pudo crear el usuario administrador del branch.");
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error al crear el usuario administrador del branch: {ex.Message}");
+            }
+        }
+
         public BranchDTO CreateBranch(int tenantId, string latitud, string longitud, string address, string phone, TimeOnly openTime, TimeOnly closingTime)
         {
             // Crear un nuevo branch
@@ -66,6 +113,10 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             // Guardar el branch en la base de datos usando el repositorio de la clase
             var createdBranch = _branchRepository.AddAsync(branch).GetAwaiter().GetResult();
             _branchRepository.SaveChangesAsync().GetAwaiter().GetResult();
+
+            // imprimimos el tipo de createdBranch
+            // Crear el usuario administrador del branch
+            CreateBranchAdminUser(createdBranch);
 
             // Inicializar los precios de combustibles para este branch
             InitializeFuelPrices(createdBranch.Id, tenantId);
@@ -146,8 +197,16 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
                 throw new Exception("No existe una estación con el ID ${branchId}");
             }
 
+            var users = _userRepository.GetQueryable().Where(u => u.BranchId == branchId).ToList();
+            foreach (var user in users) {
+                _userRepository.DeleteAsync(user.Id).GetAwaiter().GetResult();
+            }
+            _userRepository.SaveChangesAsync().GetAwaiter().GetResult();
+
             _branchRepository.DeleteAsync(branchId).GetAwaiter().GetResult();
             _branchRepository.SaveChangesAsync().GetAwaiter().GetResult();
+
+
         }
 
         public BranchDTO setBranchHours(int id, TimeOnly openTime, TimeOnly closingTiem)

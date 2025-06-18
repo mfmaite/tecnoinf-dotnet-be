@@ -49,3 +49,5 @@ coverage/
 **/bin/
 **/Debug/
 **/obj/
+
+**/fcm-key.json
