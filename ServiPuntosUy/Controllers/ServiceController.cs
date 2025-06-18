@@ -22,13 +22,24 @@ namespace ServiPuntosUy.Controllers
         }
 
         [HttpGet]
-        [Route("branch/{branchId}")]
-        public async Task<IActionResult> GetBranchServices(int branchId)
+        [Route("branch")]
+        public async Task<IActionResult> GetBranchServices()
         {
             try
             {
+                // Obtener el BranchId del token JWT
+                var branchId = ObtainBranchIdFromToken();
+                if (!branchId.HasValue)
+                {
+                    return BadRequest(new ApiResponse<object>
+                    {
+                        Error = true,
+                        Message = "No se pudo obtener el ID de la branch del token"
+                    });
+                }
+
                 // Obtener los servicios con sus disponibilidades
-                var services = await _serviceManager.GetBranchServicesAsync(branchId);
+                var services = await _serviceManager.GetBranchServicesAsync(branchId.Value);
                 return Ok(new ApiResponse<ServiceDTO[]>
                 {
                     Error = false,
@@ -85,8 +96,19 @@ namespace ServiPuntosUy.Controllers
 
             try
             {
+                // Obtener el BranchId del token JWT
+                var branchId = ObtainBranchIdFromToken();
+                if (!branchId.HasValue)
+                {
+                    return BadRequest(new ApiResponse<object>
+                    {
+                        Error = true,
+                        Message = "No se pudo obtener el ID de la branch del token"
+                    });
+                }
+
                 var service = await _serviceManager.CreateServiceAsync(
-                    BranchId.Value,
+                    branchId.Value,
                     request.Name,
                     request.Description,
                     request.Price,

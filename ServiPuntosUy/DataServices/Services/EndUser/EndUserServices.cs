@@ -39,6 +39,21 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
                 .FirstOrDefault(fp => fp.BranchId == branchId && fp.FuelType == fuelType) ?? throw new Exception($"No existe un precio configurado para el combustible {fuelType} en la estación {branchId}");
             return fuelPrice;
         }
+
+        public List<FuelPrices> GetAllFuelPrices(int branchId)
+        {
+            // Obtener todos los precios de combustible para la estación
+            var fuelPrices = _fuelPricesRepository.GetQueryable()
+                .Where(fp => fp.BranchId == branchId)
+                .ToList();
+
+            if (fuelPrices.Count == 0)
+            {
+                throw new Exception($"No existen precios configurados para la estación {branchId}");
+            }
+
+            return fuelPrices;
+        }
     }
 
     /// <summary>

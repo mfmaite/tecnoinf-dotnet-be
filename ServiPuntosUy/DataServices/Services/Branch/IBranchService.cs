@@ -12,6 +12,7 @@ namespace ServiPuntosUy.DataServices.Services.Branch
         Task<BranchDTO?> GetBranchById(int id);
         Task<ProductStockDTO?> manageStock(int productId, int branchId, int stock);
         Task<BranchDTO?> setBranchHours(int id,  TimeOnly openTime, TimeOnly closingTime);
+        Task<ProductWithStockDTO[]> GetBranchProductsWithStock(int branchId, int tenantId);
     }
 
 }

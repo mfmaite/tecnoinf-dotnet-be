@@ -188,13 +188,23 @@ public class BranchController : BaseController
     [ProducesResponseType(400)]
     public async Task<IActionResult> setBranchHours([FromBody] SetBranchHoursRequest request) {
         try {
-
             // Validar el tipo de usuario
             if (ObtainUserTypeFromToken() != UserType.Branch)
                 return Unauthorized(new ApiResponse<object>{
                     Error = true,
                     Message = "No tiene permisos para actualizar los horarios del branch"
                 });
+
+            // Obtener branchId del token
+            int? branchIdNullable = ObtainBranchIdFromToken();
+            if (!branchIdNullable.HasValue)
+            {
+                return BadRequest(new ApiResponse<object>{
+                    Error = true,
+                    Message = "No se pudo obtener el ID de la estación del token"
+                });
+            }
+            int branchId = branchIdNullable.Value;
 
             // Intentar parsear OpenTime y ClosingTime
             if (!TimeOnly.TryParse(request.OpenTime, out var openTime))
@@ -203,7 +213,7 @@ public class BranchController : BaseController
             if (!TimeOnly.TryParse(request.ClosingTime, out var closingTime))
                 return BadRequest("Formato de hora inválido para ClosingTime. Use HH:mm.");
 
-            var branch = await BranchService?.setBranchHours(request.branchId, openTime, closingTime);
+            var branch = await BranchService?.setBranchHours(branchId, openTime, closingTime);
             return Ok(new ApiResponse<BranchDTO?>{
                 Error = false,
                 Message = "Horario del branch actualizado correctamente",
@@ -275,8 +285,18 @@ public class BranchController : BaseController
     [ProducesResponseType(400)]
     public async Task<IActionResult> manageStock([FromBody] ManageProductStockRequest request) {
         try {
+            // Obtener branchId del token
+            int? branchIdNullable = ObtainBranchIdFromToken();
+            if (!branchIdNullable.HasValue)
+            {
+                return BadRequest(new ApiResponse<object>{
+                    Error = true,
+                    Message = "No se pudo obtener el ID de la estación del token"
+                });
+            }
+            int branchId = branchIdNullable.Value;
 
-            var productStock = await BranchService?.manageStock(request.productId, request.branchId, request.stock);
+            var productStock = await BranchService?.manageStock(request.productId, branchId, request.stock);
             if (productStock == null)
             {
                 return BadRequest(new ApiResponse<object>{
@@ -298,4 +318,54 @@ public class BranchController : BaseController
         }
     }
 
+    /// <summary>
+    /// Obtiene la lista de productos del tenant con su stock en el branch
+    /// </summary>
+    /// <returns>Lista de productos con stock</returns>
+    /// <response code="200">Retorna la lista de productos con stock</response>
+    /// <response code="400">Si hay un error en la búsqueda</response>
+    [HttpGet("products")]
+    [ProducesResponseType(typeof(ProductWithStockDTO[]), 200)]
+    [ProducesResponseType(400)]
+    public async Task<IActionResult> GetBranchProducts()
+    {
+        try
+        {
+            // Obtener branchId del token
+            int? branchIdNullable = ObtainBranchIdFromToken();
+            if (!branchIdNullable.HasValue)
+            {
+                return BadRequest(new ApiResponse<object>{
+                    Error = true,
+                    Message = "No se pudo obtener el ID de la estación del token"
+                });
+            }
+            int branchId = branchIdNullable.Value;
+
+            // Obtener tenantId del token
+            var user = ObtainUserFromToken();
+            if (!int.TryParse(user.TenantId, out int tenantId))
+            {
+                return BadRequest(new ApiResponse<object>{
+                    Error = true,
+                    Message = "No se pudo obtener el ID del tenant del token"
+                });
+            }
+
+            var products = await BranchService.GetBranchProductsWithStock(branchId, tenantId);
+            
+            return Ok(new ApiResponse<ProductWithStockDTO[]>{
+                Error = false,
+                Message = "Lista de productos con stock obtenida correctamente",
+                Data = products
+            });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new ApiResponse<object>{
+                Error = true,
+                Message = ex.Message
+            });
+        }
+    }
 }

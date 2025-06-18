@@ -1,5 +1,6 @@
 using ServiPuntosUy.DAO.Models.Central;
 using ServiPuntosUy.Enums;
+using System.Collections.Generic;
 
 namespace ServiPuntosUy.DataServices.Services
 {
@@ -8,6 +9,13 @@ namespace ServiPuntosUy.DataServices.Services
     /// </summary>
     public interface IFuelService
     {
+        /// <summary>
+        /// Obtiene todos los precios de combustible para una estación
+        /// </summary>
+        /// <param name="branchId">ID de la estación</param>
+        /// <returns>Lista de precios de combustible</returns>
+        List<FuelPrices> GetAllFuelPrices(int branchId);
+
         /// <summary>
         /// Actualiza el precio de un combustible para una estación
         /// </summary>
