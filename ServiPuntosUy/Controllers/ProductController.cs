@@ -33,9 +33,11 @@ public class ProductController : BaseController
         {
             if (request == null)
                 return BadRequest("Los datos del producto son requeridos.");
-
+            
+            var tenantId = ObtainUserFromToken().TenantId;
+            
             var newProduct = ProductService?.CreateProduct(
-                request.tenantId,
+                int.Parse(tenantId),
                 request.Name,
                 request.Description,
                 request.ImageUrl,

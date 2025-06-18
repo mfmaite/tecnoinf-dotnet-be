@@ -217,7 +217,7 @@ public class PromotionController : BaseController
 
             // Obtenemos branch id del usuario loguead
             var branchId = ObtainBranchIdFromToken();
-            var tenantId = ObtainTenantFromToken();
+            var tenantId = ObtainUserFromToken().TenantId;
             
             var promocion = await PromotionService.AddPromotionForBranch(
                 int.Parse(tenantId),
