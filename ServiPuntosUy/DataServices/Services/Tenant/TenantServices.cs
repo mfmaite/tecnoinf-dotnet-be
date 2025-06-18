@@ -24,7 +24,7 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
         private readonly IGenericRepository<DAO.Models.Central.FuelPrices> _fuelPricesRepository;
         private readonly IGenericRepository<User> _userRepository;
         private readonly IAuthLogic _authLogic;
-        
+
 
         public TenantBranchService(
             IGenericRepository<DAO.Models.Central.Branch> branchRepository,
@@ -81,7 +81,8 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             };
 
             // Guardar el usuario en la base de datos
-            try{
+            try
+            {
                 var createdUser = _userRepository.AddAsync(adminUser).GetAwaiter().GetResult();
                 _userRepository.SaveChangesAsync().GetAwaiter().GetResult();
 
@@ -198,7 +199,8 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             }
 
             var users = _userRepository.GetQueryable().Where(u => u.BranchId == branchId).ToList();
-            foreach (var user in users) {
+            foreach (var user in users)
+            {
                 _userRepository.DeleteAsync(user.Id).GetAwaiter().GetResult();
             }
             _userRepository.SaveChangesAsync().GetAwaiter().GetResult();
@@ -369,15 +371,14 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
         private readonly IGenericRepository<DAO.Models.Central.PromotionProduct> _promotionProductRepository;
         private readonly IGenericRepository<DAO.Models.Central.Branch> _branchRepository;
         private readonly IGenericRepository<DAO.Models.Central.Product> _productRepository;
-
-
-
+        private readonly IGenericRepository<DAO.Models.Central.GeneralParameter> _generalParameterRepository;
         public PromotionService(IGenericRepository<DAO.Models.Central.Promotion> promotionRepository,
                                 IGenericRepository<DAO.Models.Central.PromotionProduct> promotionProductRepository,
                                 IGenericRepository<DAO.Models.Central.PromotionBranch> promotionBranchRepository,
                                 IGenericRepository<DAO.Models.Central.Branch> branchRepository,
                                 IGenericRepository<DAO.Models.Central.Product> productRepository,
-                                IGenericRepository<DAO.Models.Central.Tenant> tenantRepository
+                                IGenericRepository<DAO.Models.Central.Tenant> tenantRepository,
+                                IGenericRepository<DAO.Models.Central.GeneralParameter> generalParameterRepository
                                 )
 
         {
@@ -387,6 +388,7 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             _branchRepository = branchRepository;
             _productRepository = productRepository;
             _tenantRepository = tenantRepository;
+            _generalParameterRepository = generalParameterRepository;
         }
 
         public async Task<PromotionDTO?> GetPrmotionById(int promotionId)
@@ -511,7 +513,8 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             }
             _promotionBranchRepository.SaveChangesAsync().GetAwaiter().GetResult();
             var tenant = await _tenantRepository.GetByIdAsync(tenantId);
-            if (tenant?.Name is not null) await FCM(createdPromotion.Id, tenant.Name, description, startDate, endDate, branch, product, price);
+            var currencySymbol = _generalParameterRepository.GetQueryable().Where(gp => gp.Key == "Currency").FirstOrDefault()?.Value ?? "$";
+            if (tenant?.Name is not null) await FCM(createdPromotion.Id, tenant.Name, description, startDate, endDate, price, currencySymbol);
 
             // Devolver el DTO de la promoción creada
             return promotionDTO;
@@ -531,15 +534,15 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             }
         }
 
-        public async Task<bool> FCM(int promotionId, string tenantName, string description, DateTime startDate, DateTime endDate, IEnumerable<int> branch, IEnumerable<int> product, int price)
+        public async Task<bool> FCM(int promotionId, string tenantName, string description, DateTime startDate, DateTime endDate, int price, string currencySymbol)
         {
             // Crear el mensaje de notificación
             var message = new Message()
             {
                 Notification = new Notification
                 {
-                    Title = "Nueva Promoción",
-                    Body = $"Se ha creado una nueva promoción: {description}",
+                    Title = "Nueva oferta flash!",
+                    Body = "Clickea aqui para enterarte mas!",
                 },
                 Topic = $"ofertas_{tenantName}",
                 Android = new AndroidConfig()
@@ -552,11 +555,7 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
                 },
                 Data = new Dictionary<string, string>
                 {
-                    { "promotionId", promotionId.ToString() },
-                    { "description", description },
-                    { "startDate", startDate.ToString("o") }, // Formato ISO 8601
-                    { "endDate", endDate.ToString("o") }, // Formato ISO 8601
-                    { "price", price.ToString() }
+                    { "Description", $"{description}\nPor el modico precio de {currencySymbol} {price}.\nDesde el {startDate}, hasta el {endDate}" },
                 }
             };
 
