@@ -146,6 +146,46 @@ namespace ServiPuntosUy.Controllers
         }
 
         /// <summary>
+        /// Autentica a un usuario con Google
+        /// </summary>
+        /// <param name="request">Información del usuario de Google</param>
+        /// <returns>Token JWT</returns>
+        [HttpPost("google-login")]
+        [ProducesResponseType(typeof(ApiResponse<UserSessionDTO>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<object>), 401)]
+        public async Task<IActionResult> GoogleLogin([FromBody] GoogleAuthRequest request)
+        {
+            try {
+                var userSession = await AuthService.AuthenticateWithGoogleAsync(
+                    request.IdToken, 
+                    request.Email, 
+                    request.Name, 
+                    request.GoogleId, 
+                    HttpContext);
+
+                if (userSession == null || string.IsNullOrEmpty(userSession.token))
+                    return Unauthorized(new ApiResponse<object>
+                    {
+                        Error = true,
+                        Message = "Error al autenticar con Google"
+                    });
+
+                return Ok(new ApiResponse<UserSessionDTO>
+                {
+                    Error = false,
+                    Message = "Inicio de sesión con Google correcto",
+                    Data = userSession
+                });
+            } catch (Exception ex) {
+                return BadRequest(new ApiResponse<object>
+                {
+                    Error = true,
+                    Message = ex.Message
+                });
+            }
+        }
+
+        /// <summary>
         /// Registra a un usuario
         /// </summary>
         /// <param name="request">Credenciales del usuario</param>

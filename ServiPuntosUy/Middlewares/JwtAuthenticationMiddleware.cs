@@ -28,6 +28,7 @@ namespace ServiPuntosUy.Middlewares
             {
                 "/api/auth/login",
                 "/api/auth/signup",
+                "/api/auth/google-login", // Ruta para autenticación con Google
                 "/swagger",
                 "/api/auth/register",
                 "/api/health",

@@ -47,6 +47,7 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
             _emailService = emailService;
         }
 
+        /// <summary>
         /// Genera un token JWT para un usuario
         /// </summary>
         /// <param name="userId">ID del usuario</param>
@@ -55,8 +56,9 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
         /// <param name="role">Tipo de usuario</param>
         /// <param name="tenantId">ID del tenant</param>
         /// <param name="branchId">ID de la sucursal</param>
+        /// <param name="googleId">ID de Google del usuario (opcional)</param>
         /// <returns>Token JWT</returns>
-        public async Task<UserSessionDTO> GenerateJwtToken(int userId, string email, string name, UserType role, int? tenantId, int? branchId)
+        public async Task<UserSessionDTO> GenerateJwtToken(int userId, string email, string name, UserType role, int? tenantId, int? branchId, string googleId = null)
         {
             // Generar token JWT
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -75,6 +77,12 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
             if (role == UserType.Branch)
             {
                 claims.Add(new Claim("branchId", branchId.ToString()));
+            }
+
+            // Agregar googleId al token si está disponible
+            if (!string.IsNullOrEmpty(googleId))
+            {
+                claims.Add(new Claim("googleId", googleId));
             }
 
             var tokenDescriptor = new SecurityTokenDescriptor
@@ -147,7 +155,8 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
                 user.Name,
                 user.Role,
                 user.TenantId ?? null,
-                user.BranchId ?? null
+                user.BranchId ?? null,
+                user.GoogleId
             );
         }
 
@@ -174,7 +183,8 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
                 BranchId = user.BranchId,
                 IsVerified = user.IsVerified,
                 PointBalance = user.PointBalance,
-                NotificationsEnabled = user.NotificationsEnabled
+                NotificationsEnabled = user.NotificationsEnabled,
+                GoogleId = user.GoogleId
             };
         }
 
@@ -186,6 +196,110 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
         public bool ValidateToken(string token)
         {
             return _authLogic.ValidateToken(token);
+        }
+
+        /// <summary>
+        /// Autentica a un usuario con Google
+        /// </summary>
+        /// <param name="idToken">Token de ID de Google</param>
+        /// <param name="email">Email del usuario</param>
+        /// <param name="name">Nombre del usuario</param>
+        /// <param name="googleId">ID de Google del usuario</param>
+        /// <param name="httpContext">Contexto HTTP para obtener información adicional</param>
+        /// <returns>Token JWT si la autenticación es exitosa, null en caso contrario</returns>
+        public async Task<UserSessionDTO?> AuthenticateWithGoogleAsync(
+            string idToken,
+            string email,
+            string name,
+            string googleId,
+            HttpContext httpContext)
+        {
+            // Obtener tenantId y userType del contexto HTTP
+            string? tenantIdStr = httpContext.Items["CurrentTenant"] as string;
+            if (string.IsNullOrEmpty(tenantIdStr) || !int.TryParse(tenantIdStr, out int tenantId))
+            {
+                throw new Exception("No se pudo determinar el tenant para el login con Google");
+            }
+
+            UserType userType = (UserType)(httpContext.Items["UserType"] ?? UserType.EndUser);
+
+            // Verify if the user exists by GoogleId
+            var user = await _dbContext.Set<User>()
+                .FirstOrDefaultAsync(u => u.GoogleId == googleId && u.TenantId == tenantId);
+
+            // If user doesn't exist, try to find by email
+            if (user == null)
+            {
+                user = await _dbContext.Set<User>()
+                    .FirstOrDefaultAsync(u => u.Email == email && u.TenantId == tenantId);
+            }
+
+            // If user still doesn't exist, create a new one
+            if (user == null)
+            {
+                // Create a random password for the user (they'll never use it)
+                string salt;
+                var randomPassword = Guid.NewGuid().ToString();
+                var passwordHash = _authLogic.HashPassword(randomPassword, out salt);
+
+                user = new User
+                {
+                    Email = email,
+                    Name = name,
+                    TenantId = tenantId,
+                    Role = userType,
+                    IsVerified = true, // Google users are already verified
+                    NotificationsEnabled = true,
+                    LastLoginDate = DateTime.UtcNow,
+                    PointBalance = 0,
+                    Password = passwordHash,
+                    PasswordSalt = salt,
+                    GoogleId = googleId
+                };
+
+                await _dbContext.Set<User>().AddAsync(user);
+                await _dbContext.SaveChangesAsync();
+            }
+            else
+            {
+                // Update Google ID if it's not set
+                if (string.IsNullOrEmpty(user.GoogleId))
+                {
+                    user.GoogleId = googleId;
+                }
+
+                // Update last login date
+                user.LastLoginDate = DateTime.UtcNow;
+                await _dbContext.SaveChangesAsync();
+            }
+
+            // Verify expiration of points for end users
+            if (user.Role == UserType.EndUser && _loyaltyService != null)
+            {
+                try
+                {
+                    await _loyaltyService.CheckPointsExpirationAsync(user.Id);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error checking point expiration: {ex.Message}");
+                }
+            }
+
+            // Actualizar la fecha del último login (siempre)
+            user.LastLoginDate = DateTime.UtcNow;
+            await _dbContext.SaveChangesAsync();
+
+            // Generate token
+            return await GenerateJwtToken(
+                user.Id,
+                user.Email,
+                user.Name,
+                user.Role,
+                user.TenantId ?? null,
+                user.BranchId ?? null,
+                user.GoogleId
+            );
         }
 
         /// <summary>
@@ -225,7 +339,7 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
                 Email = email,
                 Name = name,
                 TenantId = tenantId,
-                Role = UserType.EndUser,
+                Role = userType,
                 IsVerified = false,
                 NotificationsEnabled = true,
                 LastLoginDate = DateTime.UtcNow,
@@ -243,7 +357,8 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
                 createdUser.Name,
                 createdUser.Role,
                 createdUser.TenantId,
-                null
+                null,
+                null // GoogleId is null for regular signup
             );
         }
 

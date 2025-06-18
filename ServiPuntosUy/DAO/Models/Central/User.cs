@@ -24,6 +24,9 @@ public class User
 
     [Required]
     public string PasswordSalt { get; set; } = "";
+    
+    // Google authentication ID
+    public string? GoogleId { get; set; } = null;
 
     [Required]
     public UserType Role { get; set; } = UserType.Central;
