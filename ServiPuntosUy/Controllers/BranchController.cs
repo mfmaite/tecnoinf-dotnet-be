@@ -318,4 +318,54 @@ public class BranchController : BaseController
         }
     }
 
+    /// <summary>
+    /// Obtiene la lista de productos del tenant con su stock en el branch
+    /// </summary>
+    /// <returns>Lista de productos con stock</returns>
+    /// <response code="200">Retorna la lista de productos con stock</response>
+    /// <response code="400">Si hay un error en la búsqueda</response>
+    [HttpGet("products")]
+    [ProducesResponseType(typeof(ProductWithStockDTO[]), 200)]
+    [ProducesResponseType(400)]
+    public async Task<IActionResult> GetBranchProducts()
+    {
+        try
+        {
+            // Obtener branchId del token
+            int? branchIdNullable = ObtainBranchIdFromToken();
+            if (!branchIdNullable.HasValue)
+            {
+                return BadRequest(new ApiResponse<object>{
+                    Error = true,
+                    Message = "No se pudo obtener el ID de la estación del token"
+                });
+            }
+            int branchId = branchIdNullable.Value;
+
+            // Obtener tenantId del token
+            var user = ObtainUserFromToken();
+            if (!int.TryParse(user.TenantId, out int tenantId))
+            {
+                return BadRequest(new ApiResponse<object>{
+                    Error = true,
+                    Message = "No se pudo obtener el ID del tenant del token"
+                });
+            }
+
+            var products = await BranchService.GetBranchProductsWithStock(branchId, tenantId);
+            
+            return Ok(new ApiResponse<ProductWithStockDTO[]>{
+                Error = false,
+                Message = "Lista de productos con stock obtenida correctamente",
+                Data = products
+            });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new ApiResponse<object>{
+                Error = true,
+                Message = ex.Message
+            });
+        }
+    }
 }

@@ -247,6 +247,41 @@ namespace ServiPuntosUy.DataServices.Services.Branch
 
             return GetBranchDTO(branchDTO);
         }
+
+        public async Task<ProductWithStockDTO[]> GetBranchProductsWithStock(int branchId, int tenantId)
+        {
+            try
+            {
+                // Obtener todos los productos del tenant
+                var products = await _productRepository.GetQueryable()
+                    .Where(p => p.TenantId == tenantId)
+                    .AsNoTracking()
+                    .ToListAsync();
+
+                // Obtener el stock para cada producto en este branch
+                var productStocks = await _productStockRepository.GetQueryable()
+                    .Where(ps => ps.BranchId == branchId)
+                    .AsNoTracking()
+                    .ToDictionaryAsync(ps => ps.ProductId, ps => ps.Stock);
+
+                // Mapear a DTOs
+                return products.Select(p => new ProductWithStockDTO
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    Description = p.Description,
+                    ImageUrl = p.ImageUrl,
+                    Price = p.Price,
+                    AgeRestricted = p.AgeRestricted,
+                    Stock = productStocks.ContainsKey(p.Id) ? productStocks[p.Id] : 0
+                }).ToArray();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error al obtener productos con stock: {ex.Message}");
+                throw;
+            }
+        }
     }
 
     /// <summary>
