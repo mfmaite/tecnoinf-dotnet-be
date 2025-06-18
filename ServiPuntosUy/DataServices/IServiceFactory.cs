@@ -13,7 +13,7 @@ namespace ServiPuntosUy.DataServices
         /// <typeparam name="T">Tipo de servicio a obtener</typeparam>
         /// <returns>Instancia del servicio</returns>
         T GetService<T>() where T : class;
-        
+
         /// <summary>
         /// Configura los servicios según el tenant y tipo de usuario
         /// </summary>
