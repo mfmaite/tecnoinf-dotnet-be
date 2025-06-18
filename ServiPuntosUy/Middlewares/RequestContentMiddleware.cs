@@ -37,7 +37,22 @@ namespace ServiPuntosUy.Middlewares
                 // 2. Identificar el tipo de usuario
                 UserType userType = tenantResolver.ResolveUserType(context);
 
-                // 3. Configurar los servicios según el tenant y tipo de usuario
+                // 3. Agregar información del tenant y tipo de usuario al contexto para uso posterior (antes de configurar servicios)
+                context.Items["CurrentTenant"] = tenantId;
+                context.Items["UserType"] = userType;
+
+                // 4. Para administradores de estación, intentar resolver el ID de la estación
+                if (userType == UserType.Branch)
+                {
+                    int? branchId = tenantResolver.ResolveBranchId(context);
+                    if (branchId.HasValue)
+                    {
+                        context.Items["BranchId"] = branchId.Value;
+                    }
+                }
+
+                // 5. Configurar los servicios según el tenant y tipo de usuario
+                // Ahora el contexto ya tiene toda la información necesaria, incluido el branchId si es un administrador de estación
                 try
                 {
                     serviceFactory.ConfigureServices(tenantId, userType, context);
@@ -52,20 +67,6 @@ namespace ServiPuntosUy.Middlewares
                         return;
                     }
                     throw; // En producción, propagar el error
-                }
-
-                // 4. Agregar información del tenant y tipo de usuario al contexto para uso posterior
-                context.Items["CurrentTenant"] = tenantId;
-                context.Items["UserType"] = userType;
-
-                // 5. Para administradores de estación, intentar resolver el ID de la estación
-                if (userType == UserType.Branch)
-                {
-                    int? branchId = tenantResolver.ResolveBranchId(context);
-                    if (branchId.HasValue)
-                    {
-                        context.Items["BranchId"] = branchId.Value;
-                    }
                 }
 
                 // 6. Continuar con el pipeline
