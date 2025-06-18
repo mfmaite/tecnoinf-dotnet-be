@@ -9,6 +9,9 @@ using ServiPuntosUy.DataServices;
 using ServiPuntosUy.DataServices.Services.CommonLogic;
 using ServiPuntosUy.Middlewares;
 using ServiPuntosUy.Utils;
+using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
+using Microsoft.Extensions.Configuration; 
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -75,6 +78,31 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 });
+
+// Configure Firebase Admin SDK
+var serviceAccountKeyPath = builder.Configuration.GetValue<string>("Firebase:ServiceAccountKeyPath");
+if (string.IsNullOrEmpty(serviceAccountKeyPath))
+{
+    throw new InvalidOperationException("Firebase:ServiceAccountKeyPath is not configured in appsettings.json.");
+}
+
+try
+{
+    FirebaseApp.Create(new AppOptions()
+    {
+        Credential = GoogleCredential.FromFile(serviceAccountKeyPath)
+    });
+    Console.WriteLine("Firebase Admin SDK initialized successfully.");
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"Error initializing Firebase Admin SDK: {ex.Message}");
+    // Consider logging the full exception for debugging
+    throw; // Re-throw to prevent the application from starting if initialization fails
+}
+
+
+
 
 // Configurar la conexión a la base de datos
 builder.Services.AddDbContext<CentralDbContext>(options =>

@@ -12,6 +12,9 @@ using ServiPuntosUy.DataServices.Services;
 using ServiPuntosUy.DataServices.Services.Branch;
 using ServiPuntosUy.Enums;
 using ServiPuntosUy.DataServices.Services.CommonLogic;
+using FirebaseAdmin.Messaging;
+using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace ServiPuntosUy.DataServices.Services.Tenant
 {
@@ -396,6 +399,10 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
 
         public Task<PromotionDTO?> AddPromotion(int tenantId, string description, DateTime startDate, DateTime endDate, IEnumerable<int> branch, IEnumerable<int> product, int price)        
         {
+            
+            
+            
+            
             // Validaciones previas - verificar existencia de branches
             verifyBranchList(branch, tenantId);
             // Validaciones previas - verificar existencia de productos
@@ -440,6 +447,8 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             }
             _promotionBranchRepository.SaveChangesAsync().GetAwaiter().GetResult();
 
+            var fcm = FCM(createdPromotion.Id, tenantId, description, startDate, endDate, branch, product, price);
+
             // Devolver el DTO de la promoción creada
             return Task.FromResult(promotionDTO);
         }
@@ -453,7 +462,50 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
                await _promotionProductRepository.DeleteAsync(entity.PromotionId, entity.ProductId);
             }
             else{
-                        await _promotionProductRepository.DeleteAsync(entity.PromotionId, entity.ProductId, tenantId);
+                await _promotionProductRepository.DeleteAsync(entity.PromotionId, entity.ProductId, tenantId);
+            }
+        }
+
+        public async Task<bool> FCM(int promotionId, int tenantId, string description, DateTime startDate, DateTime endDate, IEnumerable<int> branch, IEnumerable<int> product, int price)
+        {
+            // Crear el mensaje de notificación
+            var message = new Message()
+            {
+                Notification = new Notification
+                {
+                    Title = "Nueva Promoción",
+                    Body = $"Se ha creado una nueva promoción: {description}",
+                },
+                Topic = "topic",
+                Data = new Dictionary<string, string>
+                {
+                    { "promotionId", promotionId.ToString() },
+                    { "tenantId", tenantId.ToString() },
+                    { "description", description },
+                    { "startDate", startDate.ToString("o") }, // Formato ISO 8601
+                    { "endDate", endDate.ToString("o") }, // Formato ISO 8601
+                    { "price", price.ToString() }
+                //                     { "promotionId", "-1"},
+                // { "tenantId", "-1" },
+                // { "description", "descripcion de prueba"},
+                // { "startDate", "10-10-2010" },
+                // { "endDate", "10-10-2010" },
+                // { "price", "3000" }
+
+                }
+            };
+
+            try
+            {
+                // Enviar el mensaje a Firebase Cloud Messaging
+                string response = await FirebaseMessaging.DefaultInstance.SendAsync(message);
+                Console.WriteLine($"Successfully sent message to topic: {response}");
+                return true;
+            }
+            catch (FirebaseMessagingException ex)
+            {
+                Console.WriteLine($"Error sending message to topic: {ex.Message}");
+                throw new Exception($"Error al enviar la notificación a los usuarios suscritos al topic");
             }
         }
 

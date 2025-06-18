@@ -216,8 +216,13 @@ public class PromotionController : BaseController
                 return BadRequest("La fecha de inicio debe ser anterior a la fecha de fin.");
 
             // Obtenemos branch id del usuario loguead
+            // var branchId = 12;
+            // var tenantId = ObtainTenantFromToken();
+
+            var tenantId = ObtainUserFromToken().TenantId;
             var branchId = ObtainBranchIdFromToken();
-            var tenantId = ObtainTenantFromToken();
+
+            // Console.WriteLine($"Tenant ID: {tenantId}, Branch ID: {branchId}");
             
             var promocion = await PromotionService.AddPromotionForBranch(
                 int.Parse(tenantId),
