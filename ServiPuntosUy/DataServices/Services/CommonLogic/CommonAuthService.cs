@@ -253,13 +253,8 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
             }
             else
             {
-                // Mark as Google user if not already
-                if (!user.IsGoogleUser)
-                {
-                    user.IsGoogleUser = true;
-                }
-
-                // Update last login date
+                // Only update last login date for existing users
+                // Do not modify the IsGoogleUser flag to preserve the original login method
                 user.LastLoginDate = DateTime.UtcNow;
                 await _dbContext.SaveChangesAsync();
             }
@@ -276,10 +271,6 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
                     Console.WriteLine($"Error checking point expiration: {ex.Message}");
                 }
             }
-
-            // Actualizar la fecha del último login (siempre)
-            user.LastLoginDate = DateTime.UtcNow;
-            await _dbContext.SaveChangesAsync();
 
             // Generate token
             return await GenerateJwtToken(
