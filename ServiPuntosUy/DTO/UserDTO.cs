@@ -60,8 +60,8 @@ namespace ServiPuntosUy.DTO
         public bool NotificationsEnabled { get; set; } = true;
 
         /// <summary>
-        /// ID de Google del usuario (solo para usuarios autenticados con Google)
+        /// Indica si el usuario se autenticó con Google
         /// </summary>
-        public string? GoogleId { get; set; }
+        public bool IsGoogleUser { get; set; }
     }
 }

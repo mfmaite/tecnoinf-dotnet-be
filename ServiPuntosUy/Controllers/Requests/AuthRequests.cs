@@ -18,5 +18,4 @@ public class GoogleAuthRequest
     public string IdToken { get; set; }  // The ID token from Google
     public string Email { get; set; }
     public string Name { get; set; }
-    public string GoogleId { get; set; }
 }

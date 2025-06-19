@@ -56,9 +56,9 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
         /// <param name="role">Tipo de usuario</param>
         /// <param name="tenantId">ID del tenant</param>
         /// <param name="branchId">ID de la sucursal</param>
-        /// <param name="googleId">ID de Google del usuario (opcional)</param>
+        /// <param name="isGoogleUser">Indica si el usuario se autenticó con Google</param>
         /// <returns>Token JWT</returns>
-        public async Task<UserSessionDTO> GenerateJwtToken(int userId, string email, string name, UserType role, int? tenantId, int? branchId, string googleId = null)
+        public async Task<UserSessionDTO> GenerateJwtToken(int userId, string email, string name, UserType role, int? tenantId, int? branchId, bool isGoogleUser = false)
         {
             // Generar token JWT
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -79,10 +79,10 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
                 claims.Add(new Claim("branchId", branchId.ToString()));
             }
 
-            // Agregar googleId al token si está disponible
-            if (!string.IsNullOrEmpty(googleId))
+            // Agregar información de autenticación con Google al token
+            if (isGoogleUser)
             {
-                claims.Add(new Claim("googleId", googleId));
+                claims.Add(new Claim("isGoogleUser", "true"));
             }
 
             var tokenDescriptor = new SecurityTokenDescriptor
@@ -156,7 +156,7 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
                 user.Role,
                 user.TenantId ?? null,
                 user.BranchId ?? null,
-                user.GoogleId
+                user.IsGoogleUser
             );
         }
 
@@ -184,7 +184,7 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
                 IsVerified = user.IsVerified,
                 PointBalance = user.PointBalance,
                 NotificationsEnabled = user.NotificationsEnabled,
-                GoogleId = user.GoogleId
+                IsGoogleUser = user.IsGoogleUser
             };
         }
 
@@ -204,14 +204,12 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
         /// <param name="idToken">Token de ID de Google</param>
         /// <param name="email">Email del usuario</param>
         /// <param name="name">Nombre del usuario</param>
-        /// <param name="googleId">ID de Google del usuario</param>
         /// <param name="httpContext">Contexto HTTP para obtener información adicional</param>
         /// <returns>Token JWT si la autenticación es exitosa, null en caso contrario</returns>
         public async Task<UserSessionDTO?> AuthenticateWithGoogleAsync(
             string idToken,
             string email,
             string name,
-            string googleId,
             HttpContext httpContext)
         {
             // Obtener tenantId y userType del contexto HTTP
@@ -223,16 +221,9 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
 
             UserType userType = (UserType)(httpContext.Items["UserType"] ?? UserType.EndUser);
 
-            // Verify if the user exists by GoogleId
+            // Try to find user by email
             var user = await _dbContext.Set<User>()
-                .FirstOrDefaultAsync(u => u.GoogleId == googleId && u.TenantId == tenantId);
-
-            // If user doesn't exist, try to find by email
-            if (user == null)
-            {
-                user = await _dbContext.Set<User>()
-                    .FirstOrDefaultAsync(u => u.Email == email && u.TenantId == tenantId);
-            }
+                .FirstOrDefaultAsync(u => u.Email == email && u.TenantId == tenantId);
 
             // If user still doesn't exist, create a new one
             if (user == null)
@@ -254,7 +245,7 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
                     PointBalance = 0,
                     Password = passwordHash,
                     PasswordSalt = salt,
-                    GoogleId = googleId
+                    IsGoogleUser = true
                 };
 
                 await _dbContext.Set<User>().AddAsync(user);
@@ -262,10 +253,10 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
             }
             else
             {
-                // Update Google ID if it's not set
-                if (string.IsNullOrEmpty(user.GoogleId))
+                // Mark as Google user if not already
+                if (!user.IsGoogleUser)
                 {
-                    user.GoogleId = googleId;
+                    user.IsGoogleUser = true;
                 }
 
                 // Update last login date
@@ -298,7 +289,7 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
                 user.Role,
                 user.TenantId ?? null,
                 user.BranchId ?? null,
-                user.GoogleId
+                user.IsGoogleUser
             );
         }
 
@@ -358,7 +349,7 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
                 createdUser.Role,
                 createdUser.TenantId,
                 null,
-                null // GoogleId is null for regular signup
+                false // Not a Google user for regular signup
             );
         }
 
@@ -532,7 +523,8 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
                     user.Name,
                     user.Role,
                     user.TenantId,
-                    user.BranchId
+                    user.BranchId,
+                    user.IsGoogleUser
                 );
             }
             catch (Exception ex)

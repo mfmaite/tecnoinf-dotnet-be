@@ -25,8 +25,8 @@ public class User
     [Required]
     public string PasswordSalt { get; set; } = "";
     
-    // Google authentication ID
-    public string? GoogleId { get; set; } = null;
+    // Flag to indicate if the user authenticated with Google
+    public bool IsGoogleUser { get; set; } = false;
 
     [Required]
     public UserType Role { get; set; } = UserType.Central;
