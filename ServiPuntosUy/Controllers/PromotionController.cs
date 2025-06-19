@@ -78,7 +78,8 @@ public class PromotionController : BaseController
     [ProducesResponseType(typeof(PromotionDTO), 200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(500)]
-    public async Task<IActionResult> UpdatePromotion([FromBody] UpdatePromotionRequest request) {
+    public async Task<IActionResult> UpdatePromotion([FromBody] UpdatePromotionRequest request) 
+    {
         try
         {
             
@@ -215,10 +216,6 @@ public class PromotionController : BaseController
             if (request.StartDate >= request.EndDate)
                 return BadRequest("La fecha de inicio debe ser anterior a la fecha de fin.");
 
-            // Obtenemos branch id del usuario loguead
-            // var branchId = 12;
-            // var tenantId = ObtainTenantFromToken();
-
             var tenantId = ObtainUserFromToken().TenantId;
             var branchId = ObtainBranchIdFromToken();
 
@@ -251,4 +248,49 @@ public class PromotionController : BaseController
             });
         }
     }
+
+        /// <summary>
+    /// Obtiene la lista de promociones
+    /// </summary>
+    /// <returns>La lista de promociones</returns>
+    /// <response code="200">Retorna la lista de promociones</response>
+    /// <response code="400">Si hay un error en la búsqueda</response>
+    [HttpGet("Branch")]
+    [ProducesResponseType(typeof(PromotionExtendedDTO[]), 200)]
+    [ProducesResponseType(404)]
+    [ProducesResponseType(400)]
+    public IActionResult GetBranchPromotionList()
+    {
+        try
+        {
+            // Obtenemos tenant id del usuario loguead
+            var tenantId = int.Parse(ObtainUserFromToken().TenantId ?? "0");
+            if (tenantId == 0)
+                return BadRequest(new ApiResponse<object>
+                {
+                    Error = true,
+                    Message = "No se pudo obtener el tenant ID del token."
+                });
+            var branchId = ObtainBranchIdFromToken();
+
+            
+            var promotionList = PromotionService.GetBranchPromotionList(tenantId, branchId ?? 0);
+
+            return Ok(new ApiResponse<PromotionExtendedDTO[]>
+            {
+                Error = false,
+                Message = "Lista de promociones obtenida correctamente",
+                Data = promotionList.ToArray()
+            });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new ApiResponse<object>
+            {
+                Error = true,
+                Message = ex.Message
+            });
+        }
+    }
+
 }

@@ -12,8 +12,7 @@ namespace ServiPuntosUy.DataServices.Services
         Task<PromotionDTO?> UpdatePromotion(int PromotionId,int tenantId, string description, DateTime startDate, DateTime endDate, IEnumerable<int> branch, IEnumerable<int> product, int price);
         PromotionExtendedDTO[] GetPromotionList(int tenantId);
         PromotionExtendedDTO GetPromotion(int promotionId, int branchId);
-        Task<PromotionDTO?> AddPromotionForBranch(int tenantId, int branchId, string description, DateTime startDate, DateTime endDate, IEnumerable<int> product, int price);       
-
-
+        Task<PromotionDTO?> AddPromotionForBranch(int tenantId, int branchId, string description, DateTime startDate, DateTime endDate, IEnumerable<int> product, int price);     
+        PromotionExtendedDTO[] GetBranchPromotionList(int tenantId, int branchId);
     }
 }

@@ -259,6 +259,11 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
         {
             throw new UnauthorizedAccessException("El usuario final no puede agregar promociones para una sucursal");
         }
+        
+        public PromotionExtendedDTO[] GetBranchPromotionList(int tenantId, int branchId)
+        {
+            throw new UnauthorizedAccessException("El usuario final no puede obtener promociones de una sucursal específica");
+        }
     }
 
     /// <summary>
