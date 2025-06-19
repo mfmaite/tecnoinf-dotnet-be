@@ -285,6 +285,11 @@ namespace ServiPuntosUy.DataServices.Services.Central
             // Implementación básica para el scaffold
             throw new NotImplementedException();
         }
+        public PromotionExtendedDTO[] GetBranchPromotionList(int tenantId, int branchId)
+        {
+            // Implementación básica para el scaffold
+            return new PromotionExtendedDTO[0];
+        }
     }
 
     /// <summary>

@@ -743,6 +743,29 @@ namespace ServiPuntosUy.DataServices.Services.Tenant
             return Task.FromResult(promotionDTO);
         }
 
+        public PromotionExtendedDTO[] GetBranchPromotionList(int tenantId, int branchId)
+      {
+            // Obtener la lista de promociones del repositorio filtrando por TenantId
+            var promotions = _promotionRepository.GetQueryable().Where(p => p.TenantId == tenantId);
+            // Filtrar las promociones que están asociadas a la sucursal específica
+            promotions = promotions.Where(p => _promotionBranchRepository.GetQueryable()
+                .Any(pb => pb.PromotionId == p.Id && pb.BranchId == branchId && pb.TenantId == tenantId));
+
+            //Recorremos las promociones y las agregamos a una lista
+            var promotionList = promotions.Select(p => new PromotionExtendedDTO
+            {
+                PromotionId = p.Id,
+                TenantId = p.TenantId,
+                Description = p.Description,
+                StartDate = p.StartDate,
+                EndDate = p.EndDate,
+                Branches = _promotionBranchRepository.GetQueryable().Where(pb => pb.TenantId == tenantId && pb.PromotionId == p.Id).Select(pb => pb.BranchId).ToList(),
+                Products = _promotionProductRepository.GetQueryable().Where(pp => pp.PromotionId == p.Id).Select(pp => pp.ProductId).ToList(),
+                Price = p.Price
+            }).ToArray();
+            return promotionList;
+        }
+
     }
 
     /// <summary>
