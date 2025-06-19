@@ -143,12 +143,20 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
                 return null;
 
             var tenant = _dbContext.Tenants.FirstOrDefault(t => t.Name == tenantName);
-            return tenant?.Id.ToString();
+            if (tenant != null)
+            {
+                return tenant.Id.ToString();
+            }
+            else
+            {
+                return null;
+            }
         }
 
         private string GetTenantIdFromHost(HttpContext context)
         {
             string host = context.Request.Host.Host;
+            string origin = context.Request.Headers["Origin"].ToString();
 
             // Para administradores: admin.servipuntos.uy
             // No intentamos resolver el tenant desde la URL
@@ -172,6 +180,22 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
             {
                 tenantName = tenantParam.ToString();
                 return GetTenantIdByName(tenantName);
+            }
+
+            // Fallback para desarrollo: intentar extraer del header Origin si el host es localhost
+            if (host == "localhost" && !string.IsNullOrEmpty(origin))
+            {
+                var originUri = new Uri(origin);
+                var originHost = originUri.Host;
+
+                // Intentar extraer tenant del host del origin
+                var originTenantMatch = endUserTenantRegex.Match(originHost);
+                if (originTenantMatch.Success)
+                {
+                    tenantName = originTenantMatch.Groups[1].Value;
+                    var tenantId = GetTenantIdByName(tenantName);
+                    return tenantId;
+                }
             }
 
             return null;
