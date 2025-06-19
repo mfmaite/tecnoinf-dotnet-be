@@ -15,14 +15,12 @@ namespace ServiPuntosUy.DataServices.Services
         /// <param name="idToken">Token de ID de Google</param>
         /// <param name="email">Email del usuario</param>
         /// <param name="name">Nombre del usuario</param>
-        /// <param name="googleId">ID de Google del usuario</param>
         /// <param name="httpContext">Contexto HTTP para obtener información adicional</param>
         /// <returns>Token JWT si la autenticación es exitosa, null en caso contrario</returns>
         Task<UserSessionDTO?> AuthenticateWithGoogleAsync(
             string idToken, 
             string email, 
             string name, 
-            string googleId, 
             HttpContext httpContext);
             
         /// <summary>
@@ -68,7 +66,7 @@ namespace ServiPuntosUy.DataServices.Services
         /// <param name="role">Tipo de usuario</param>
         /// <param name="tenantId">ID del tenant</param>
         /// <param name="branchId">ID de la sucursal</param>
-        /// <param name="googleId">ID de Google del usuario (opcional)</param>
+        /// <param name="isGoogleUser">Indica si el usuario se autenticó con Google</param>
         /// <returns>Token JWT</returns>
         Task<UserSessionDTO> GenerateJwtToken(
             int userId,
@@ -77,7 +75,7 @@ namespace ServiPuntosUy.DataServices.Services
             UserType role,
             int? tenantId,
             int? branchId,
-            string googleId = null
+            bool isGoogleUser = false
         );
 
         /// <summary>

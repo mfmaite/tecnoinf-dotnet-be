@@ -160,7 +160,6 @@ namespace ServiPuntosUy.Controllers
                     request.IdToken, 
                     request.Email, 
                     request.Name, 
-                    request.GoogleId, 
                     HttpContext);
 
                 if (userSession == null || string.IsNullOrEmpty(userSession.token))
