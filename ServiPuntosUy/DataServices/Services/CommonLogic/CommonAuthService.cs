@@ -223,7 +223,7 @@ namespace ServiPuntosUy.DataServices.Services.CommonLogic
 
             // Try to find user by email
             var user = await _dbContext.Set<User>()
-                .FirstOrDefaultAsync(u => u.Email == email && u.TenantId == tenantId);
+                .FirstOrDefaultAsync(u => u.Email == email && u.TenantId == tenantId && u.Role == UserType.EndUser);
 
             // If user still doesn't exist, create a new one
             if (user == null)
