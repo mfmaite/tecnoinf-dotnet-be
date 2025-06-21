@@ -121,6 +121,9 @@ namespace ServiPuntosUy.DataServices
             _serviceCollection.AddScoped<IPublicTenantService>(sp =>
                 new PublicTenantService(
                     sp.GetRequiredService<IGenericRepository<DAO.Models.Central.Tenant>>()));
+                    
+            // Registrar el servicio de aplicación de promociones
+            _serviceCollection.AddScoped<IPromotionApplicator, PromotionApplicator>();
 
             // Registrar un servicio de autenticación básico
             _serviceCollection.AddScoped<IAuthService>(sp =>
@@ -144,7 +147,8 @@ namespace ServiPuntosUy.DataServices
                     sp.GetRequiredService<IGenericRepository<User>>(),
                     sp.GetRequiredService<IGenericRepository<LoyaltyConfig>>(),
                     sp.GetRequiredService<IGenericRepository<Branch>>(),
-                    _configuration));
+                    _configuration,
+                    sp.GetRequiredService<IPromotionApplicator>()));
 
             // Construir el proveedor de servicios para login
             _scopedServiceProvider = _serviceCollection.BuildServiceProvider();
@@ -176,6 +180,9 @@ namespace ServiPuntosUy.DataServices
 
             // Registrar el servicio de email
             _serviceCollection.AddScoped<IEmailService>(sp => _serviceProvider.GetRequiredService<IEmailService>());
+
+            // Registrar el servicio de aplicación de promociones
+            _serviceCollection.AddScoped<IPromotionApplicator, PromotionApplicator>();
 
             // Registrar HttpContextAccessor si no está registrado
             _serviceCollection.AddHttpContextAccessor();
@@ -370,7 +377,8 @@ namespace ServiPuntosUy.DataServices
                     sp.GetRequiredService<IGenericRepository<TransactionItem>>(),
                     sp.GetRequiredService<IGenericRepository<Branch>>(),
                     sp.GetRequiredService<IGenericRepository<ProductStock>>(),
-                    sp.GetRequiredService<IGenericRepository<User>>()));
+                    sp.GetRequiredService<IGenericRepository<User>>(),
+                    sp.GetRequiredService<IPromotionApplicator>()));
 
             // Registrar los demás servicios
             _serviceCollection.AddScoped<IPromotionService>(sp => new Services.Tenant.PromotionService(
@@ -401,7 +409,8 @@ namespace ServiPuntosUy.DataServices
                     sp.GetRequiredService<IGenericRepository<User>>(),
                     sp.GetRequiredService<IGenericRepository<LoyaltyConfig>>(),
                     sp.GetRequiredService<IGenericRepository<Branch>>(),
-                    _configuration));
+                    _configuration,
+                    sp.GetRequiredService<IPromotionApplicator>()));
 
             // Registrar el servicio de gestión de servicios para el usuario final (solo lectura)
             _serviceCollection.AddScoped<IServiceManager>(sp =>

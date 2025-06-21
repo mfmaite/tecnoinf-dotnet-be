@@ -1,4 +1,5 @@
 using ServiPuntosUy.Enums;
+using System.Collections.Generic;
 
 namespace ServiPuntosUy.DTO
 {
@@ -46,5 +47,25 @@ namespace ServiPuntosUy.DTO
     /// Puntos gastados en la transacción (para canjes)
     /// </summary>
     public int PointsSpent { get; set; } = 0;
+    
+    /// <summary>
+    /// Lista de items de la transacción
+    /// </summary>
+    public List<TransactionItemDTO> Items { get; set; } = new List<TransactionItemDTO>();
+    
+    /// <summary>
+    /// Indica si la transacción tiene alguna promoción aplicada
+    /// </summary>
+    public bool HasPromotions => Items?.Any(i => i.HasPromotion) ?? false;
+    
+    /// <summary>
+    /// Monto total de descuentos aplicados
+    /// </summary>
+    public decimal TotalDiscount => Items?.Sum(i => i.Discount * i.Quantity) ?? 0;
+    
+    /// <summary>
+    /// Monto original antes de descuentos
+    /// </summary>
+    public decimal OriginalAmount => Items?.Sum(i => i.OriginalPrice * i.Quantity) ?? Amount;
     }
 }
