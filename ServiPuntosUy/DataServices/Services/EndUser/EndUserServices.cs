@@ -12,6 +12,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
+using ServiPuntosUy.DataServices.Services.CommonLogic;
 
 namespace ServiPuntosUy.DataServices.Services.EndUser
 {
@@ -545,6 +546,7 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
         private readonly IGenericRepository<DAO.Models.Central.Branch> _branchRepository;
         private readonly IGenericRepository<DAO.Models.Central.ProductStock> _productStockRepository;
         private readonly IGenericRepository<DAO.Models.Central.User> _userRepository;
+        private readonly IPromotionApplicator _promotionApplicator;
 
         public TransactionService(
             DbContext dbContext,
@@ -554,7 +556,8 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
             IGenericRepository<DAO.Models.Central.TransactionItem> transactionItemRepository,
             IGenericRepository<DAO.Models.Central.Branch> branchRepository,
             IGenericRepository<DAO.Models.Central.ProductStock> productStockRepository,
-            IGenericRepository<DAO.Models.Central.User> userRepository
+            IGenericRepository<DAO.Models.Central.User> userRepository,
+            IPromotionApplicator promotionApplicator
         )
         {
             _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
@@ -565,6 +568,7 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
             _branchRepository = branchRepository ?? throw new ArgumentNullException(nameof(branchRepository));
             _productStockRepository = productStockRepository ?? throw new ArgumentNullException(nameof(productStockRepository));
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+            _promotionApplicator = promotionApplicator ?? throw new ArgumentNullException(nameof(promotionApplicator));
         }
         
         /// <summary>
@@ -663,12 +667,43 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
                     throw new Exception("La configuración de lealtad no existe para este tenant");
                 }
 
-                // Calcular el monto total considerando las cantidades
+                // Calcular el monto total considerando las cantidades y las promociones
                 decimal totalAmount = 0;
-                foreach (var product in products)
+                var transactionItems = new List<TransactionItem>();
+
+                foreach (var productQuantity in products)
                 {
-                    var productInfo = productsList.First(p => p.Id == product.ProductId);
-                    totalAmount += productInfo.Price * product.Quantity;
+                    var productInfo = productsList.First(p => p.Id == productQuantity.ProductId);
+                    
+                    // Verificar si hay una promoción aplicable
+                    var promotion = await _promotionApplicator.GetApplicablePromotion(
+                        productQuantity.ProductId, branchId, branch.TenantId);
+                    
+                    // Determinar el precio a aplicar
+                    decimal unitPrice = productInfo.Price;
+                    int? promotionId = null;
+                    
+                    if (promotion != null && promotion.Price > 0)
+                    {
+                        unitPrice = promotion.Price;
+                        promotionId = promotion.Id;
+                    }
+                    
+                    // Calcular el subtotal para este producto
+                    var subtotal = unitPrice * productQuantity.Quantity;
+                    totalAmount += subtotal;
+                    
+                    // Crear el item de transacción
+                    var transactionItem = new TransactionItem
+                    {
+                        ProductId = productQuantity.ProductId,
+                        Quantity = productQuantity.Quantity,
+                        UnitPrice = unitPrice,
+                        OriginalPrice = productInfo.Price,
+                        PromotionId = promotionId
+                    };
+                    
+                    transactionItems.Add(transactionItem);
                 }
 
                 // Crear la transacción
@@ -700,18 +735,11 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
                     await _transactionRepository.AddAsync(transaction);
                     await _transactionRepository.SaveChangesAsync();
 
-                    // Crear las relaciones entre la transacción y los productos
-                    foreach (var item in productsList)
+                    // Asignar el ID de la transacción a los items y guardarlos
+                    foreach (var item in transactionItems)
                     {
-                        var transactionProduct = new TransactionItem
-                        {
-                            TransactionId = transaction.Id,
-                            ProductId = item.Id,
-                            Quantity = products.First(p => p.ProductId == item.Id).Quantity,
-                            UnitPrice = item.Price
-                        };
-
-                        await _transactionItemRepository.AddAsync(transactionProduct);
+                        item.TransactionId = transaction.Id;
+                        await _transactionItemRepository.AddAsync(item);
                     }
 
                     // Actualizar el stock de los productos
@@ -780,6 +808,7 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
         private readonly IGenericRepository<LoyaltyConfig> _loyaltyConfigRepository;
         private readonly IGenericRepository<DAO.Models.Central.Branch> _branchRepository;
         private readonly IConfiguration _configuration;
+        private readonly IPromotionApplicator _promotionApplicator;
 
         public RedemptionService(
             DbContext dbContext,
@@ -790,7 +819,8 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
             IGenericRepository<User> userRepository,
             IGenericRepository<LoyaltyConfig> loyaltyConfigRepository,
             IGenericRepository<DAO.Models.Central.Branch> branchRepository,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            IPromotionApplicator promotionApplicator)
         {
             _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
             _transactionRepository = transactionRepository ?? throw new ArgumentNullException(nameof(transactionRepository));
@@ -801,6 +831,7 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
             _loyaltyConfigRepository = loyaltyConfigRepository ?? throw new ArgumentNullException(nameof(loyaltyConfigRepository));
             _branchRepository = branchRepository ?? throw new ArgumentNullException(nameof(branchRepository));
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            _promotionApplicator = promotionApplicator ?? throw new ArgumentNullException(nameof(promotionApplicator));
         }
 
         /// <summary>
@@ -844,19 +875,33 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
             {
                 throw new Exception("Configuración de lealtad no encontrada");
             }
+            
+            // 4. Verificar si hay una promoción aplicable
+            var promotion = await _promotionApplicator.GetApplicablePromotion(
+                productId, branchId, branch.TenantId);
+                
+            // Determinar el precio a aplicar
+            decimal productPrice = product.Price;
+            int? promotionId = null;
+            
+            if (promotion != null && promotion.Price > 0)
+            {
+                productPrice = promotion.Price;
+                promotionId = promotion.Id;
+            }
 
-            // 4. Calcular el costo en puntos
-            int pointsCost = (int)(product.Price / loyaltyConfig.PointsValue);
+            // 5. Calcular el costo en puntos (usando el precio promocional si existe)
+            int pointsCost = (int)(productPrice / loyaltyConfig.PointsValue);
 
             if (user.PointBalance < pointsCost)
             {
                 throw new Exception("Puntos insuficientes para realizar el canje");
             }
 
-            // 5. Crear el payload del token
+            // 6. Crear el payload del token
             var expiresAt = DateTime.UtcNow.AddMinutes(15); // El token expira en 15 minutos
 
-            // 6. Generar el token JWT
+            // 7. Generar el token JWT
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]);
             
@@ -868,7 +913,9 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
                     new Claim("branchId", branchId.ToString()),
                     new Claim("productId", productId.ToString()),
                     new Claim("pointsCost", pointsCost.ToString()),
-                    new Claim("expiresAt", expiresAt.ToString("o"))
+                    new Claim("expiresAt", expiresAt.ToString("o")),
+                    new Claim("originalPrice", product.Price.ToString()),
+                    new Claim("promotionId", promotionId?.ToString() ?? "0")
                 }),
                 Expires = expiresAt,
                 SigningCredentials = new SigningCredentials(
@@ -909,6 +956,11 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
                 var productId = int.Parse(principal.FindFirst("productId").Value);
                 var pointsCost = int.Parse(principal.FindFirst("pointsCost").Value);
                 var expiresAt = DateTime.Parse(principal.FindFirst("expiresAt").Value);
+                var originalPrice = decimal.Parse(principal.FindFirst("originalPrice").Value);
+                var promotionIdClaim = principal.FindFirst("promotionId")?.Value;
+                int? promotionId = (!string.IsNullOrEmpty(promotionIdClaim) && promotionIdClaim != "0") 
+                    ? int.Parse(promotionIdClaim) 
+                    : null;
 
                 // 3. Verificar que el token no haya expirado
                 if (expiresAt > DateTime.UtcNow)
@@ -963,13 +1015,15 @@ namespace ServiPuntosUy.DataServices.Services.EndUser
                     await _transactionRepository.AddAsync(transaction);
                     await _transactionRepository.SaveChangesAsync();
 
-                    // 8. Crear el item de transacción
+                    // 8. Crear el item de transacción con la información de promoción
                     var transactionItem = new TransactionItem
                     {
                         TransactionId = transaction.Id,
                         ProductId = productId,
                         Quantity = 1,
-                        UnitPrice = product.Price
+                        UnitPrice = product.Price,
+                        OriginalPrice = originalPrice,
+                        PromotionId = promotionId
                     };
 
                     await _transactionItemRepository.AddAsync(transactionItem);

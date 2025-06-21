@@ -23,4 +23,12 @@ public class TransactionItem
 
     [Required]
     public decimal UnitPrice { get; set; }
+    
+    // Precio original antes del descuento (para referencia)
+    public decimal OriginalPrice { get; set; }
+    
+    // Referencia a la promoción aplicada (si existe)
+    [ForeignKey("Promotion")]
+    public int? PromotionId { get; set; }
+    public Promotion Promotion { get; set; }
 }
